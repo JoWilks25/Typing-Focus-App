@@ -1,34 +1,74 @@
-# Typing Focus App
+# Focus Writer
 
-An Electron application with React and TypeScript
+A minimalist writing app built with Electron, React, and TypeScript. Write without distractions with beautiful animations that respond to your typing.
 
-## Recommended IDE Setup
+## Prerequisites
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- **Node.js 20+** (LTS recommended)
+- **macOS** (primary target for MVP)
+- **npm** (comes with Node.js)
 
-## Project Setup
+## Installation
 
-### Install
-
-```bash
-$ npm install
-```
-
-### Development
+Clone the repository and install dependencies:
 
 ```bash
-$ npm run dev
+npm install
 ```
 
-### Build
+## Development
+
+Start the development server with hot reload:
 
 ```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
+npm run dev
 ```
+
+This will open the Electron app with:
+- Hot Module Replacement (HMR) for the React renderer
+- Auto-reload for the Electron main process
+
+## Build
+
+Build the application for production:
+
+```bash
+npm run build        # Build only
+npm run build:mac    # Build macOS app
+npm run build:win    # Build Windows app
+npm run build:linux  # Build Linux app
+```
+
+## Other Commands
+
+```bash
+npm run lint         # Run ESLint
+npm run format       # Run Prettier
+npm run typecheck    # TypeScript type checking
+```
+
+## Project Structure
+
+```
+src/
+├── main/           # Electron main process (Node.js)
+├── preload/        # Preload scripts (context bridge)
+└── renderer/       # React application (frontend)
+```
+
+## Documentation
+
+📚 **[View All Documentation](./docs/README.md)** - Complete documentation index
+
+**Quick Links:**
+- 🚀 [Getting Started Guide](./docs/setup/STARTUP.md) - Verify your setup
+- 🏗️ [Project Structure](./docs/architecture/STRUCTURE.md) - Understand the codebase
+- 🔌 [API Usage Guide](./docs/architecture/PRELOAD_API_USAGE.md) - Use the Electron API
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines, coding standards, and workflow.
+
+## License
+
+MIT License - see [LICENSE](./LICENSE) file for details.
