@@ -29,7 +29,7 @@ export class StorageService {
         data = JSON.parse(content);
       } catch (error) {
         // If file doesn't exist or is corrupted, start with empty object
-        if ((error as any)?.code !== 'ENOENT') {
+        if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
           // For other errors (like JSON parse errors), log but continue with empty object
           console.warn('Storage file corrupted, starting fresh:', error);
         }
@@ -57,7 +57,7 @@ export class StorageService {
       return data[key];
     } catch (error) {
       // If file doesn't exist or is corrupted, return undefined
-      if ((error as any)?.code === 'ENOENT') {
+      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
         return undefined;
       }
       
@@ -85,7 +85,7 @@ export class StorageService {
         data = JSON.parse(content);
       } catch (error) {
         // If file doesn't exist or is corrupted, nothing to remove
-        if ((error as any)?.code === 'ENOENT') {
+        if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
           return;
         }
         if (error instanceof SyntaxError) {

@@ -1,0 +1,86 @@
+/* src/renderer/src/components/Editor/Editor.module.css */
+/* Purpose: Styling for the Tiptap editor component */
+
+.editor {
+  @apply bg-gray-800 rounded-lg shadow-xl;
+  min-height: 500px;
+}
+
+.editorContent {
+  @apply p-8 min-h-[500px] focus:outline-none;
+}
+
+.editorContent:empty:before {
+  content: attr(data-placeholder);
+  @apply text-gray-400 italic;
+  pointer-events: none;
+}
+
+/* Tiptap/ProseMirror specific styles */
+.editorContent .ProseMirror {
+  @apply focus:outline-none;
+  min-height: 400px;
+  line-height: 1.6;
+  font-size: 16px;
+  color: #f3f4f6; /* text-gray-100 */
+  white-space: pre-wrap; /* Required by ProseMirror */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  outline: none;
+  will-change: auto;
+  transform: translateZ(0);
+}
+
+.editorContent .ProseMirror p {
+  @apply mb-4;
+}
+
+.editorContent .ProseMirror p:last-child {
+  @apply mb-0;
+}
+
+/* Placeholder styling */
+.editorContent .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply text-gray-400 italic;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Focus state */
+.editorContent .ProseMirror:focus {
+  @apply outline-none;
+}
+
+/* ProseMirror selection */
+.editorContent .ProseMirror .ProseMirror-selectednode {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
+}
+
+/* ProseMirror cursor */
+.editorContent .ProseMirror .ProseMirror-cursor {
+  border-left: 2px solid #3b82f6; /* blue-500 */
+  margin-left: -1px;
+  pointer-events: none;
+  position: relative;
+}
+
+/* ProseMirror drop cursor */
+.editorContent .ProseMirror .ProseMirror-dropcursor {
+  position: relative;
+  pointer-events: none;
+}
+
+.editorContent .ProseMirror .ProseMirror-dropcursor:after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: -2px;
+  right: -2px;
+  background: #3b82f6; /* blue-500 */
+  pointer-events: none;
+}

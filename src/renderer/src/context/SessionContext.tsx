@@ -1,55 +1,19 @@
 // src/renderer/src/context/SessionContext.tsx
-// Purpose: Session state management with localStorage persistence
+// Purpose: Session state management components
 
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import type { SessionState, Session } from '@renderer/types/session';
-
-const STORAGE_KEY = 'tfa:sessionState:v1';
-
-export interface SessionContextValue extends SessionState {
-    setActiveSession: (id: string | null) => void;
-    addSession: (session: Session) => void;
-    updateSession: (session: Session) => void;
-    removeSession: (id: string) => void;
-    reset: () => void;
-}
-
-export const SessionContext = createContext<SessionContextValue | undefined>(undefined);
-
-function load(): SessionState {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { sessions: [], activeSessionId: null };
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return { sessions: [], activeSessionId: null };
-        return {
-            sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
-            activeSessionId:
-                typeof parsed.activeSessionId === 'string' || parsed.activeSessionId === null
-                    ? parsed.activeSessionId
-                    : null
-        };
-    } catch {
-        return { sessions: [], activeSessionId: null };
-    }
-}
-
-function save(state: SessionState) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-        // ignore write errors
-    }
-}
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Session } from '@renderer/types/session';
+import { SessionContext, type SessionContextValue } from './SessionContextDef';
+import { loadSessionState, saveSessionState } from './sessionStorage';
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-    const [sessions, setSessions] = useState<Session[]>(() => load().sessions);
+    const [sessions, setSessions] = useState<Session[]>(() => loadSessionState().sessions);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(
-        () => load().activeSessionId
+        () => loadSessionState().activeSessionId
     );
 
     useEffect(() => {
-        save({ sessions, activeSessionId });
+        saveSessionState({ sessions, activeSessionId });
     }, [sessions, activeSessionId]);
 
     const setActiveSession = useCallback((id: string | null) => setActiveSessionId(id), []);
@@ -76,19 +40,23 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setActiveSessionId(null);
     }, []);
 
+    const activeSession = useMemo(() => {
+        return sessions.find(session => session.id === activeSessionId) || null;
+    }, [sessions, activeSessionId]);
+
     const value = useMemo<SessionContextValue>(
         () => ({
             sessions,
             activeSessionId,
+            activeSession,
             setActiveSession,
             addSession,
             updateSession,
             removeSession,
             reset
         }),
-        [sessions, activeSessionId, setActiveSession, addSession, updateSession, removeSession, reset]
+        [sessions, activeSessionId, activeSession, setActiveSession, addSession, updateSession, removeSession, reset]
     );
 
     return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
-

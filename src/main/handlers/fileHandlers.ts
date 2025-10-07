@@ -44,7 +44,7 @@ export async function handleFileRead(request: FileReadRequest) {
     return createSuccessResult(response);
   } catch (error) {
     // Map specific error codes
-    const errorCode = (error as any)?.code === 'ENOENT' 
+    const errorCode = (error as NodeJS.ErrnoException)?.code === 'ENOENT'
       ? ERROR_CODES.FILE_NOT_FOUND 
       : ERROR_CODES.FILE_READ_ERROR;
     
@@ -103,7 +103,7 @@ export async function handleFileList(request: FileListRequest) {
     return createSuccessResult(response);
   } catch (error) {
     // Map specific error codes
-    const errorCode = (error as any)?.code === 'ENOENT' 
+    const errorCode = (error as NodeJS.ErrnoException)?.code === 'ENOENT' 
       ? ERROR_CODES.FILE_NOT_FOUND 
       : ERROR_CODES.FILE_LIST_ERROR;
     

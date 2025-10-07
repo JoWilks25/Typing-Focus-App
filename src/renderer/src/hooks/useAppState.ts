@@ -2,7 +2,7 @@
 // Purpose: Custom hook for app state management
 
 import { useContext } from 'react';
-import { AppContext } from '@renderer/context/AppContext';
+import { AppContext } from '@renderer/context/AppContextDef';
 
 export function useAppState() {
   const ctx = useContext(AppContext);

@@ -52,7 +52,7 @@ export class FileService {
     try {
       await fs.access(fullPath, fs.constants.F_OK);
       return true;
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       return false;
     }
   }
@@ -67,7 +67,7 @@ export class FileService {
       await fs.mkdir(fullPath, { recursive: true });
     } catch (error) {
       // If directory already exists, that's fine
-      if ((error as any)?.code !== 'EEXIST') {
+      if ((error as NodeJS.ErrnoException)?.code !== 'EEXIST') {
         throw error;
       }
     }

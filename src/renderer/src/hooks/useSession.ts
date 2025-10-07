@@ -2,7 +2,7 @@
 // Purpose: Custom hook for session state management
 
 import { useContext } from 'react';
-import { SessionContext } from '@renderer/context/SessionContext';
+import { SessionContext } from '@renderer/context/SessionContextDef';
 
 export function useSession() {
   const ctx = useContext(SessionContext);

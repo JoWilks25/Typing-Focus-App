@@ -49,7 +49,7 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
       '@typescript-eslint/ban-ts-comment': 'warn'
     }
   },
@@ -82,7 +82,7 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
       '@typescript-eslint/ban-ts-comment': 'warn'
     }
   },
@@ -124,7 +124,7 @@ export default [
       'react/react-in-jsx-scope': 'off', // Not needed with React 17+ JSX transform
       'react-refresh/only-export-components': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
       '@typescript-eslint/no-empty-object-type': 'warn'
     },
     settings: {
@@ -176,8 +176,8 @@ export default [
       ...vitest.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react-refresh/only-export-components': 'off', // Turn off for tests
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn'
+      '@typescript-eslint/no-explicit-any': 'off', // Allow any in tests for mocking
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }]
     },
     settings: {
       react: { version: 'detect' }

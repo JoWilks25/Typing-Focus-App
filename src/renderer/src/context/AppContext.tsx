@@ -1,39 +1,10 @@
 // src/renderer/src/context/AppContext.tsx
-// Purpose: App state management with localStorage persistence
+// Purpose: App state management components
 
-import { Component, createContext, useEffect, useMemo, useState } from 'react';
+import { Component, useEffect, useMemo, useState } from 'react';
 import type { AppState, View } from '@renderer/types/app';
-
-const STORAGE_KEY = 'tfa:appState:v1';
-
-export interface AppContextValue extends AppState {
-    setView: (view: View) => void;
-    setTheme: (theme: AppState['theme']) => void;
-}
-
-export const AppContext = createContext<AppContextValue | undefined>(undefined);
-
-function load(): AppState {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { currentView: 'dashboard', theme: 'dark' };
-        const parsed = JSON.parse(raw);
-        return {
-            currentView: parsed?.currentView === 'editor' ? 'editor' : 'dashboard',
-            theme: parsed?.theme === 'light' || parsed?.theme === 'system' ? parsed.theme : 'dark'
-        };
-    } catch {
-        return { currentView: 'dashboard', theme: 'dark' };
-    }
-}
-
-function save(state: AppState) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-        // ignore
-    }
-}
+import { AppContext, type AppContextValue } from './AppContextDef';
+import { loadAppState, saveAppState } from './appStorage';
 
 export class ErrorBoundary extends Component<
     { children: React.ReactNode },
@@ -69,10 +40,10 @@ export class ErrorBoundary extends Component<
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-    const [state, setState] = useState<AppState>(() => load());
+    const [state, setState] = useState<AppState>(() => loadAppState());
 
     useEffect(() => {
-        save(state);
+        saveAppState(state);
     }, [state]);
 
     const setView = (view: View) => setState((prev) => ({ ...prev, currentView: view }));

@@ -1,95 +1,113 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type {
   FileReadRequest,
+  FileReadResponse,
   FileWriteRequest,
+  FileWriteResponse,
   FileListRequest,
+  FileListResponse,
   FileExistsRequest,
+  FileExistsResponse,
   StorageGetRequest,
+  StorageGetResponse,
   StorageSetRequest,
+  StorageSetResponse,
   StorageRemoveRequest,
+  StorageRemoveResponse,
+  StorageClearResponse,
   SessionStartRequest,
+  SessionStartResponse,
   SessionStopRequest,
+  SessionStopResponse,
   SessionGetRequest,
+  SessionGetResponse,
+  SessionListResponse,
   FocusStartRequest,
+  FocusStartResponse,
   FocusStopRequest,
+  FocusStopResponse,
   FocusStatusRequest,
+  FocusStatusResponse,
   ActivityRecordRequest,
+  ActivityRecordResponse,
   ActivityStatsRequest,
+  ActivityStatsResponse,
   ActivityResetRequest,
+  ActivityResetResponse,
   Result,
   StructuredError
 } from '../main/types/ipc';
 
 // File API
 const fileAPI = {
-  read: (request: FileReadRequest): Promise<Result<any, StructuredError>> => {
+  read: (request: FileReadRequest): Promise<Result<FileReadResponse, StructuredError>> => {
     return ipcRenderer.invoke('file:read', request);
   },
-  write: (request: FileWriteRequest): Promise<Result<any, StructuredError>> => {
+  write: (request: FileWriteRequest): Promise<Result<FileWriteResponse, StructuredError>> => {
     return ipcRenderer.invoke('file:write', request);
   },
-  list: (request: FileListRequest): Promise<Result<any, StructuredError>> => {
+  list: (request: FileListRequest): Promise<Result<FileListResponse, StructuredError>> => {
     return ipcRenderer.invoke('file:list', request);
   },
-  exists: (request: FileExistsRequest): Promise<Result<any, StructuredError>> => {
+  exists: (request: FileExistsRequest): Promise<Result<FileExistsResponse, StructuredError>> => {
     return ipcRenderer.invoke('file:exists', request);
   }
 };
 
 // Storage API (placeholder - will be implemented next)
 const storageAPI = {
-  get: (request: StorageGetRequest): Promise<Result<any, StructuredError>> => {
+  get: (request: StorageGetRequest): Promise<Result<StorageGetResponse, StructuredError>> => {
     return ipcRenderer.invoke('storage:get', request);
   },
-  set: (request: StorageSetRequest): Promise<Result<any, StructuredError>> => {
+  set: (request: StorageSetRequest): Promise<Result<StorageSetResponse, StructuredError>> => {
     return ipcRenderer.invoke('storage:set', request);
   },
-  remove: (request: StorageRemoveRequest): Promise<Result<any, StructuredError>> => {
+  remove: (request: StorageRemoveRequest): Promise<Result<StorageRemoveResponse, StructuredError>> => {
     return ipcRenderer.invoke('storage:remove', request);
   },
-  clear: (): Promise<Result<any, StructuredError>> => {
+  clear: (): Promise<Result<StorageClearResponse, StructuredError>> => {
     return ipcRenderer.invoke('storage:clear');
   }
 };
 
 // Session API (placeholder - will be implemented next)
 const sessionAPI = {
-  start: (request: SessionStartRequest): Promise<Result<any, StructuredError>> => {
+  start: (request: SessionStartRequest): Promise<Result<SessionStartResponse, StructuredError>> => {
     return ipcRenderer.invoke('session:start', request);
   },
-  stop: (request: SessionStopRequest): Promise<Result<any, StructuredError>> => {
+  stop: (request: SessionStopRequest): Promise<Result<SessionStopResponse, StructuredError>> => {
     return ipcRenderer.invoke('session:stop', request);
   },
-  get: (request: SessionGetRequest): Promise<Result<any, StructuredError>> => {
+  get: (request: SessionGetRequest): Promise<Result<SessionGetResponse, StructuredError>> => {
     return ipcRenderer.invoke('session:get', request);
   },
-  list: (): Promise<Result<any, StructuredError>> => {
+  list: (): Promise<Result<SessionListResponse, StructuredError>> => {
     return ipcRenderer.invoke('session:list');
   }
 };
 
 // Focus API (placeholder - will be implemented next)
 const focusAPI = {
-  start: (request: FocusStartRequest): Promise<Result<any, StructuredError>> => {
+  start: (request: FocusStartRequest): Promise<Result<FocusStartResponse, StructuredError>> => {
     return ipcRenderer.invoke('focus:start', request);
   },
-  stop: (request: FocusStopRequest): Promise<Result<any, StructuredError>> => {
+  stop: (request: FocusStopRequest): Promise<Result<FocusStopResponse, StructuredError>> => {
     return ipcRenderer.invoke('focus:stop', request);
   },
-  status: (request: FocusStatusRequest): Promise<Result<any, StructuredError>> => {
+  status: (request: FocusStatusRequest): Promise<Result<FocusStatusResponse, StructuredError>> => {
     return ipcRenderer.invoke('focus:status', request);
   }
 };
 
 // Activity API (placeholder - will be implemented next)
 const activityAPI = {
-  record: (request: ActivityRecordRequest): Promise<Result<any, StructuredError>> => {
+  record: (request: ActivityRecordRequest): Promise<Result<ActivityRecordResponse, StructuredError>> => {
     return ipcRenderer.invoke('activity:record', request);
   },
-  stats: (request: ActivityStatsRequest): Promise<Result<any, StructuredError>> => {
+  stats: (request: ActivityStatsRequest): Promise<Result<ActivityStatsResponse, StructuredError>> => {
     return ipcRenderer.invoke('activity:stats', request);
   },
-  reset: (request: ActivityResetRequest): Promise<Result<any, StructuredError>> => {
+  reset: (request: ActivityResetRequest): Promise<Result<ActivityResetResponse, StructuredError>> => {
     return ipcRenderer.invoke('activity:reset', request);
   }
 };
@@ -151,8 +169,8 @@ if (process.contextIsolated) {
     console.error('Failed to expose API:', error);
   }
 } else {
-  // @ts-ignore (for non-sandboxed environments)
+  // @ts-expect-error (for non-sandboxed environments)
   window.api = electronAPI;
-  // @ts-ignore (for non-sandboxed environments)
+  // @ts-expect-error (for non-sandboxed environments)
   window.electronAPI = electronAPI;
 }

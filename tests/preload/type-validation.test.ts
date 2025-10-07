@@ -10,21 +10,21 @@ describe('Preload API Type Validation', () => {
   // Mock the window object with the expected API structure
   const mockAPI = {
     file: {
-      read: async (request: { path: string }) => ({ success: true, data: { content: '' } }),
-      write: async (request: { path: string; content: string }) => ({ success: true, data: { success: true } }),
-      list: async (request: { path: string }) => ({ success: true, data: { files: [] } }),
-      exists: async (request: { path: string }) => ({ success: true, data: { exists: true } })
+      read: async (_request: { path: string }) => ({ success: true, data: { content: '' } }),
+      write: async (_request: { path: string; content: string }) => ({ success: true, data: { success: true } }),
+      list: async (_request: { path: string }) => ({ success: true, data: { files: [] } }),
+      exists: async (_request: { path: string }) => ({ success: true, data: { exists: true } })
     },
     storage: {
-      get: async (request: { key: string }) => ({ success: true, data: { value: null } }),
-      set: async (request: { key: string; value: unknown }) => ({ success: true, data: { success: true } }),
-      remove: async (request: { key: string }) => ({ success: true, data: { success: true } }),
+      get: async (_request: { key: string }) => ({ success: true, data: { value: null } }),
+      set: async (_request: { key: string; value: unknown }) => ({ success: true, data: { success: true } }),
+      remove: async (_request: { key: string }) => ({ success: true, data: { success: true } }),
       clear: async () => ({ success: true, data: { success: true } })
     },
     session: {
-      start: async (request: { name?: string }) => ({ success: true, data: { sessionId: '' } }),
-      stop: async (request: { sessionId: string }) => ({ success: true, data: { success: true } }),
-      get: async (request: { sessionId: string }) => ({ 
+      start: async (_request: { name?: string }) => ({ success: true, data: { sessionId: '' } }),
+      stop: async (_request: { sessionId: string }) => ({ success: true, data: { success: true } }),
+      get: async (_request: { sessionId: string }) => ({ 
         success: true, 
         data: { 
           session: { 
@@ -43,9 +43,9 @@ describe('Preload API Type Validation', () => {
       })
     },
     focus: {
-      start: async (request: { sessionId: string }) => ({ success: true, data: { success: true } }),
-      stop: async (request: { sessionId: string }) => ({ success: true, data: { success: true } }),
-      status: async (request: { sessionId: string }) => ({ 
+      start: async (_request: { sessionId: string }) => ({ success: true, data: { success: true } }),
+      stop: async (_request: { sessionId: string }) => ({ success: true, data: { success: true } }),
+      status: async (_request: { sessionId: string }) => ({ 
         success: true, 
         data: { 
           isActive: true, 
@@ -54,7 +54,7 @@ describe('Preload API Type Validation', () => {
       })
     },
     activity: {
-      record: async (request: { 
+      record: async (_request: { 
         sessionId: string; 
         activity: { 
           type: 'typing' | 'pause' | 'resume'; 
@@ -62,7 +62,7 @@ describe('Preload API Type Validation', () => {
           data?: unknown 
         } 
       }) => ({ success: true, data: { success: true } }),
-      stats: async (request: { sessionId: string }) => ({ 
+      stats: async (_request: { sessionId: string }) => ({ 
         success: true, 
         data: { 
           stats: {
@@ -73,18 +73,18 @@ describe('Preload API Type Validation', () => {
           }
         } 
       }),
-      reset: async (request: { sessionId: string }) => ({ success: true, data: { success: true } })
+      reset: async (_request: { sessionId: string }) => ({ success: true, data: { success: true } })
     },
     process: {
       versions: {} as NodeJS.ProcessVersions
     },
     // Legacy API
-    saveSession: async (sessionData: unknown) => ({ success: false, message: 'Use session API instead' }),
-    loadSession: async (sessionId: string) => null,
-    deleteSession: async (sessionId: string) => ({ success: false, message: 'Use session API instead' }),
+    saveSession: async (_sessionData: unknown) => ({ success: false, message: 'Use session API instead' }),
+    loadSession: async (_sessionId: string) => null,
+    deleteSession: async (_sessionId: string) => ({ success: false, message: 'Use session API instead' }),
     listSessions: async () => [],
-    saveFile: async (filePath: string, content: string) => ({ success: false, message: 'Use file API instead' }),
-    loadFile: async (filePath: string) => null
+    saveFile: async (_filePath: string, _content: string) => ({ success: false, message: 'Use file API instead' }),
+    loadFile: async (_filePath: string) => null
   };
 
   describe('File API Type Validation', () => {

@@ -19,7 +19,7 @@ describe('StorageService - Integration Tests', () => {
     // Clean up temporary directory
     try {
       await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       // Ignore cleanup errors
     }
   });
@@ -165,7 +165,7 @@ describe('StorageService - Integration Tests', () => {
         try {
           await fs.chmod(readOnlyDir, 0o755);
           await fs.rm(readOnlyDir, { recursive: true, force: true });
-        } catch (error) {
+        } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
           // Ignore cleanup errors
         }
       }
