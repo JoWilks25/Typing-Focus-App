@@ -39,6 +39,17 @@ npm run build:win    # Build Windows app
 npm run build:linux  # Build Linux app
 ```
 
+## Testing
+
+Run tests with Vitest (unified test framework for all layers):
+
+```bash
+npm run test         # Run all tests
+npm run test:coverage # Run tests with coverage report
+npm run test:watch   # Run tests in watch mode
+npm run test:ui      # Run tests with UI interface
+```
+
 ## Other Commands
 
 ```bash
@@ -54,6 +65,12 @@ src/
 ├── main/           # Electron main process (Node.js)
 ├── preload/        # Preload scripts (context bridge)
 └── renderer/       # React application (frontend)
+
+tests/              # All tests (unit, integration, and future E2E)
+├── main/          # Main process tests
+├── preload/       # Preload script tests
+├── renderer/      # Renderer process tests
+└── setup.ts       # Global test setup
 ```
 
 ## Documentation

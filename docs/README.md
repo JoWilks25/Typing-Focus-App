@@ -8,7 +8,8 @@ Start here if you're new to the project:
 
 1. **[STARTUP.md](./setup/STARTUP.md)** - Verification checklist to ensure your setup works
 2. **[SETUP_COMPLETE.md](./setup/SETUP_COMPLETE.md)** - Setup completion summary
-3. **[TAILWIND_FIX.md](./setup/TAILWIND_FIX.md)** - Tailwind CSS configuration notes
+3. **[TESTING.md](./setup/TESTING.md)** - Testing guide and best practices ⭐
+4. **[TAILWIND_FIX.md](./setup/TAILWIND_FIX.md)** - Tailwind CSS configuration notes
 
 ## 🏗️ Architecture
 
@@ -36,6 +37,7 @@ docs/
 ├── setup/                  # Getting started guides
 │   ├── STARTUP.md         # Verification checklist ⭐
 │   ├── SETUP_COMPLETE.md  # Setup summary
+│   ├── TESTING.md         # Testing guide ⭐
 │   └── TAILWIND_FIX.md    # Tailwind notes
 │
 ├── architecture/          # Project architecture
@@ -72,6 +74,9 @@ Essential docs in the project root:
 
 **Use the Electron API:**
 - See [architecture/PRELOAD_API_USAGE.md](./architecture/PRELOAD_API_USAGE.md)
+
+**Write and run tests:**
+- See [setup/TESTING.md](./setup/TESTING.md)
 
 **Configure the project:**
 - See [reference/CONFIG_FILES.md](./reference/CONFIG_FILES.md)
