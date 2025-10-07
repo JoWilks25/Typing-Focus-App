@@ -1,16 +1,16 @@
-import { useState } from 'react';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { Editor } from './components/Editor/Editor';
 import Versions from './components/Versions';
+import { AppProvider, ErrorBoundary } from './context/AppContext';
+import { SessionProvider } from './context/SessionContext';
+import { useAppState } from './hooks/useAppState';
 
-type View = 'dashboard' | 'editor';
+function AppContent(): React.JSX.Element {
+  const { currentView, setView } = useAppState();
 
-function App(): React.JSX.Element {
-  const [currentView, setCurrentView] = useState<View>('dashboard');
-
-  const handleViewChange = (view: View) => {
+  const handleViewChange = (view: 'dashboard' | 'editor') => {
     console.log(`Switching to ${view} view`);
-    setCurrentView(view);
+    setView(view);
   };
 
   return (
@@ -29,21 +29,19 @@ function App(): React.JSX.Element {
         <div className="max-w-7xl mx-auto flex justify-center gap-4">
           <button
             onClick={() => handleViewChange('dashboard')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              currentView === 'dashboard'
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'dashboard'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
+              }`}
           >
             Dashboard View
           </button>
           <button
             onClick={() => handleViewChange('editor')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              currentView === 'editor'
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'editor'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
+              }`}
           >
             Editor View
           </button>
@@ -60,6 +58,18 @@ function App(): React.JSX.Element {
         <Versions />
       </footer>
     </div>
+  );
+}
+
+function App(): React.JSX.Element {
+  return (
+    <AppProvider>
+      <SessionProvider>
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
+      </SessionProvider>
+    </AppProvider>
   );
 }
 
