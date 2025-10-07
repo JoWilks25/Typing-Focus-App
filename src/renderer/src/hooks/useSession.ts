@@ -1,7 +1,13 @@
 // src/renderer/src/hooks/useSession.ts
 // Purpose: Custom hook for session state management
 
-export const useSession = () => {
-  // Hook implementation to be added
-  return {};
-};
+import { useContext } from 'react';
+import { SessionContext } from '@renderer/context/SessionContext';
+
+export function useSession() {
+  const ctx = useContext(SessionContext);
+  if (!ctx) {
+    throw new Error('useSession must be used within SessionProvider');
+  }
+  return ctx;
+}
