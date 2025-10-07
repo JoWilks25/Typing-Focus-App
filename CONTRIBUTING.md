@@ -52,7 +52,11 @@ focus-writer/
 │
 ├── out/                         \# Build output directory
 │
-├── tests/                       \# Reserved for Playwright/UAT tests (empty for MVP)
+├── tests/                       \# All tests (unit, integration, and future E2E)
+│   ├── main/                   \# Main process tests
+│   ├── preload/                \# Preload script tests
+│   ├── renderer/               \# Renderer process tests
+│   └── setup.ts                \# Global test setup
 │
 ├── electron.vite.config.js
 ├── package.json
@@ -93,9 +97,10 @@ focus-writer/
 npm run dev           \# Start dev server with HMR (renderer) and hot reload (main)
 npm run build         \# Build for production
 npm run preview       \# Preview production build
-npm run test          \# Run all tests
-npm run test:main     \# Jest tests for main process
-npm run test:renderer \# Jest/RTL tests for renderer
+npm run test          \# Run all tests (Vitest)
+npm run test:coverage \# Run tests with coverage report
+npm run test:watch    \# Run tests in watch mode
+npm run test:ui       \# Run tests with UI interface
 npm run lint          \# Run ESLint
 npm run format        \# Run Prettier
 
@@ -105,10 +110,15 @@ npm run format        \# Run Prettier
 
 ## Testing Requirements
 
-- **MUST:** Use React Testing Library + Jest (renderer), Jest (main process).
-- **MUST:** 100% unit test coverage for functions, utilities, and business logic.
+- **MUST:** Use Vitest + React Testing Library for all testing (unified test framework).
+- **MUST:** 80%+ test coverage for business logic (services, utilities, core functions).
+- **MUST:** All tests located in `/tests` folder with clear organization:
+  - `/tests/main/` - Main process tests (services, handlers, IPC)
+  - `/tests/preload/` - Preload script tests (API, type validation)
+  - `/tests/renderer/` - Renderer tests (components, hooks, utilities)
+  - `/tests/setup.ts` - Global test setup with mocks
 - **OPTIONAL:** No coverage enforced for UI components or files other than core logic (for MVP).
-- **TIP:** `/tests` exists for future Playwright end-to-end/UAT tests.
+- **TIP:** Test utilities available in `/tests/renderer/src/utils/test-utils.tsx` for React component testing.
 
 ---
 

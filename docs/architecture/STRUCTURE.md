@@ -73,8 +73,18 @@ focus-writer/
 ├── out/                           # [NEW] Build output directory
 │   └── .gitkeep
 │
-├── tests/                         # [NEW] Reserved for Playwright/UAT tests
-│   └── .gitkeep
+├── tests/                         # [NEW] All tests (unit, integration, and future E2E)
+│   ├── main/                     # [NEW] Main process tests
+│   │   ├── services/             # [NEW] Service layer tests
+│   │   ├── handlers/             # [NEW] IPC handler tests
+│   │   └── bootstrap.test.ts     # [NEW] Bootstrap tests
+│   ├── preload/                  # [NEW] Preload script tests
+│   │   ├── api.test.ts           # [NEW] API tests
+│   │   └── type-validation.test.ts # [NEW] Type validation tests
+│   ├── renderer/                 # [NEW] Renderer process tests
+│   │   ├── src/utils/            # [NEW] Utility tests
+│   │   └── context/              # [NEW] Context tests
+│   └── setup.ts                  # [NEW] Global test setup
 │
 ├── .env.example                   # [NEW] Environment variables template
 ├── electron.vite.config.ts        # [existing]
@@ -106,6 +116,30 @@ export const sessionService = {};
 4. Use type-safe IPC channels defined in preload scripts
 5. Manage state centrally using Redux or Context API in the store/ directory
 
+## Testing Architecture
+
+The project uses **Vitest** as the unified test framework for all layers:
+
+### Test Organization
+- **`/tests/main/`** - Main process tests (services, handlers, IPC)
+- **`/tests/preload/`** - Preload script tests (API, type validation)  
+- **`/tests/renderer/`** - Renderer tests (components, hooks, utilities)
+- **`/tests/setup.ts`** - Global test setup with mocks
+
+### Test Coverage
+- **80%+ coverage** required for business logic (services, utilities, core functions)
+- **React Testing Library** for component testing
+- **Electron mocks** for isolated testing
+- **Type-safe test utilities** in `/tests/renderer/src/utils/test-utils.tsx`
+
+### Available Commands
+```bash
+npm run test         # Run all tests
+npm run test:coverage # Run with coverage report
+npm run test:watch   # Run in watch mode
+npm run test:ui      # Run with UI interface
+```
+
 ## Architecture Guidelines
 
 - **Data Service Layer**: All data operations go through `src/main/services/`
@@ -113,3 +147,4 @@ export const sessionService = {};
 - **State Management**: Centralize state in `src/renderer/src/store/`
 - **Component Organization**: Group related components in feature folders
 - **Type Safety**: Define types in dedicated `types/` directories
+- **Testing**: Use Vitest + React Testing Library for all test layers
