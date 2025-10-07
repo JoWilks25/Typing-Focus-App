@@ -2,5 +2,9 @@
 // Purpose: Type definitions for session data structures
 
 export interface Session {
-  // Session type definition to be implemented
+  id: string;
+  name: string;
+  startTime: number;
+  endTime?: number;
+  status: 'active' | 'stopped';
 }
