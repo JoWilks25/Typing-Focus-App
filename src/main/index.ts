@@ -2,14 +2,18 @@ import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
 
 function createWindow(): void {
-  // Create the browser window (1200x800)
+  // Create the browser window (1280x800, min 1024x768)
   const mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
+    minWidth: 1024,
+    minHeight: 768,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
       sandbox: false
     }
   });
