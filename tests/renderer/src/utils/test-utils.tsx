@@ -18,7 +18,7 @@ Object.defineProperty(window, 'localStorage', {
 // Custom render function that includes providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
     initialAppState?: {
-        currentView?: 'dashboard' | 'editor';
+        currentView?: 'dashboard' | 'editor' | 'session-setup';
         theme?: 'light' | 'dark' | 'system';
     };
     initialSessionState?: {

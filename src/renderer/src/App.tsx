@@ -1,5 +1,6 @@
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { Editor } from './components/Editor/Editor';
+import { SessionSetup } from './components/Session/SessionSetup';
 import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
 import { SessionProvider } from './context/SessionContext';
@@ -8,7 +9,7 @@ import { useAppState } from './hooks/useAppState';
 function AppContent(): React.JSX.Element {
   const { currentView, setView } = useAppState();
 
-  const handleViewChange = (view: 'dashboard' | 'editor') => {
+  const handleViewChange = (view: 'dashboard' | 'editor' | 'session-setup') => {
     console.log(`Switching to ${view} view`);
     setView(view);
   };
@@ -30,17 +31,26 @@ function AppContent(): React.JSX.Element {
           <button
             onClick={() => handleViewChange('dashboard')}
             className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'dashboard'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
           >
             Dashboard View
           </button>
           <button
+            onClick={() => handleViewChange('session-setup')}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'session-setup'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+          >
+            New Session
+          </button>
+          <button
             onClick={() => handleViewChange('editor')}
             className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'editor'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
           >
             Editor View
@@ -50,7 +60,9 @@ function AppContent(): React.JSX.Element {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-8 px-6">
-        {currentView === 'dashboard' ? <Dashboard /> : <Editor />}
+        {currentView === 'dashboard' && <Dashboard />}
+        {currentView === 'session-setup' && <SessionSetup />}
+        {currentView === 'editor' && <Editor />}
       </main>
 
       {/* Footer with Versions */}
