@@ -1,5 +1,10 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
+import { initializeFileService, registerFileHandlers } from './handlers/fileHandlers';
+import { initializeStorageService, registerStorageHandlers } from './handlers/storageHandlers';
+import { initializeSessionService, registerSessionHandlers } from './handlers/sessionHandlers';
+import { initializeFocusService, registerFocusHandlers } from './handlers/focusHandlers';
+import { initializeActivityService, registerActivityHandlers } from './handlers/activityHandlers';
 
 function createWindow(): void {
   // Create the browser window (1280x800, min 1024x768)
@@ -38,7 +43,27 @@ function createWindow(): void {
 }
 
 // Create window when app is ready
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Initialize services with app data directory
+  const appDataPath = app.getPath('userData');
+  
+  // Ensure userData directory exists
+  const fileService = new (await import('./services/fileService')).FileService(appDataPath);
+  await fileService.ensureDirectory('.');
+  
+  initializeFileService(appDataPath);
+  initializeStorageService(appDataPath);
+  initializeSessionService();
+  initializeFocusService();
+  initializeActivityService();
+  
+  // Register IPC handlers
+  registerFileHandlers();
+  registerStorageHandlers();
+  registerSessionHandlers();
+  registerFocusHandlers();
+  registerActivityHandlers();
+  
   createWindow();
 
   // macOS: re-create window when dock icon is clicked
