@@ -16,23 +16,26 @@ export function SessionSummary({ session }: SessionSummaryProps): React.JSX.Elem
 
     // Calculate completion status and statistics
     const stats = useMemo(() => {
+        const currentWords = session.currentWords || 0;
+        const timeElapsed = session.timeElapsed || 0;
+
         const isCompleted = session.goalType === 'word'
-            ? session.currentWords >= session.goalValue
-            : session.timeElapsed >= (session.goalValue * 60 * 1000);
+            ? currentWords >= session.goalValue
+            : timeElapsed >= (session.goalValue * 60 * 1000);
 
         const progressPercentage = session.goalType === 'word'
-            ? Math.min((session.currentWords / session.goalValue) * 100, 100)
-            : Math.min((session.timeElapsed / (session.goalValue * 60 * 1000)) * 100, 100);
+            ? Math.min((currentWords / session.goalValue) * 100, 100)
+            : Math.min((timeElapsed / (session.goalValue * 60 * 1000)) * 100, 100);
 
-        const timeElapsedMinutes = Math.floor(session.timeElapsed / (1000 * 60));
-        const timeElapsedSeconds = Math.floor((session.timeElapsed % (1000 * 60)) / 1000);
+        const timeElapsedMinutes = Math.floor(timeElapsed / (1000 * 60));
+        const timeElapsedSeconds = Math.floor((timeElapsed % (1000 * 60)) / 1000);
 
         return {
             isCompleted,
             progressPercentage: Math.round(progressPercentage),
             timeElapsedMinutes,
             timeElapsedSeconds,
-            wordsPerMinute: timeElapsedMinutes > 0 ? Math.round(session.currentWords / timeElapsedMinutes) : 0
+            wordsPerMinute: timeElapsedMinutes > 0 ? Math.round(currentWords / timeElapsedMinutes) : 0
         };
     }, [session]);
 

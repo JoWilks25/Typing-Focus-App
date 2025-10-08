@@ -59,12 +59,30 @@ const storageAPI = {
   }
 };
 
+// Activity API - simplified function-style interface
+const activityAPI = {
+  recordTyping: (): Promise<void> => {
+    return ipcRenderer.invoke('activity:typing');
+  }
+};
+
 // Main API object - simplified
 const electronAPI = {
   // Simplified APIs
   session: sessionAPI,
   file: fileAPI,
   storage: storageAPI,
+  activity: activityAPI,
+  
+  // Event listener for main→renderer events
+  on: (channel: string, callback: (...args: unknown[]) => void) => {
+    ipcRenderer.on(channel, callback);
+  },
+  
+  // Remove event listener
+  removeListener: (channel: string, callback: (...args: unknown[]) => void) => {
+    ipcRenderer.removeListener(channel, callback);
+  },
   
   // Process versions
   process: {

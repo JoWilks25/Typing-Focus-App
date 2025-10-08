@@ -1,9 +1,11 @@
 import { ipcMain } from 'electron';
 import { SessionManager } from './services/sessionManager';
 import { FileManager } from './services/fileManager';
+import { inactivityService } from './services/InactivityService';
 import { isValidGoal } from './utils/validation';
 import type { Session } from './types/session';
-import type { GoalType } from '../../shared/types/validation';
+// import type { GoalType } from '../../shared/types/validation';
+type GoalType = 'word' | 'time';
 
 // Simple IPC channels
 export const IPC_CHANNELS = {
@@ -26,7 +28,10 @@ export const IPC_CHANNELS = {
   // Storage operations
   STORAGE_SET: 'storage:set',
   STORAGE_GET: 'storage:get',
-  STORAGE_REMOVE: 'storage:remove'
+  STORAGE_REMOVE: 'storage:remove',
+  
+  // Activity operations
+  ACTIVITY_TYPING: 'activity:typing'
 } as const;
 
 let sessionManager: SessionManager;
@@ -54,7 +59,12 @@ async function handleSessionStart(
     throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
   }
 
-  return await sessionManager.startSession(name, title, goalType, goalValue);
+  const session = await sessionManager.startSession(name, title, goalType, goalValue);
+  
+  // Start inactivity tracking for the new session
+  inactivityService.startTracking();
+  
+  return session;
 }
 
 async function handleSessionStop(sessionId: string): Promise<Session> {
@@ -62,7 +72,12 @@ async function handleSessionStop(sessionId: string): Promise<Session> {
     throw new Error('Session ID is required');
   }
 
-  return await sessionManager.stopSession(sessionId);
+  const session = await sessionManager.stopSession(sessionId);
+  
+  // Stop inactivity tracking when session ends
+  inactivityService.stopTracking();
+  
+  return session;
 }
 
 async function handleSessionGet(sessionId: string): Promise<Session> {
@@ -192,6 +207,15 @@ async function handleStorageRemove(key: string): Promise<void> {
 }
 
 /**
+ * Activity Handlers
+ */
+
+async function handleActivityTyping(): Promise<void> {
+  // Reset the inactivity timer when typing activity is detected
+  inactivityService.resetInactivityTimer();
+}
+
+/**
  * Register all IPC handlers
  */
 export function registerHandlers(): void {
@@ -201,125 +225,70 @@ export function registerHandlers(): void {
 
   // Session handlers
   ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, name, title, goalType, goalValue) => {
-    try {
-      return await handleSessionStart(name, title, goalType, goalValue);
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionStart(name, title, goalType, goalValue);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STOP, async (_, sessionId) => {
-    try {
-      return await handleSessionStop(sessionId);
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionStop(sessionId);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_GET, async (_, sessionId) => {
-    try {
-      return await handleSessionGet(sessionId);
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionGet(sessionId);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_GET_ACTIVE, async () => {
-    try {
-      return await handleSessionGetActive();
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionGetActive();
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_LIST, async () => {
-    try {
-      return await handleSessionList();
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionList();
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_UPDATE_CONTENT, async (_, sessionId, content) => {
-    try {
-      return await handleSessionUpdateContent(sessionId, content);
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionUpdateContent(sessionId, content);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_UPDATE_PROGRESS, async (_, sessionId, currentWords, timeElapsed, progressThresholds) => {
-    try {
-      return await handleSessionUpdateProgress(sessionId, currentWords, timeElapsed, progressThresholds);
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionUpdateProgress(sessionId, currentWords, timeElapsed, progressThresholds);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STATS, async (_, sessionId) => {
-    try {
-      return await handleSessionStats(sessionId);
-    } catch (error) {
-      throw error;
-    }
+    return await handleSessionStats(sessionId);
   });
 
   // File handlers
   ipcMain.handle(IPC_CHANNELS.FILE_READ, async (_, path) => {
-    try {
-      return await handleFileRead(path);
-    } catch (error) {
-      throw error;
-    }
+    return await handleFileRead(path);
   });
 
   ipcMain.handle(IPC_CHANNELS.FILE_WRITE, async (_, path, content) => {
-    try {
-      return await handleFileWrite(path, content);
-    } catch (error) {
-      throw error;
-    }
+    return await handleFileWrite(path, content);
   });
 
   ipcMain.handle(IPC_CHANNELS.FILE_EXISTS, async (_, path) => {
-    try {
-      return await handleFileExists(path);
-    } catch (error) {
-      throw error;
-    }
+    return await handleFileExists(path);
   });
 
   ipcMain.handle(IPC_CHANNELS.FILE_AUTOSAVE, async (_, path, content) => {
-    try {
-      return await handleFileAutosave(path, content);
-    } catch (error) {
-      throw error;
-    }
+    return await handleFileAutosave(path, content);
   });
 
   // Storage handlers
   ipcMain.handle(IPC_CHANNELS.STORAGE_SET, async (_, key, value) => {
-    try {
-      return await handleStorageSet(key, value);
-    } catch (error) {
-      throw error;
-    }
+    return await handleStorageSet(key, value);
   });
 
   ipcMain.handle(IPC_CHANNELS.STORAGE_GET, async (_, key) => {
-    try {
-      return await handleStorageGet(key);
-    } catch (error) {
-      throw error;
-    }
+    return await handleStorageGet(key);
   });
 
   ipcMain.handle(IPC_CHANNELS.STORAGE_REMOVE, async (_, key) => {
-    try {
-      return await handleStorageRemove(key);
-    } catch (error) {
-      throw error;
-    }
+    return await handleStorageRemove(key);
+  });
+
+  // Activity handlers
+  ipcMain.handle(IPC_CHANNELS.ACTIVITY_TYPING, async () => {
+    return await handleActivityTyping();
   });
 }
 

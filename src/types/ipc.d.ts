@@ -58,10 +58,14 @@ interface StorageAPI {
 
 // Session API
 interface SessionAPI {
-  start(request: SessionStartRequest): Promise<Result<SessionStartResponse, StructuredError>>;
-  stop(request: SessionStopRequest): Promise<Result<SessionStopResponse, StructuredError>>;
-  get(request: SessionGetRequest): Promise<Result<SessionGetResponse, StructuredError>>;
-  list(): Promise<Result<SessionListResponse, StructuredError>>;
+  start(name?: string, title?: string, goalType?: 'word' | 'time', goalValue?: number): Promise<any>;
+  stop(sessionId: string): Promise<any>;
+  get(sessionId: string): Promise<any>;
+  getActive(): Promise<any>;
+  list(): Promise<any[]>;
+  updateContent(sessionId: string, content: string): Promise<any>;
+  updateProgress(sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }): Promise<any>;
+  getStats(sessionId: string): Promise<any>;
 }
 
 // Focus API
@@ -73,6 +77,7 @@ interface FocusAPI {
 
 // Activity API
 interface ActivityAPI {
+  recordTyping(): Promise<void>;
   record(request: ActivityRecordRequest): Promise<Result<ActivityRecordResponse, StructuredError>>;
   stats(request: ActivityStatsRequest): Promise<Result<ActivityStatsResponse, StructuredError>>;
   reset(request: ActivityResetRequest): Promise<Result<ActivityResetResponse, StructuredError>>;
@@ -85,6 +90,10 @@ interface ElectronAPI {
   session: SessionAPI;
   focus: FocusAPI;
   activity: ActivityAPI;
+  
+  // Event listeners
+  on: (channel: string, callback: (...args: any[]) => void) => void;
+  removeListener: (channel: string, callback: (...args: any[]) => void) => void;
   
   // Legacy API for backward compatibility (to be removed)
   process: {

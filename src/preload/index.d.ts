@@ -42,6 +42,15 @@ export interface ElectronAPI {
     set: (key: string, value: unknown) => Promise<void>;
     remove: (key: string) => Promise<void>;
   };
+
+  // Activity API
+  activity: {
+    recordTyping: () => Promise<void>;
+  };
+
+  // Event listeners
+  on: (channel: string, callback: (...args: unknown[]) => void) => void;
+  removeListener: (channel: string, callback: (...args: unknown[]) => void) => void;
 }
 
 declare global {

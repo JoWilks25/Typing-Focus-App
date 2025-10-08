@@ -40,7 +40,11 @@ export default [
         __filename: 'readonly',
         Buffer: 'readonly',
         global: 'readonly',
-        NodeJS: 'readonly'
+        NodeJS: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly'
       }
     },
     plugins: {
@@ -73,7 +77,11 @@ export default [
         Buffer: 'readonly',
         global: 'readonly',
         NodeJS: 'readonly',
-        window: 'readonly'
+        window: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly'
       }
     },
     plugins: {
