@@ -4,7 +4,7 @@
 import React, { useState, useCallback } from 'react';
 import { GoalSelector } from './GoalSelector';
 import { GoalInput } from './GoalInput';
-import { useSession } from '@renderer/context/useSession';
+import { useSession } from '@renderer/hooks/useSession';
 import { useAppState } from '@renderer/hooks/useAppState';
 import { isValidGoal, getDefaultValue } from '@renderer/utils/validation';
 import type { GoalType } from '@renderer/types/session';
@@ -37,28 +37,17 @@ export function SessionSetup(): React.JSX.Element {
         }
 
         try {
-            // Create session via IPC - this will validate goals and persist to storage.json
-            const result = await window.electronAPI.session.start({
-                name: `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`,
-                goalType,
-                goalValue,
-            });
+            // Create session via simplified IPC API
+            const sessionName = `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`;
+            const newSession = await window.api.session.start(sessionName, undefined, goalType, goalValue);
 
-            if (result.success) {
-                // Use the complete session object returned from main process
-                const newSession = result.data.session;
-
-                // Add session to local state and navigate to editor
-                addSession(newSession);
-                setView('editor');
-            } else {
-                // Handle validation errors from main process
-                console.error('Session creation failed:', result.error);
-                // You could show a toast notification here
-            }
+            // Add session to local state and navigate to editor
+            addSession(newSession);
+            setView('editor');
         } catch (error) {
             console.error('Failed to create session:', error);
-            // Handle network/communication errors
+            // Handle validation errors from main process
+            // You could show a toast notification here
         }
     }, [isValid, goalType, goalValue, addSession, setView]);
 

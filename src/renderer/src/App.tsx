@@ -1,16 +1,17 @@
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { Editor } from './components/Editor/Editor';
 import { SessionSetup } from './components/Session/SessionSetup';
+import { SessionSummary } from './components/Session/SessionSummary';
 import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
-import { SessionProvider } from './context/SessionContext';
-import { AnimationProvider } from './context/AnimationContext';
 import { useAppState } from './hooks/useAppState';
+import { useSession } from './hooks/useSession';
 
 function AppContent(): React.JSX.Element {
   const { currentView, setView } = useAppState();
+  const { activeSession } = useSession();
 
-  const handleViewChange = (view: 'dashboard' | 'editor' | 'session-setup') => {
+  const handleViewChange = (view: 'dashboard' | 'editor' | 'session-setup' | 'session-summary') => {
     console.log(`Switching to ${view} view`);
     setView(view);
   };
@@ -64,6 +65,7 @@ function AppContent(): React.JSX.Element {
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'session-setup' && <SessionSetup />}
         {currentView === 'editor' && <Editor />}
+        {currentView === 'session-summary' && activeSession && <SessionSummary session={activeSession} />}
       </main>
 
       {/* Footer with Versions */}
@@ -77,13 +79,9 @@ function AppContent(): React.JSX.Element {
 function App(): React.JSX.Element {
   return (
     <AppProvider>
-      <SessionProvider>
-        <AnimationProvider>
-          <ErrorBoundary>
-            <AppContent />
-          </ErrorBoundary>
-        </AnimationProvider>
-      </SessionProvider>
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
     </AppProvider>
   );
 }

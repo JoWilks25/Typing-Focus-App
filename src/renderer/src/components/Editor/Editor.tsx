@@ -3,12 +3,11 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSession } from '../../context/useSession';
+import { useSession } from '../../hooks/useSession';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
 import { calculateWordCount } from '../../utils/wordCount';
-import { getElectronAPI } from '../../utils/electronAPI';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
 
@@ -22,7 +21,7 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, addSession } = useSession();
+  const { activeSession, addSession, updateSession, updateProgress } = useSession();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
 
@@ -42,25 +41,16 @@ export const Editor = () => {
 
   // Debounced session update (2 second delay to avoid typing interference)
   const debouncedUpdateSession = useDebounce(
-    useCallback(() => {
+    useCallback(async () => {
       const content = contentRef.current;
       if (activeSession) {
-        // Only update backend/persistence, NOT React state
-        // This prevents re-renders that cause focus loss
-        const updatedSession = {
-          ...activeSession,
-          content,
-          updatedAt: new Date().toISOString()
-        };
-
-        // Save to backend using storage API (non-deprecated)
-        const api = getElectronAPI();
-        api.storage.set({
-          key: 'active-session',
-          value: updatedSession
-        }).catch((error) => {
+        try {
+          // Update session content via simplified API
+          const updatedSession = await window.api.session.updateContent(activeSession.id, content);
+          updateSession(updatedSession);
+        } catch (error) {
           console.warn('Failed to save session to backend:', error);
-        });
+        }
       } else {
         // Create new session if none exists
         const newSession = {
@@ -77,7 +67,7 @@ export const Editor = () => {
         };
         addSession(newSession);
       }
-    }, [activeSession, addSession]),
+    }, [activeSession, addSession, updateSession]),
     2000 // 2 second delay - only update backend after user stops typing
   );
 
@@ -197,16 +187,11 @@ export const Editor = () => {
         if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
         if (currentProgress >= 100 && !newThresholds[100]) newThresholds[100] = true;
 
-        // Update progress via session API (backend only, no React re-renders)
-        const api = getElectronAPI();
-        (api.session as any).updateProgress({
-          sessionId: activeSession.id,
-          currentWords: localState.wordCount,
-          timeElapsed,
-          progressThresholds: newThresholds
-        }).catch((error) => {
-          console.warn('Failed to update progress:', error);
-        });
+        // Update progress via simplified API
+        window.api.session.updateProgress(activeSession.id, localState.wordCount, timeElapsed, newThresholds)
+          .catch((error) => {
+            console.warn('Failed to update progress:', error);
+          });
 
         console.log('Progress update via interval (backend only):', {
           wordCount: localState.wordCount,

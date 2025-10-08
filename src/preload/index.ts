@@ -1,181 +1,85 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type {
-  FileReadRequest,
-  FileReadResponse,
-  FileWriteRequest,
-  FileWriteResponse,
-  FileListRequest,
-  FileListResponse,
-  FileExistsRequest,
-  FileExistsResponse,
-  StorageGetRequest,
-  StorageGetResponse,
-  StorageSetRequest,
-  StorageSetResponse,
-  StorageRemoveRequest,
-  StorageRemoveResponse,
-  StorageClearResponse,
-  SessionStartRequest,
-  SessionStartResponse,
-  SessionStopRequest,
-  SessionStopResponse,
-  SessionGetRequest,
-  SessionGetResponse,
-  SessionListResponse,
-  SessionUpdateProgressRequest,
-  SessionUpdateProgressResponse,
-  FocusStartRequest,
-  FocusStartResponse,
-  FocusStopRequest,
-  FocusStopResponse,
-  FocusStatusRequest,
-  FocusStatusResponse,
-  ActivityRecordRequest,
-  ActivityRecordResponse,
-  ActivityStatsRequest,
-  ActivityStatsResponse,
-  ActivityResetRequest,
-  ActivityResetResponse,
-  Result,
-  StructuredError
-} from '../main/types/ipc';
+import type { Session } from '../main/types/session';
+import type { GoalType } from '../shared/types/validation';
 
-// File API
-const fileAPI = {
-  read: (request: FileReadRequest): Promise<Result<FileReadResponse, StructuredError>> => {
-    return ipcRenderer.invoke('file:read', request);
-  },
-  write: (request: FileWriteRequest): Promise<Result<FileWriteResponse, StructuredError>> => {
-    return ipcRenderer.invoke('file:write', request);
-  },
-  list: (request: FileListRequest): Promise<Result<FileListResponse, StructuredError>> => {
-    return ipcRenderer.invoke('file:list', request);
-  },
-  exists: (request: FileExistsRequest): Promise<Result<FileExistsResponse, StructuredError>> => {
-    return ipcRenderer.invoke('file:exists', request);
-  }
-};
-
-// Storage API (placeholder - will be implemented next)
-const storageAPI = {
-  get: (request: StorageGetRequest): Promise<Result<StorageGetResponse, StructuredError>> => {
-    return ipcRenderer.invoke('storage:get', request);
-  },
-  set: (request: StorageSetRequest): Promise<Result<StorageSetResponse, StructuredError>> => {
-    return ipcRenderer.invoke('storage:set', request);
-  },
-  remove: (request: StorageRemoveRequest): Promise<Result<StorageRemoveResponse, StructuredError>> => {
-    return ipcRenderer.invoke('storage:remove', request);
-  },
-  clear: (): Promise<Result<StorageClearResponse, StructuredError>> => {
-    return ipcRenderer.invoke('storage:clear');
-  }
-};
-
-// Session API (placeholder - will be implemented next)
+// Session API - simplified function-style interface
 const sessionAPI = {
-  start: (request: SessionStartRequest): Promise<Result<SessionStartResponse, StructuredError>> => {
-    return ipcRenderer.invoke('session:start', request);
+  start: (name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500): Promise<Session> => {
+    return ipcRenderer.invoke('session:start', name, title, goalType, goalValue);
   },
-  stop: (request: SessionStopRequest): Promise<Result<SessionStopResponse, StructuredError>> => {
-    return ipcRenderer.invoke('session:stop', request);
+  stop: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:stop', sessionId);
   },
-  get: (request: SessionGetRequest): Promise<Result<SessionGetResponse, StructuredError>> => {
-    return ipcRenderer.invoke('session:get', request);
+  get: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:get', sessionId);
   },
-  list: (): Promise<Result<SessionListResponse, StructuredError>> => {
+  getActive: (): Promise<Session | undefined> => {
+    return ipcRenderer.invoke('session:get-active');
+  },
+  list: (): Promise<Session[]> => {
     return ipcRenderer.invoke('session:list');
   },
-  updateProgress: (request: SessionUpdateProgressRequest): Promise<Result<SessionUpdateProgressResponse, StructuredError>> => {
-    return ipcRenderer.invoke('session:updateProgress', request);
+  updateContent: (sessionId: string, content: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:update-content', sessionId, content);
+  },
+  updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }): Promise<Session> => {
+    return ipcRenderer.invoke('session:update-progress', sessionId, currentWords, timeElapsed, progressThresholds);
+  },
+  getStats: (sessionId: string) => {
+    return ipcRenderer.invoke('session:stats', sessionId);
   }
 };
 
-// Focus API (placeholder - will be implemented next)
-const focusAPI = {
-  start: (request: FocusStartRequest): Promise<Result<FocusStartResponse, StructuredError>> => {
-    return ipcRenderer.invoke('focus:start', request);
+// File API - simplified function-style interface
+const fileAPI = {
+  read: (path: string): Promise<string> => {
+    return ipcRenderer.invoke('file:read', path);
   },
-  stop: (request: FocusStopRequest): Promise<Result<FocusStopResponse, StructuredError>> => {
-    return ipcRenderer.invoke('focus:stop', request);
+  write: (path: string, content: string): Promise<void> => {
+    return ipcRenderer.invoke('file:write', path, content);
   },
-  status: (request: FocusStatusRequest): Promise<Result<FocusStatusResponse, StructuredError>> => {
-    return ipcRenderer.invoke('focus:status', request);
+  exists: (path: string): Promise<boolean> => {
+    return ipcRenderer.invoke('file:exists', path);
+  },
+  autosave: (path: string, content: string): Promise<void> => {
+    return ipcRenderer.invoke('file:autosave', path, content);
   }
 };
 
-// Activity API (placeholder - will be implemented next)
-const activityAPI = {
-  record: (request: ActivityRecordRequest): Promise<Result<ActivityRecordResponse, StructuredError>> => {
-    return ipcRenderer.invoke('activity:record', request);
+// Storage API - simplified function-style interface
+const storageAPI = {
+  get: (key: string): Promise<unknown> => {
+    return ipcRenderer.invoke('storage:get', key);
   },
-  stats: (request: ActivityStatsRequest): Promise<Result<ActivityStatsResponse, StructuredError>> => {
-    return ipcRenderer.invoke('activity:stats', request);
+  set: (key: string, value: unknown): Promise<void> => {
+    return ipcRenderer.invoke('storage:set', key, value);
   },
-  reset: (request: ActivityResetRequest): Promise<Result<ActivityResetResponse, StructuredError>> => {
-    return ipcRenderer.invoke('activity:reset', request);
+  remove: (key: string): Promise<void> => {
+    return ipcRenderer.invoke('storage:remove', key);
   }
 };
 
-// Main API object
+// Main API object - simplified
 const electronAPI = {
-  // New typed API
+  // Simplified APIs
+  session: sessionAPI,
   file: fileAPI,
   storage: storageAPI,
-  session: sessionAPI,
-  focus: focusAPI,
-  activity: activityAPI,
   
   // Process versions
   process: {
     versions: process.versions
-  },
-
-  // Legacy API for backward compatibility (to be removed)
-  saveSession: (sessionData: unknown) => {
-    console.log('saveSession - deprecated, use session API instead', sessionData);
-    return Promise.resolve({ success: false, message: 'Use session API instead' });
-  },
-
-  loadSession: (sessionId: string) => {
-    console.log('loadSession - deprecated, use session API instead', sessionId);
-    return Promise.resolve(null);
-  },
-
-  deleteSession: (sessionId: string) => {
-    console.log('deleteSession - deprecated, use session API instead', sessionId);
-    return Promise.resolve({ success: false, message: 'Use session API instead' });
-  },
-
-  listSessions: () => {
-    console.log('listSessions - deprecated, use session API instead');
-    return Promise.resolve([]);
-  },
-
-  saveFile: (filePath: string, _content: string) => {
-    console.log('saveFile - deprecated, use file API instead', filePath);
-    return Promise.resolve({ success: false, message: 'Use file API instead' });
-  },
-
-  loadFile: (filePath: string) => {
-    console.log('loadFile - deprecated, use file API instead', filePath);
-    return Promise.resolve(null);
   }
 };
 
 // Expose the API to the renderer process
 if (process.contextIsolated) {
   try {
-    // Expose the new typed API
     contextBridge.exposeInMainWorld('api', electronAPI);
-    // Also expose the legacy API for backward compatibility
-    contextBridge.exposeInMainWorld('electronAPI', electronAPI);
   } catch (error) {
     console.error('Failed to expose API:', error);
   }
 } else {
   // @ts-expect-error (for non-sandboxed environments)
   window.api = electronAPI;
-  // @ts-expect-error (for non-sandboxed environments)
-  window.electronAPI = electronAPI;
 }

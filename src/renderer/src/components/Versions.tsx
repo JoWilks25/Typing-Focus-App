@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 function Versions(): React.JSX.Element {
-  const [versions] = useState(window.electronAPI.process.versions);
+  const [versions] = useState(window.api?.process?.versions || { electron: 'N/A', chrome: 'N/A', node: 'N/A' });
 
   return (
     <div className="flex justify-center items-center gap-4 text-xs text-gray-400 font-mono">

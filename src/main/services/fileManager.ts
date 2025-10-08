@@ -1,21 +1,81 @@
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { resolve, join, dirname } from 'path';
 
 /**
- * StorageService provides a JSON-backed key-value store in the user data directory.
- * All data is persisted to a single JSON file (storage.json) in the app data directory.
+ * FileManager provides simplified file operations and JSON storage.
+ * Combines file operations with basic storage functionality for MVP.
  */
-export class StorageService {
+export class FileManager {
+  private readonly baseDir: string;
   private readonly storagePath: string;
 
   constructor(appDataPath: string) {
+    this.baseDir = resolve(appDataPath);
     this.storagePath = join(appDataPath, 'storage.json');
   }
 
   /**
+   * Read a file from the base directory
+   */
+  async readFile(filePath: string): Promise<string> {
+    const fullPath = this.resolvePath(filePath);
+    return await fs.readFile(fullPath, 'utf8');
+  }
+
+  /**
+   * Write content to a file in the base directory
+   */
+  async writeFile(filePath: string, content: string): Promise<void> {
+    const fullPath = this.resolvePath(filePath);
+    return await fs.writeFile(fullPath, content, 'utf8');
+  }
+
+  /**
+   * Check if a file exists
+   */
+  async fileExists(filePath: string): Promise<boolean> {
+    const fullPath = this.resolvePath(filePath);
+    try {
+      await fs.access(fullPath, fs.constants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Ensure a directory exists, creating it if necessary
+   */
+  async ensureDirectory(dirPath: string): Promise<void> {
+    const fullPath = this.resolvePath(dirPath);
+    try {
+      await fs.mkdir(fullPath, { recursive: true });
+    } catch (error) {
+      // If directory already exists, that's fine
+      if ((error as NodeJS.ErrnoException)?.code !== 'EEXIST') {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Autosave content to a file
+   */
+  async autosave(filePath: string, content: string): Promise<void> {
+    try {
+      await this.writeFile(filePath, content);
+    } catch (error) {
+      console.warn('Autosave failed:', error);
+      // Don't throw - autosave failures shouldn't crash the app
+    }
+  }
+
+  /**
+   * Storage operations - simplified JSON key-value store
+   */
+
+  /**
    * Set a value in the storage
-   * @param key - The key to store the value under
-   * @param value - The value to store (will be JSON serialized)
    */
   async set(key: string, value: unknown): Promise<void> {
     try {
@@ -30,7 +90,6 @@ export class StorageService {
       } catch (error) {
         // If file doesn't exist or is corrupted, start with empty object
         if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
-          // For other errors (like JSON parse errors), log but continue with empty object
           console.warn('Storage file corrupted, starting fresh:', error);
         }
       }
@@ -47,8 +106,6 @@ export class StorageService {
 
   /**
    * Get a value from the storage
-   * @param key - The key to retrieve
-   * @returns The stored value, or undefined if key doesn't exist
    */
   async get(key: string): Promise<unknown> {
     try {
@@ -61,20 +118,17 @@ export class StorageService {
         return undefined;
       }
       
-      // For JSON parse errors, return undefined (graceful handling)
       if (error instanceof SyntaxError) {
         console.warn('Storage file corrupted, returning undefined for key:', key);
         return undefined;
       }
 
-      // For other errors, re-throw
       throw new Error(`Failed to get storage value for key "${key}": ${error}`);
     }
   }
 
   /**
    * Remove a key from the storage
-   * @param key - The key to remove
    */
   async remove(key: string): Promise<void> {
     try {
@@ -121,8 +175,30 @@ export class StorageService {
   }
 
   /**
+   * Resolve a relative path to an absolute path within the base directory
+   * This prevents directory traversal attacks
+   */
+  private resolvePath(filePath: string): string {
+    // Normalize the path and resolve it relative to base directory
+    const resolvedPath = resolve(this.baseDir, filePath);
+    
+    // Ensure the resolved path is within the base directory
+    if (!resolvedPath.startsWith(this.baseDir)) {
+      throw new Error(`Path traversal detected: ${filePath}`);
+    }
+    
+    return resolvedPath;
+  }
+
+  /**
+   * Get the base directory path
+   */
+  getBaseDirectory(): string {
+    return this.baseDir;
+  }
+
+  /**
    * Get the storage file path
-   * @returns The path to the storage file
    */
   getStoragePath(): string {
     return this.storagePath;

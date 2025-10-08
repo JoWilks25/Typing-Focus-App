@@ -1,7 +1,7 @@
 // src/renderer/src/types/app.ts
 // Purpose: Type definitions for app state
 
-export type View = 'dashboard' | 'editor' | 'session-setup';
+export type View = 'dashboard' | 'editor' | 'session-setup' | 'session-summary';
 
 export interface AppState {
   currentView: View;

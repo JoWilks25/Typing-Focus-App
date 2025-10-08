@@ -9,8 +9,8 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
       include: [
-        'src/main/services/sessionService.ts',
-        'src/renderer/src/utils/wordCount.ts',
+        'src/main/services/sessionManager.ts',
+        'src/main/services/fileManager.ts',
       ],
       exclude: [
         'src/**/*.d.ts',

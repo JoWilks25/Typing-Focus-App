@@ -1,20 +1,6 @@
 // Preload script type definitions
-import type { Result, StructuredError } from '../main/types/ipc';
-
-export interface SessionUpdateProgressRequest {
-  sessionId: string;
-  currentWords: number;
-  timeElapsed: number;
-  progressThresholds: {
-    33: boolean;
-    67: boolean;
-    100: boolean;
-  };
-}
-
-export interface SessionUpdateProgressResponse {
-  success: boolean;
-}
+import type { Session } from '../main/types/session';
+import type { GoalType } from '../shared/types/validation';
 
 export interface ElectronAPI {
   // Process info
@@ -22,25 +8,44 @@ export interface ElectronAPI {
     versions: NodeJS.ProcessVersions;
   };
 
-  // New typed API
+  // Session API
   session: {
-    updateProgress: (request: SessionUpdateProgressRequest) => Promise<Result<SessionUpdateProgressResponse, StructuredError>>;
+    start: (name?: string, title?: string, goalType?: GoalType, goalValue?: number) => Promise<Session>;
+    stop: (sessionId: string) => Promise<Session>;
+    get: (sessionId: string) => Promise<Session>;
+    getActive: () => Promise<Session | undefined>;
+    list: () => Promise<Session[]>;
+    updateContent: (sessionId: string, content: string) => Promise<Session>;
+    updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => Promise<Session>;
+    getStats: (sessionId: string) => Promise<{
+      sessionId: string;
+      isCompleted: boolean;
+      progressPercentage: number;
+      currentWords: number;
+      timeElapsed: number;
+      goalType: GoalType;
+      goalValue: number;
+    }>;
   };
 
-  // Legacy API for backward compatibility
-  saveSession: (sessionData: unknown) => Promise<{ success: boolean; message: string }>;
-  loadSession: (sessionId: string) => Promise<unknown | null>;
-  deleteSession: (sessionId: string) => Promise<{ success: boolean; message: string }>;
-  listSessions: () => Promise<unknown[]>;
+  // File API
+  file: {
+    read: (path: string) => Promise<string>;
+    write: (path: string, content: string) => Promise<void>;
+    exists: (path: string) => Promise<boolean>;
+    autosave: (path: string, content: string) => Promise<void>;
+  };
 
-  // File operations
-  saveFile: (filePath: string, content: string) => Promise<{ success: boolean; message: string }>;
-  loadFile: (filePath: string) => Promise<unknown | null>;
+  // Storage API
+  storage: {
+    get: (key: string) => Promise<unknown>;
+    set: (key: string, value: unknown) => Promise<void>;
+    remove: (key: string) => Promise<void>;
+  };
 }
 
 declare global {
   interface Window {
-    electronAPI: ElectronAPI;
     api: ElectronAPI;
   }
 }

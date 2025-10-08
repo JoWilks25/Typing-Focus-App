@@ -2,12 +2,24 @@
 // Purpose: Custom hook for session state management
 
 import { useContext } from 'react';
-import { SessionContext } from '@renderer/context/SessionContextDef';
+import { AppContext } from '@renderer/context/AppContextDef';
 
 export function useSession() {
-  const ctx = useContext(SessionContext);
+  const ctx = useContext(AppContext);
   if (!ctx) {
-    throw new Error('useSession must be used within SessionProvider');
+    throw new Error('useSession must be used within AppProvider');
   }
-  return ctx;
+  
+  // Return only session-related properties
+  return {
+    sessions: ctx.sessions,
+    activeSessionId: ctx.activeSessionId,
+    activeSession: ctx.activeSession,
+    setActiveSession: ctx.setActiveSession,
+    addSession: ctx.addSession,
+    updateSession: ctx.updateSession,
+    removeSession: ctx.removeSession,
+    resetSessions: ctx.resetSessions,
+    updateProgress: ctx.updateProgress
+  };
 }
