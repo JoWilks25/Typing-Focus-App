@@ -95,13 +95,50 @@ export const useSession = () => {
 
 ## 🔧 Current Status
 
-All API methods are **placeholders** and will:
+The API has been implemented with the following methods:
 
-- Log to console: `"methodName - not implemented"`
-- Return mock responses:
-  - Save/Delete operations: `{ success: false, message: 'Not implemented' }`
-  - Load operations: `null`
-  - List operations: `[]`
+### Session API
+- `session.start(sessionData)` - Create a new writing session
+- `session.stop(sessionId)` - Stop an active session
+- `session.getActive()` - Get the currently active session
+- `session.list()` - List all sessions
+
+### File API
+- `file.save(filePath, content)` - Save content to a file
+- `file.load(filePath)` - Load content from a file
+
+### Response Format
+All session operations return:
+```typescript
+{
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+```
+
+### Session Creation Example
+```typescript
+// Create a new writing session
+const result = await window.electronAPI.session.start({
+  name: 'Writing Session - 500 words',
+  goalType: 'word',
+  goalValue: 500
+});
+
+if (result.success) {
+  const session = result.data.session;
+  // Session created successfully
+} else {
+  console.error('Session creation failed:', result.error);
+}
+```
+
+### Validation Rules
+Session creation validates:
+- **Word Count Goals**: 10-10,000 words
+- **Time Duration Goals**: 5-480 minutes
+- Invalid goals will cause session creation to fail
 
 ## 📝 Next Steps (For Implementation)
 
