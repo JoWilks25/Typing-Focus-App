@@ -24,4 +24,7 @@ export interface Session {
     67: boolean;
     100: boolean;
   };
+  isPaused?: boolean;
+  pauseStartTime?: number;
+  totalPauseTime?: number; // accumulated pause time in ms
 }

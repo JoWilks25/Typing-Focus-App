@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
 import { initializeServices, registerHandlers } from './ipcHandlers';
+import { inactivityService } from './services/InactivityService';
 
 function createWindow(): void {
   // Create the browser window (1280x800, min 1024x768)
@@ -19,6 +20,9 @@ function createWindow(): void {
     }
   });
 
+  // Set main window reference for InactivityService
+  inactivityService.setMainWindow(mainWindow);
+
   // Show window when ready
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -27,6 +31,8 @@ function createWindow(): void {
   // Handle window closed
   mainWindow.on('closed', () => {
     console.log('Window closed');
+    // Stop tracking when window is closed
+    inactivityService.stopTracking();
   });
 
   // Load the renderer process

@@ -1,0 +1,153 @@
+/* src/renderer/src/components/Modals/InactivityModal.module.css */
+/* Purpose: Minimalist styling for inactivity pause modal */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #1f2937; /* gray-800 */
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.iconContainer {
+  margin-bottom: 16px;
+}
+
+.pauseIcon {
+  font-size: 48px;
+  display: inline-block;
+}
+
+.heading {
+  color: #f9fafb; /* gray-50 */
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.message {
+  color: #d1d5db; /* gray-300 */
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.subtext {
+  color: #9ca3af; /* gray-400 */
+  font-size: 14px;
+  margin: 0 0 24px 0;
+}
+
+.statsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #374151; /* gray-700 */
+  border-radius: 8px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statLabel {
+  color: #9ca3af; /* gray-400 */
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  color: #f9fafb; /* gray-50 */
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.treeContainer {
+  margin-bottom: 32px;
+}
+
+.treeIcon {
+  font-size: 32px;
+  display: inline-block;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resumeButton {
+  flex: 1;
+  background-color: #3b82f6; /* blue-500 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.resumeButton:hover {
+  background-color: #2563eb; /* blue-600 */
+}
+
+.resumeButton:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.endButton {
+  flex: 1;
+  background-color: transparent;
+  color: #9ca3af; /* gray-400 */
+  border: 1px solid #4b5563; /* gray-600 */
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.endButton:hover {
+  background-color: #374151; /* gray-700 */
+  color: #d1d5db; /* gray-300 */
+  border-color: #6b7280; /* gray-500 */
+}
+
+.endButton:focus {
+  outline: 2px solid #6b7280;
+  outline-offset: 2px;
+}
+
+.hint {
+  color: #6b7280; /* gray-500 */
+  font-size: 12px;
+  margin: 0;
+  font-style: italic;
+}

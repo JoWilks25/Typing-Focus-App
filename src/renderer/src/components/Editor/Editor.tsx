@@ -7,6 +7,7 @@ import { useSession } from '../../hooks/useSession';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
+import { InactivityModal } from '../Modals/InactivityModal';
 import { calculateWordCount } from '../../utils/wordCount';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
@@ -21,9 +22,12 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, addSession, updateSession, updateProgress } = useSession();
+  const { activeSession, addSession, updateSession } = useSession();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
+
+  // State for inactivity modal
+  const [showInactivityModal, setShowInactivityModal] = useState(false);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -71,7 +75,7 @@ export const Editor = () => {
     2000 // 2 second delay - only update backend after user stops typing
   );
 
-  const handleEditorBlur = useCallback((event: any) => {
+  const handleEditorBlur = useCallback((event: React.FocusEvent) => {
     // Log blur events for debugging with detailed information
     console.log('Editor blur event:', {
       relatedTarget: event.relatedTarget,
@@ -97,6 +101,13 @@ export const Editor = () => {
     // Store content in ref for backend updates (no React state change)
     contentRef.current = content;
 
+    // Record typing activity immediately (no debouncing for inactivity detection)
+    if (window.api?.activity?.recordTyping) {
+      window.api.activity.recordTyping().catch((error) => {
+        console.warn('Failed to record typing activity:', error);
+      });
+    }
+
     // Trigger backend update after user stops typing
     debouncedUpdateSession();
   }, [debouncedUpdateSession]);
@@ -112,6 +123,22 @@ export const Editor = () => {
     console.log('End session triggered');
     // Additional end session logic can be added here
   }, []);
+
+  // Handle inactivity modal actions
+  const handleResumeSession = useCallback(() => {
+    setShowInactivityModal(false);
+    // Reset inactivity timer when resuming
+    if (window.api?.activity?.recordTyping) {
+      window.api.activity.recordTyping().catch((error) => {
+        console.warn('Failed to record typing activity on resume:', error);
+      });
+    }
+  }, []);
+
+  const handleEndSession = useCallback(() => {
+    setShowInactivityModal(false);
+    handleEnd();
+  }, [handleEnd]);
 
   // Initialize Tiptap editor
   const editor = useEditor(
@@ -162,6 +189,24 @@ export const Editor = () => {
       editor.commands.focus();
     }
   }, [editor, currentContent]);
+
+  // Listen for inactivity modal events from main process
+  useEffect(() => {
+    if (window.api?.on) {
+      const handleShowInactivityModal = () => {
+        setShowInactivityModal(true);
+      };
+
+      window.api.on('show-inactivity-modal', handleShowInactivityModal);
+
+      return () => {
+        if (window.api?.removeListener) {
+          window.api.removeListener('show-inactivity-modal', handleShowInactivityModal);
+        }
+      };
+    }
+    return undefined;
+  }, []);
 
 
   // Separate progress update interval (45 seconds) - independent of timer display
@@ -226,6 +271,12 @@ export const Editor = () => {
       <div className={styles.editorContent}>
         <EditorContent editor={editor} />
       </div>
+
+      <InactivityModal
+        isVisible={showInactivityModal}
+        onClose={handleResumeSession}
+        onEndSession={handleEndSession}
+      />
     </div>
   );
 };

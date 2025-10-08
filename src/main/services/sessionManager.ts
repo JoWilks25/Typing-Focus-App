@@ -174,9 +174,9 @@ export class SessionManager {
    */
   isGoalCompleted(session: Session): boolean {
     if (session.goalType === 'word') {
-      return session.currentWords >= session.goalValue;
+      return (session.currentWords || 0) >= session.goalValue;
     } else if (session.goalType === 'time') {
-      return session.timeElapsed >= (session.goalValue * 60 * 1000); // Convert minutes to milliseconds
+      return (session.timeElapsed || 0) >= (session.goalValue * 60 * 1000); // Convert minutes to milliseconds
     }
     return false;
   }
@@ -260,10 +260,10 @@ export class SessionManager {
    */
   private calculateProgressPercentage(session: Session): number {
     if (session.goalType === 'word') {
-      return Math.min((session.currentWords / session.goalValue) * 100, 100);
+      return Math.min(((session.currentWords || 0) / session.goalValue) * 100, 100);
     } else if (session.goalType === 'time') {
       const goalTimeMs = session.goalValue * 60 * 1000;
-      return Math.min((session.timeElapsed / goalTimeMs) * 100, 100);
+      return Math.min(((session.timeElapsed || 0) / goalTimeMs) * 100, 100);
     }
     return 0;
   }
