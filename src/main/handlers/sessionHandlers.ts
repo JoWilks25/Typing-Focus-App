@@ -10,6 +10,8 @@ import {
   SessionGetRequest, 
   SessionGetResponse,
   SessionListResponse,
+  SessionUpdateProgressRequest,
+  SessionUpdateProgressResponse,
   IPC_CHANNELS,
   ERROR_CODES,
   createSuccessResult,
@@ -134,6 +136,67 @@ export async function handleSessionList() {
 }
 
 /**
+ * Handle session progress update operation
+ */
+export async function handleSessionUpdateProgress(request: SessionUpdateProgressRequest) {
+  try {
+    // Validate input
+    if (!request.sessionId || request.sessionId.trim() === '') {
+      return createErrorResult(toStructuredError(
+        new Error('Session ID is required'),
+        ERROR_CODES.VALIDATION_ERROR
+      ));
+    }
+
+    if (typeof request.currentWords !== 'number' || request.currentWords < 0) {
+      return createErrorResult(toStructuredError(
+        new Error('Current words must be a non-negative number'),
+        ERROR_CODES.VALIDATION_ERROR
+      ));
+    }
+
+    if (typeof request.timeElapsed !== 'number' || request.timeElapsed < 0) {
+      return createErrorResult(toStructuredError(
+        new Error('Time elapsed must be a non-negative number'),
+        ERROR_CODES.VALIDATION_ERROR
+      ));
+    }
+
+    if (!request.progressThresholds || 
+        typeof request.progressThresholds[33] !== 'boolean' ||
+        typeof request.progressThresholds[67] !== 'boolean' ||
+        typeof request.progressThresholds[100] !== 'boolean') {
+      return createErrorResult(toStructuredError(
+        new Error('Progress thresholds must be provided with boolean values'),
+        ERROR_CODES.VALIDATION_ERROR
+      ));
+    }
+
+    await sessionService.updateProgress(
+      request.sessionId,
+      request.currentWords,
+      request.timeElapsed,
+      request.progressThresholds
+    );
+
+    const response: SessionUpdateProgressResponse = { success: true };
+    
+    return createSuccessResult(response);
+  } catch (error) {
+    // Map specific error codes
+    let errorCode: string = ERROR_CODES.UNKNOWN_ERROR;
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        errorCode = ERROR_CODES.SESSION_NOT_FOUND;
+      }
+    }
+    
+    const structuredError = toStructuredError(error, errorCode);
+    return createErrorResult(structuredError);
+  }
+}
+
+/**
  * Register all session IPC handlers
  */
 export function registerSessionHandlers(): void {
@@ -156,6 +219,10 @@ export function registerSessionHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.SESSION_LIST, async () => {
     return await handleSessionList();
   });
+
+  ipcMain.handle(IPC_CHANNELS.SESSION_UPDATE_PROGRESS, async (_, request: SessionUpdateProgressRequest) => {
+    return await handleSessionUpdateProgress(request);
+  });
 }
 
 /**
@@ -166,4 +233,5 @@ export function unregisterSessionHandlers(): void {
   ipcMain.removeAllListeners(IPC_CHANNELS.SESSION_STOP);
   ipcMain.removeAllListeners(IPC_CHANNELS.SESSION_GET);
   ipcMain.removeAllListeners(IPC_CHANNELS.SESSION_LIST);
+  ipcMain.removeAllListeners(IPC_CHANNELS.SESSION_UPDATE_PROGRESS);
 }

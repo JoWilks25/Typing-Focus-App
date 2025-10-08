@@ -1,7 +1,12 @@
 // src/renderer/src/utils/validation.ts
 // Purpose: Validation utility functions for goal selection
 
-export type GoalType = 'word' | 'time';
+import { 
+  GoalType, 
+  VALIDATION_RANGES, 
+  RECOMMENDED_RANGES, 
+  DEFAULT_VALUES 
+} from '../../../shared/types/validation';
 
 export interface RecommendedRange {
   min: number;
@@ -9,15 +14,19 @@ export interface RecommendedRange {
   label: string;
 }
 
-// Validation ranges
-const WORD_COUNT_MIN = 10;
-const WORD_COUNT_MAX = 10000;
-const TIME_DURATION_MIN = 5; // minutes
-const TIME_DURATION_MAX = 480; // 8 hours
+// Use shared validation ranges
+const {
+  WORD_COUNT_MIN,
+  WORD_COUNT_MAX,
+  TIME_DURATION_MIN,
+  TIME_DURATION_MAX,
+} = VALIDATION_RANGES;
 
-// Recommended ranges for focused sessions
-const WORD_COUNT_RECOMMENDED = { min: 250, max: 500, label: '250-500 words' };
-const TIME_DURATION_RECOMMENDED = { min: 15, max: 30, label: '15-30 min' };
+// Use shared recommended ranges
+const {
+  WORD_COUNT: WORD_COUNT_RECOMMENDED,
+  TIME_DURATION: TIME_DURATION_RECOMMENDED,
+} = RECOMMENDED_RANGES;
 
 /**
  * Validates if a word count is within acceptable range
@@ -85,9 +94,9 @@ export function sanitizeInput(input: string): string {
 export function getDefaultValue(goalType: GoalType): number {
   switch (goalType) {
     case 'word':
-      return 500;
+      return DEFAULT_VALUES.WORD;
     case 'time':
-      return 30;
+      return DEFAULT_VALUES.TIME;
     default:
       throw new Error(`Invalid goal type: ${goalType}`);
   }

@@ -3,6 +3,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { vi } from 'vitest';
 import { AppProvider } from '../../../../src/renderer/src/context/AppContext';
 import { SessionProvider } from '../../../../src/renderer/src/context/SessionContext';
+import { AnimationProvider } from '../../../../src/renderer/src/context/AnimationContext';
 
 // Mock localStorage for tests
 const localStorageMock = {
@@ -58,7 +59,9 @@ function AllTheProviders({
     return (
         <AppProvider>
             <SessionProvider>
-                {children}
+                <AnimationProvider>
+                    {children}
+                </AnimationProvider>
             </SessionProvider>
         </AppProvider>
     );

@@ -22,6 +22,8 @@ import type {
   SessionGetRequest,
   SessionGetResponse,
   SessionListResponse,
+  SessionUpdateProgressRequest,
+  SessionUpdateProgressResponse,
   FocusStartRequest,
   FocusStartResponse,
   FocusStopRequest,
@@ -83,6 +85,9 @@ const sessionAPI = {
   },
   list: (): Promise<Result<SessionListResponse, StructuredError>> => {
     return ipcRenderer.invoke('session:list');
+  },
+  updateProgress: (request: SessionUpdateProgressRequest): Promise<Result<SessionUpdateProgressResponse, StructuredError>> => {
+    return ipcRenderer.invoke('session:updateProgress', request);
   }
 };
 

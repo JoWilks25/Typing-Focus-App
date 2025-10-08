@@ -8,6 +8,8 @@ import type {
   SessionGetRequest, 
   SessionGetResponse,
   SessionListResponse,
+  SessionUpdateProgressRequest,
+  SessionUpdateProgressResponse,
   StorageGetRequest,
   StorageGetResponse,
   StorageSetRequest,
@@ -31,6 +33,7 @@ export interface ElectronAPI {
     stop: (request: SessionStopRequest) => Promise<Result<SessionStopResponse, StructuredError>>;
     get: (request: SessionGetRequest) => Promise<Result<SessionGetResponse, StructuredError>>;
     list: () => Promise<Result<SessionListResponse, StructuredError>>;
+    updateProgress: (request: SessionUpdateProgressRequest) => Promise<Result<SessionUpdateProgressResponse, StructuredError>>;
   };
 
   storage: {
@@ -52,6 +55,7 @@ export interface ElectronAPI {
 declare global {
   interface Window {
     electronAPI: ElectronAPI;
+    api: ElectronAPI;
   }
 }
 

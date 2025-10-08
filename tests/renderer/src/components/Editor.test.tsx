@@ -33,6 +33,21 @@ vi.mock('../../../../src/renderer/src/hooks/useWordCount', () => ({
     useWordCount: vi.fn(() => 0),
 }));
 
+vi.mock('../../../../src/renderer/src/hooks/useSessionProgress', () => ({
+    useSessionProgress: vi.fn(() => ({
+        currentWords: 0,
+        formattedTime: '00:00',
+        isTimerRunning: false,
+        progress: 0,
+        hasReached33: false,
+        hasReached67: false,
+        hasReached100: false,
+        animationState: 'idle',
+        goalType: 'word',
+        goalValue: 500,
+    })),
+}));
+
 
 // Mock crypto
 Object.defineProperty(global, 'crypto', {
@@ -49,7 +64,7 @@ describe('Editor Component - Basic Tests', () => {
         render(<Editor />);
 
         expect(screen.getByTestId('editor-content')).toBeInTheDocument();
-        expect(screen.getByText(/0 words/)).toBeInTheDocument();
+        expect(screen.getByText('0 words')).toBeInTheDocument();
     });
 
     it('should display keyboard shortcuts hint', () => {

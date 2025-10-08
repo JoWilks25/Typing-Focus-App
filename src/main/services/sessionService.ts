@@ -1,5 +1,6 @@
 import { generateId } from '../utils/generateId';
-import { isValidGoal, type GoalType } from '../utils/validation';
+import { isValidGoal } from '../utils/validation';
+import { type GoalType } from '../../shared/types/validation';
 import { StorageService } from './storageService';
 import type { Session } from '../types/session';
 
@@ -149,5 +150,42 @@ export class SessionService {
       console.warn('Failed to get active session from storage:', error);
       return undefined;
     }
+  }
+
+  /**
+   * Update progress for a session
+   * @param sessionId - The ID of the session to update
+   * @param currentWords - Current word count
+   * @param timeElapsed - Elapsed time in milliseconds
+   * @param progressThresholds - Thresholds that have been crossed
+   * @returns The updated session
+   */
+  async updateProgress(
+    sessionId: string,
+    currentWords: number,
+    timeElapsed: number,
+    progressThresholds: { 33: boolean; 67: boolean; 100: boolean }
+  ): Promise<Session> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const updatedSession: Session = {
+      ...session,
+      currentWords,
+      timeElapsed,
+      progressThresholds,
+      updatedAt: new Date().toISOString()
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    
+    // Persist active session if it's the one being updated
+    if (session.status === 'active') {
+      await this.storageService.set(this.ACTIVE_SESSION_KEY, updatedSession);
+    }
+    
+    return updatedSession;
   }
 }

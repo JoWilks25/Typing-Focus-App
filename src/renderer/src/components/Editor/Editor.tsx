@@ -2,34 +2,64 @@
 // Purpose: Main text editor component with Tiptap integration
 
 import { useEditor, EditorContent } from '@tiptap/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '../../context/useSession';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
-import { calculateWordCount } from '../../utils/wordCount';
-import { useWordCount } from '../../hooks/useWordCount';
 import { SessionStats } from './SessionStats';
+import { calculateWordCount } from '../../utils/wordCount';
+import { getElectronAPI } from '../../utils/electronAPI';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
 
+// Local editor state interface
+interface LocalEditorState {
+  content: string;
+  text: string;
+  wordCount: number;
+  characterCount: number;
+  lastUpdated: number;
+}
+
 export const Editor = () => {
-  const { activeSession, updateSession, addSession } = useSession();
-  const [wordCount, setWordCount] = useState(0);
+  const { activeSession, addSession } = useSession();
+  const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
+  const contentRef = useRef('');
+
+  // Local state for immediate UI updates
+  const [localState, setLocalState] = useState<LocalEditorState>({
+    content: '',
+    text: '',
+    wordCount: 0,
+    characterCount: 0,
+    lastUpdated: Date.now()
+  });
 
   // Get current session content or default to empty
   const currentContent = useMemo(() => {
     return activeSession?.content || '';
   }, [activeSession?.content]);
 
-  // Debounced session update (1 second delay)
+  // Debounced session update (2 second delay to avoid typing interference)
   const debouncedUpdateSession = useDebounce(
-    useCallback((...args: unknown[]) => {
-      const content = args[0] as string;
+    useCallback(() => {
+      const content = contentRef.current;
       if (activeSession) {
-        updateSession({
+        // Only update backend/persistence, NOT React state
+        // This prevents re-renders that cause focus loss
+        const updatedSession = {
           ...activeSession,
           content,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        // Save to backend using storage API (non-deprecated)
+        const api = getElectronAPI();
+        api.storage.set({
+          key: 'active-session',
+          value: updatedSession
+        }).catch((error) => {
+          console.warn('Failed to save session to backend:', error);
         });
       } else {
         // Create new session if none exists
@@ -47,18 +77,38 @@ export const Editor = () => {
         };
         addSession(newSession);
       }
-    }, [activeSession, updateSession, addSession]),
-    1000 // 1 second delay
+    }, [activeSession, addSession]),
+    2000 // 2 second delay - only update backend after user stops typing
   );
 
-  // Handle real-time updates (immediate word count, debounced session update)
-  const handleUpdate = useCallback((content: string, text: string) => {
-    // Update word count immediately (most performant)
-    const count = calculateWordCount(text);
-    setWordCount(count);
+  const handleEditorBlur = useCallback((event: any) => {
+    // Log blur events for debugging with detailed information
+    console.log('Editor blur event:', {
+      relatedTarget: event.relatedTarget,
+      stack: new Error().stack, // This will show what called the blur
+      timestamp: new Date().toISOString()
+    });
+  }, []);
 
-    // Debounce session update
-    debouncedUpdateSession(content);
+  // Handle real-time updates (immediate local state, debounced backend)
+  const handleUpdate = useCallback((content: string, text: string) => {
+    const wordCount = calculateWordCount(text);
+    const characterCount = text.length;
+
+    // Update local state immediately for instant UI feedback
+    setLocalState({
+      content,
+      text,
+      wordCount,
+      characterCount,
+      lastUpdated: Date.now()
+    });
+
+    // Store content in ref for backend updates (no React state change)
+    contentRef.current = content;
+
+    // Trigger backend update after user stops typing
+    debouncedUpdateSession();
   }, [debouncedUpdateSession]);
 
   // Handle save action
@@ -81,32 +131,40 @@ export const Editor = () => {
       onUpdate: handleUpdate,
       onSave: handleSave,
       onEnd: handleEnd,
+      onBlur: handleEditorBlur,
     }),
-    [currentContent]
+    [currentContent, handleUpdate, handleSave, handleEnd, handleEditorBlur]
   );
+
+  // Store editor reference for blur handler
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // Update editor content when active session changes (only when switching sessions)
   useEffect(() => {
-    if (editor && !editor.isFocused) {
-      editor.commands.setContent(currentContent, { emitUpdate: false });
+    if (editor && !editor.isFocused && activeSession?.id) {
+      // Only update content when switching to a different session
+      const editorContent = editor.getHTML();
+      if (editorContent !== currentContent) {
+        editor.commands.setContent(currentContent, { emitUpdate: false });
+      }
     }
-  }, [editor, currentContent, activeSession?.id]); // Include dependencies
+  }, [editor, currentContent, activeSession?.id]);
 
-  // Get current editor text for debounced tracking
-  const editorText = useMemo(() => {
-    return editor?.getText() || '';
-  }, [editor]);
-
-  // Use debounced word count for goal tracking and IPC
-  const trackedWordCount = useWordCount(editorText, activeSession?.id);
-
-  // Initialize word count from current content
+  // Initialize local state when session changes
   useEffect(() => {
-    if (editor && currentContent) {
-      const text = editor.getText();
-      setWordCount(calculateWordCount(text));
+    if (activeSession?.content && activeSession.content !== localState.content) {
+      const text = activeSession.content.replace(/<[^>]*>/g, ''); // Strip HTML tags
+      setLocalState({
+        content: activeSession.content,
+        text,
+        wordCount: calculateWordCount(text),
+        characterCount: text.length,
+        lastUpdated: Date.now()
+      });
     }
-  }, [editor, currentContent]);
+  }, [activeSession?.content, localState.content]);
 
   // Focus editor on mount (only if no content exists)
   useEffect(() => {
@@ -114,6 +172,53 @@ export const Editor = () => {
       editor.commands.focus();
     }
   }, [editor, currentContent]);
+
+
+  // Separate progress update interval (45 seconds) - independent of timer display
+  useEffect(() => {
+    if (!activeSession) return;
+
+    const progressInterval = globalThis.setInterval(() => {
+      if (localState.wordCount > 0) {
+        const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
+        // Calculate time elapsed for progress tracking
+        const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
+
+        // Calculate current progress to check for threshold crossings
+        const goalValue = activeSession.goalValue || 500;
+        const goalType = activeSession.goalType || 'word';
+        const currentProgress = goalType === 'word'
+          ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
+          : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
+
+        // Update thresholds if progress has crossed them
+        const newThresholds = { ...progressThresholds };
+        if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
+        if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
+        if (currentProgress >= 100 && !newThresholds[100]) newThresholds[100] = true;
+
+        // Update progress via session API (backend only, no React re-renders)
+        const api = getElectronAPI();
+        (api.session as any).updateProgress({
+          sessionId: activeSession.id,
+          currentWords: localState.wordCount,
+          timeElapsed,
+          progressThresholds: newThresholds
+        }).catch((error) => {
+          console.warn('Failed to update progress:', error);
+        });
+
+        console.log('Progress update via interval (backend only):', {
+          wordCount: localState.wordCount,
+          timeElapsed,
+          currentProgress,
+          newThresholds
+        });
+      }
+    }, 45000); // 45 seconds
+
+    return () => globalThis.clearInterval(progressInterval);
+  }, [activeSession, localState.wordCount]);
 
   if (!editor) {
     return (
@@ -127,7 +232,11 @@ export const Editor = () => {
 
   return (
     <div className={styles.editor}>
-      <SessionStats wordCount={wordCount} trackedWordCount={trackedWordCount} />
+      <SessionStats
+        localState={localState}
+        isFocused={!!editor?.isFocused}
+        activeSession={activeSession}
+      />
 
       <div className={styles.editorContent}>
         <EditorContent editor={editor} />

@@ -4,6 +4,7 @@ import { SessionSetup } from './components/Session/SessionSetup';
 import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
 import { SessionProvider } from './context/SessionContext';
+import { AnimationProvider } from './context/AnimationContext';
 import { useAppState } from './hooks/useAppState';
 
 function AppContent(): React.JSX.Element {
@@ -77,9 +78,11 @@ function App(): React.JSX.Element {
   return (
     <AppProvider>
       <SessionProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
+        <AnimationProvider>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </AnimationProvider>
       </SessionProvider>
     </AppProvider>
   );

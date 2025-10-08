@@ -1,7 +1,9 @@
 // src/renderer/src/types/session.ts
 // Purpose: Type definitions for session data structures (renderer)
 
-export type GoalType = 'word' | 'time';
+import { type GoalType } from '../../../shared/types/validation';
+
+export { type GoalType };
 
 export interface Session {
   id: string;
@@ -15,6 +17,13 @@ export interface Session {
   status: 'active' | 'stopped';
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
+  currentWords?: number;
+  timeElapsed?: number;
+  progressThresholds?: {
+    33: boolean;
+    67: boolean;
+    100: boolean;
+  };
 }
 
 export interface SessionState {

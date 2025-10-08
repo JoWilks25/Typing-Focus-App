@@ -6,6 +6,7 @@ import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import HardBreak from '@tiptap/extension-hard-break';
+import { FocusEvent } from 'react';
 
 export interface EditorConfigOptions {
   placeholder?: string;
@@ -13,10 +14,12 @@ export interface EditorConfigOptions {
   onUpdate?: (content: string, text: string) => void;
   onSave?: () => void;
   onEnd?: () => void;
+  onFocus?: () => void;
+  onBlur?: (event: FocusEvent) => void;
 }
 
 export const createEditorConfig = (options: EditorConfigOptions = {}) => {
-  const { placeholder = 'Start writing...', content = '', onUpdate, onSave, onEnd } = options;
+  const { placeholder = 'Start writing...', content = '', onUpdate, onSave, onEnd, onFocus, onBlur } = options;
 
   return {
     extensions: [
@@ -36,6 +39,12 @@ export const createEditorConfig = (options: EditorConfigOptions = {}) => {
       const html = editor.getHTML();
       const text = editor.getText();
       onUpdate?.(html, text);
+    },
+    onFocus: () => {
+      onFocus?.();
+    },
+    onBlur: ({ event }) => {
+      onBlur?.(event);
     },
     onKeyDown: ({ event }) => {
       // Cmd+S for save

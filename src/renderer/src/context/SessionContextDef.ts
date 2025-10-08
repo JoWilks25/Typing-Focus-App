@@ -11,6 +11,7 @@ export interface SessionContextValue extends SessionState {
     updateSession: (session: Session) => void;
     removeSession: (id: string) => void;
     reset: () => void;
+    updateProgress: (currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => void;
 }
 
 export const SessionContext = createContext<SessionContextValue | undefined>(undefined);

@@ -1,13 +1,15 @@
 // src/main/utils/validation.ts
 // Purpose: Validation utility functions for goal validation in main process
 
-export type GoalType = 'word' | 'time';
+import { GoalType, VALIDATION_RANGES } from '../../shared/types/validation';
 
-// Validation ranges
-const WORD_COUNT_MIN = 10;
-const WORD_COUNT_MAX = 10000;
-const TIME_DURATION_MIN = 5; // minutes
-const TIME_DURATION_MAX = 480; // 8 hours
+// Use shared validation ranges
+const {
+  WORD_COUNT_MIN,
+  WORD_COUNT_MAX,
+  TIME_DURATION_MIN,
+  TIME_DURATION_MAX,
+} = VALIDATION_RANGES;
 
 /**
  * Validates if a word count is within acceptable range
@@ -46,10 +48,6 @@ export function isValidGoal(goalType: GoalType, value: number): boolean {
 
 /**
  * Get validation constants for external use
+ * Re-export shared constants for backward compatibility
  */
-export const VALIDATION_CONSTANTS = {
-  WORD_COUNT_MIN,
-  WORD_COUNT_MAX,
-  TIME_DURATION_MIN,
-  TIME_DURATION_MAX,
-} as const;
+export const VALIDATION_CONSTANTS = VALIDATION_RANGES;

@@ -1,4 +1,6 @@
 // Structured error type for consistent error handling across IPC
+import { type GoalType } from '../../shared/types/validation';
+
 export interface StructuredError {
   code: string;
   message: string;
@@ -78,7 +80,7 @@ export interface StorageClearResponse {
 export interface SessionStartRequest {
   name?: string;
   title?: string;
-  goalType: 'word' | 'time';
+  goalType: GoalType;
   goalValue: number;
 }
 
@@ -88,7 +90,7 @@ export interface SessionStartResponse {
     name: string;
     title?: string;
     content?: string;
-    goalType: 'word' | 'time';
+    goalType: GoalType;
     goalValue: number;
     startTime: number;
     endTime?: number;
@@ -116,7 +118,7 @@ export interface SessionGetResponse {
     name: string;
     title?: string;
     content?: string;
-    goalType: 'word' | 'time';
+    goalType: GoalType;
     goalValue: number;
     startTime: number;
     endTime?: number;
@@ -132,14 +134,36 @@ export interface SessionListResponse {
     name: string;
     title?: string;
     content?: string;
-    goalType: 'word' | 'time';
+    goalType: GoalType;
     goalValue: number;
     startTime: number;
     endTime?: number;
     status: 'active' | 'stopped';
     createdAt: string;
     updatedAt: string;
+    currentWords?: number;
+    timeElapsed?: number;
+    progressThresholds?: {
+      33: boolean;
+      67: boolean;
+      100: boolean;
+    };
   }>;
+}
+
+export interface SessionUpdateProgressRequest {
+  sessionId: string;
+  currentWords: number;
+  timeElapsed: number;
+  progressThresholds: {
+    33: boolean;
+    67: boolean;
+    100: boolean;
+  };
+}
+
+export interface SessionUpdateProgressResponse {
+  success: boolean;
 }
 
 // Focus operation types
@@ -222,6 +246,7 @@ export const IPC_CHANNELS = {
   SESSION_STOP: 'session:stop',
   SESSION_GET: 'session:get',
   SESSION_LIST: 'session:list',
+  SESSION_UPDATE_PROGRESS: 'session:updateProgress',
   
   // Focus operations
   FOCUS_START: 'focus:start',
