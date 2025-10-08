@@ -18,6 +18,7 @@ Understand how the project is structured:
 - **[STRUCTURE.md](./architecture/STRUCTURE.md)** - Complete folder structure with descriptions
 - **[APP_STRUCTURE.md](./architecture/APP_STRUCTURE.md)** - React component hierarchy and app structure
 - **[PRELOAD_API_USAGE.md](./architecture/PRELOAD_API_USAGE.md)** - How to use the Electron API in components
+- **[FEATURES.md](./architecture/FEATURES.md)** - App features, validation rules, and session management ⭐
 
 ## 📖 Reference
 
@@ -43,7 +44,8 @@ docs/
 ├── architecture/          # Project architecture
 │   ├── STRUCTURE.md       # Folder structure ⭐
 │   ├── APP_STRUCTURE.md   # Component hierarchy
-│   └── PRELOAD_API_USAGE.md # API usage guide ⭐
+│   ├── PRELOAD_API_USAGE.md # API usage guide ⭐
+│   └── FEATURES.md        # App features and validation rules ⭐
 │
 └── reference/             # Reference docs
     ├── CONFIG_FILES.md
@@ -74,6 +76,9 @@ Essential docs in the project root:
 
 **Use the Electron API:**
 - See [architecture/PRELOAD_API_USAGE.md](./architecture/PRELOAD_API_USAGE.md)
+
+**Understand app features and validation:**
+- See [architecture/FEATURES.md](./architecture/FEATURES.md)
 
 **Write and run tests:**
 - See [setup/TESTING.md](./setup/TESTING.md)

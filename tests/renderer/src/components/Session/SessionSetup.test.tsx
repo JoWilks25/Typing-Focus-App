@@ -28,9 +28,39 @@ vi.mock('@renderer/hooks/useAppState', () => ({
     }),
 }));
 
+// Mock window.electronAPI
+const mockElectronAPI = {
+    session: {
+        start: vi.fn(),
+    },
+};
+
+Object.defineProperty(window, 'electronAPI', {
+    value: mockElectronAPI,
+    writable: true,
+});
+
 describe('SessionSetup Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+
+        // Mock successful session creation response
+        mockElectronAPI.session.start.mockResolvedValue({
+            success: true,
+            data: {
+                session: {
+                    id: 'test-session-1',
+                    title: 'Writing Session - 500 words',
+                    goalType: 'word',
+                    goalValue: 500,
+                    content: '',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    wordCount: 0,
+                    characterCount: 0,
+                }
+            }
+        });
     });
 
     it('should render the main form elements', () => {
@@ -190,10 +220,13 @@ describe('SessionSetup Component', () => {
         const startButton = screen.getByText('Start Writing').closest('button');
 
         // Test minimum boundary
-        fireEvent.change(input, { target: { value: '1' } });
+        fireEvent.change(input, { target: { value: '5' } });
         expect(startButton).not.toBeDisabled();
 
         // Test below minimum
+        fireEvent.change(input, { target: { value: '1' } });
+        expect(startButton).toBeDisabled();
+
         fireEvent.change(input, { target: { value: '0.5' } });
         expect(startButton).toBeDisabled();
 

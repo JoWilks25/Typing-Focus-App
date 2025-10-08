@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron';
 import { SessionService } from '../services/sessionService';
+import { StorageService } from '../services/storageService';
+import { isValidGoal } from '../utils/validation';
 import { 
   SessionStartRequest, 
   SessionStartResponse,
@@ -20,8 +22,8 @@ let sessionService: SessionService;
 /**
  * Initialize session service
  */
-export function initializeSessionService(): void {
-  sessionService = new SessionService();
+export function initializeSessionService(storageService: StorageService): void {
+  sessionService = new SessionService(storageService);
 }
 
 /**
@@ -29,8 +31,22 @@ export function initializeSessionService(): void {
  */
 export async function handleSessionStart(request: SessionStartRequest) {
   try {
-    const session = sessionService.startSession(request.name);
-    const response: SessionStartResponse = { sessionId: session.id };
+    // Validate goal before starting session
+    if (!isValidGoal(request.goalType, request.goalValue)) {
+      return createErrorResult(toStructuredError(
+        new Error(`Invalid goal: ${request.goalType} goal value ${request.goalValue} is out of range`),
+        ERROR_CODES.VALIDATION_ERROR
+      ));
+    }
+
+    const session = await sessionService.startSession(
+      request.name,
+      request.title,
+      request.goalType,
+      request.goalValue
+    );
+    
+    const response: SessionStartResponse = { session };
     
     return createSuccessResult(response);
   } catch (error) {
@@ -52,7 +68,7 @@ export async function handleSessionStop(request: SessionStopRequest) {
       ));
     }
 
-    sessionService.stopSession(request.sessionId);
+    await sessionService.stopSession(request.sessionId);
     const response: SessionStopResponse = { success: true };
     
     return createSuccessResult(response);

@@ -18,8 +18,9 @@ import {
   IPC_CHANNELS
 } from '../../../src/main/types/ipc';
 
-// Mock SessionService
+// Mock SessionService and StorageService
 vi.mock('../../../src/main/services/sessionService');
+vi.mock('../../../src/main/services/storageService');
 
 // Mock electron ipcMain
 vi.mock('electron', () => ({
@@ -31,6 +32,7 @@ vi.mock('electron', () => ({
 
 describe('Session Handlers - TDD Tests', () => {
   let mockSessionService: any;
+  let mockStorageService: any;
 
   beforeEach(() => {
     mockSessionService = {
@@ -39,62 +41,121 @@ describe('Session Handlers - TDD Tests', () => {
       getSession: vi.fn(),
       listSessions: vi.fn(),
     };
+
+    mockStorageService = {
+      set: vi.fn(),
+      get: vi.fn(),
+      remove: vi.fn(),
+    };
     
     // Mock the SessionService constructor
     vi.mocked(SessionService).mockImplementation(() => mockSessionService);
     
     // Initialize the session service for handlers
-    initializeSessionService();
+    initializeSessionService(mockStorageService);
   });
 
   describe('handleSessionStart', () => {
-    it('should start a session and return sessionId', async () => {
-      const request: SessionStartRequest = { name: 'Test Session' };
+    it('should start a session with valid goals and return full session', async () => {
+      const request: SessionStartRequest = { 
+        name: 'Test Session',
+        title: 'Test Title',
+        goalType: 'word',
+        goalValue: 500
+      };
       const mockSession = {
         id: 'test-session-id',
         name: 'Test Session',
+        title: 'Test Title',
+        goalType: 'word' as const,
+        goalValue: 500,
         startTime: 1234567890,
-        status: 'active' as const
+        status: 'active' as const,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
       };
       
-      mockSessionService.startSession.mockReturnValue(mockSession);
+      mockSessionService.startSession.mockResolvedValue(mockSession);
 
       const result = await handleSessionStart(request);
 
-      expect(mockSessionService.startSession).toHaveBeenCalledWith('Test Session');
+      expect(mockSessionService.startSession).toHaveBeenCalledWith('Test Session', 'Test Title', 'word', 500);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.sessionId).toBe('test-session-id');
+        expect(result.data.session).toEqual(mockSession);
       }
     });
 
-    it('should start a session without name and return sessionId', async () => {
-      const request: SessionStartRequest = {};
+    it('should start a session with time goal', async () => {
+      const request: SessionStartRequest = { 
+        goalType: 'time',
+        goalValue: 30
+      };
       const mockSession = {
         id: 'test-session-id',
         name: 'Session 2024-01-01 12:00:00',
+        goalType: 'time' as const,
+        goalValue: 30,
         startTime: 1234567890,
-        status: 'active' as const
+        status: 'active' as const,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
       };
       
-      mockSessionService.startSession.mockReturnValue(mockSession);
+      mockSessionService.startSession.mockResolvedValue(mockSession);
 
       const result = await handleSessionStart(request);
 
-      expect(mockSessionService.startSession).toHaveBeenCalledWith(undefined);
+      expect(mockSessionService.startSession).toHaveBeenCalledWith(undefined, undefined, 'time', 30);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.sessionId).toBe('test-session-id');
+        expect(result.data.session).toEqual(mockSession);
       }
     });
 
+    it('should handle validation errors for invalid word goal', async () => {
+      const request: SessionStartRequest = { 
+        name: 'Test Session',
+        goalType: 'word',
+        goalValue: 5 // Invalid - below minimum
+      };
+
+      const result = await handleSessionStart(request);
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+        expect(result.error.message).toContain('Invalid goal: word goal value 5 is out of range');
+      }
+      expect(mockSessionService.startSession).not.toHaveBeenCalled();
+    });
+
+    it('should handle validation errors for invalid time goal', async () => {
+      const request: SessionStartRequest = { 
+        name: 'Test Session',
+        goalType: 'time',
+        goalValue: 600 // Invalid - above maximum
+      };
+
+      const result = await handleSessionStart(request);
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.code).toBe(ERROR_CODES.VALIDATION_ERROR);
+        expect(result.error.message).toContain('Invalid goal: time goal value 600 is out of range');
+      }
+      expect(mockSessionService.startSession).not.toHaveBeenCalled();
+    });
+
     it('should handle session service errors', async () => {
-      const request: SessionStartRequest = { name: 'Test Session' };
+      const request: SessionStartRequest = { 
+        name: 'Test Session',
+        goalType: 'word',
+        goalValue: 500
+      };
       const error = new Error('Session start failed');
       
-      mockSessionService.startSession.mockImplementation(() => {
-        throw error;
-      });
+      mockSessionService.startSession.mockRejectedValue(error);
 
       const result = await handleSessionStart(request);
 
@@ -112,12 +173,16 @@ describe('Session Handlers - TDD Tests', () => {
       const mockSession = {
         id: 'test-session-id',
         name: 'Test Session',
+        goalType: 'word' as const,
+        goalValue: 500,
         startTime: 1234567890,
         endTime: 1234567891,
-        status: 'stopped' as const
+        status: 'stopped' as const,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
       };
       
-      mockSessionService.stopSession.mockReturnValue(mockSession);
+      mockSessionService.stopSession.mockResolvedValue(mockSession);
 
       const result = await handleSessionStop(request);
 
@@ -156,9 +221,7 @@ describe('Session Handlers - TDD Tests', () => {
       const request: SessionStopRequest = { sessionId: 'non-existent-id' };
       const error = new Error('Session not found: non-existent-id');
       
-      mockSessionService.stopSession.mockImplementation(() => {
-        throw error;
-      });
+      mockSessionService.stopSession.mockRejectedValue(error);
 
       const result = await handleSessionStop(request);
 
@@ -173,9 +236,7 @@ describe('Session Handlers - TDD Tests', () => {
       const request: SessionStopRequest = { sessionId: 'test-session-id' };
       const error = new Error('Session is already stopped: test-session-id');
       
-      mockSessionService.stopSession.mockImplementation(() => {
-        throw error;
-      });
+      mockSessionService.stopSession.mockRejectedValue(error);
 
       const result = await handleSessionStop(request);
 
@@ -193,9 +254,14 @@ describe('Session Handlers - TDD Tests', () => {
       const mockSession = {
         id: 'test-session-id',
         name: 'Test Session',
+        title: 'Test Title',
+        goalType: 'word' as const,
+        goalValue: 500,
         startTime: 1234567890,
         endTime: 1234567891,
-        status: 'stopped' as const
+        status: 'stopped' as const,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
       };
       
       mockSessionService.getSession.mockReturnValue(mockSession);
@@ -271,15 +337,25 @@ describe('Session Handlers - TDD Tests', () => {
         {
           id: 'session-1',
           name: 'Session 1',
+          title: 'Title 1',
+          goalType: 'word' as const,
+          goalValue: 500,
           startTime: 1234567890,
           endTime: 1234567891,
-          status: 'stopped' as const
+          status: 'stopped' as const,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z'
         },
         {
           id: 'session-2',
           name: 'Session 2',
+          title: 'Title 2',
+          goalType: 'time' as const,
+          goalValue: 30,
           startTime: 1234567892,
-          status: 'active' as const
+          status: 'active' as const,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z'
         }
       ];
       
@@ -325,12 +401,12 @@ describe('Session Handlers - TDD Tests', () => {
   });
 
   describe('Session Service Initialization', () => {
-    it('should initialize session service', () => {
+    it('should initialize session service with storage service', () => {
       expect(() => {
-        initializeSessionService();
+        initializeSessionService(mockStorageService);
       }).not.toThrow();
       
-      expect(SessionService).toHaveBeenCalled();
+      expect(SessionService).toHaveBeenCalledWith(mockStorageService);
     });
   });
 

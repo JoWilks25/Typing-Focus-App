@@ -77,10 +77,25 @@ export interface StorageClearResponse {
 // Session operation types
 export interface SessionStartRequest {
   name?: string;
+  title?: string;
+  goalType: 'word' | 'time';
+  goalValue: number;
 }
 
 export interface SessionStartResponse {
-  sessionId: string;
+  session: {
+    id: string;
+    name: string;
+    title?: string;
+    content?: string;
+    goalType: 'word' | 'time';
+    goalValue: number;
+    startTime: number;
+    endTime?: number;
+    status: 'active' | 'stopped';
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export interface SessionStopRequest {
@@ -99,9 +114,15 @@ export interface SessionGetResponse {
   session: {
     id: string;
     name: string;
+    title?: string;
+    content?: string;
+    goalType: 'word' | 'time';
+    goalValue: number;
     startTime: number;
     endTime?: number;
     status: 'active' | 'stopped';
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
@@ -109,9 +130,15 @@ export interface SessionListResponse {
   sessions: Array<{
     id: string;
     name: string;
+    title?: string;
+    content?: string;
+    goalType: 'word' | 'time';
+    goalValue: number;
     startTime: number;
     endTime?: number;
     status: 'active' | 'stopped';
+    createdAt: string;
+    updatedAt: string;
   }>;
 }
 

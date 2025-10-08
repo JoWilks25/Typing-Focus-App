@@ -33,12 +33,15 @@ export const Editor = () => {
         // Create new session if none exists
         const newSession = {
           id: globalThis.crypto.randomUUID(),
+          name: 'Untitled Session',
           title: 'Untitled Session',
           content,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           goalType: 'word' as const,
           goalValue: 500,
+          startTime: Date.now(),
+          status: 'active' as const,
         };
         addSession(newSession);
       }
