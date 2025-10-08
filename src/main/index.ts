@@ -52,8 +52,8 @@ app.whenReady().then(async () => {
   await fileService.ensureDirectory('.');
   
   initializeFileService(appDataPath);
-  initializeStorageService(appDataPath);
-  initializeSessionService();
+  const storageService = initializeStorageService(appDataPath);
+  initializeSessionService(storageService);
   initializeFocusService();
   initializeActivityService();
   

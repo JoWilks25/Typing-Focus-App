@@ -1,35 +1,61 @@
-import { v4 as uuidv4 } from 'uuid';
-
-export interface Session {
-  id: string;
-  name: string;
-  startTime: number;
-  endTime?: number;
-  status: 'active' | 'stopped';
-}
+import { generateId } from '../utils/generateId';
+import { isValidGoal, type GoalType } from '../utils/validation';
+import { StorageService } from './storageService';
+import type { Session } from '../types/session';
 
 /**
- * SessionService provides in-memory session management.
- * Sessions are stored in memory and can be started, stopped, retrieved, and listed.
+ * SessionService provides session management with persistence.
+ * Sessions are stored in memory and persisted to active-session.json via StorageService.
  */
 export class SessionService {
   private sessions: Map<string, Session> = new Map();
+  private storageService: StorageService;
+  private readonly ACTIVE_SESSION_KEY = 'active-session';
+
+  constructor(storageService: StorageService) {
+    this.storageService = storageService;
+  }
 
   /**
    * Start a new session
    * @param name - Optional name for the session
+   * @param title - Optional title for the session
+   * @param goalType - The type of goal ('word' or 'time')
+   * @param goalValue - The goal value
    * @returns The created session
+   * @throws Error if goal validation fails
    */
-  startSession(name?: string): Session {
-    const sessionId = uuidv4();
+  async startSession(
+    name?: string, 
+    title?: string, 
+    goalType: GoalType = 'word', 
+    goalValue: number = 500
+  ): Promise<Session> {
+    // Validate goal
+    if (!isValidGoal(goalType, goalValue)) {
+      throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
+    }
+
+    const sessionId = generateId();
+    const now = new Date().toISOString();
     const session: Session = {
       id: sessionId,
       name: name || `Session ${new Date().toLocaleString()}`,
+      title,
+      content: '',
+      goalType,
+      goalValue,
       startTime: Date.now(),
-      status: 'active'
+      status: 'active',
+      createdAt: now,
+      updatedAt: now
     };
 
     this.sessions.set(sessionId, session);
+    
+    // Persist active session
+    await this.storageService.set(this.ACTIVE_SESSION_KEY, session);
+    
     return session;
   }
 
@@ -38,7 +64,7 @@ export class SessionService {
    * @param sessionId - The ID of the session to stop
    * @returns The updated session
    */
-  stopSession(sessionId: string): Session {
+  async stopSession(sessionId: string): Promise<Session> {
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
@@ -51,10 +77,15 @@ export class SessionService {
     const updatedSession: Session = {
       ...session,
       endTime: Date.now(),
-      status: 'stopped'
+      status: 'stopped',
+      updatedAt: new Date().toISOString()
     };
 
     this.sessions.set(sessionId, updatedSession);
+    
+    // Remove from active session storage
+    await this.storageService.remove(this.ACTIVE_SESSION_KEY);
+    
     return updatedSession;
   }
 
@@ -104,5 +135,19 @@ export class SessionService {
    */
   getSessionCount(): number {
     return this.sessions.size;
+  }
+
+  /**
+   * Get the currently active session from storage
+   * @returns The active session or undefined if none exists
+   */
+  async getActiveSession(): Promise<Session | undefined> {
+    try {
+      const activeSession = await this.storageService.get(this.ACTIVE_SESSION_KEY);
+      return activeSession as Session | undefined;
+    } catch (error) {
+      console.warn('Failed to get active session from storage:', error);
+      return undefined;
+    }
   }
 }

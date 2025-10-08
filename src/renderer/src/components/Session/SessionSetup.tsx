@@ -39,12 +39,15 @@ export function SessionSetup(): React.JSX.Element {
         // Create new session
         const newSession = {
             id: globalThis.crypto.randomUUID(),
+            name: `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`,
             title: `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             content: '',
             goalType,
             goalValue,
+            startTime: Date.now(),
+            status: 'active' as const,
         };
 
         // Add session and navigate to editor

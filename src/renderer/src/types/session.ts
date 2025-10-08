@@ -5,12 +5,16 @@ export type GoalType = 'word' | 'time';
 
 export interface Session {
   id: string;
-  title: string;
-  createdAt: string; // ISO string
-  updatedAt: string; // ISO string
-  content: string;
+  name: string;
+  title?: string;
+  content?: string;
   goalType: GoalType;
   goalValue: number;
+  startTime: number;
+  endTime?: number;
+  status: 'active' | 'stopped';
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
 }
 
 export interface SessionState {

@@ -20,8 +20,9 @@ let storageService: StorageService;
 /**
  * Initialize storage service with the app data directory
  */
-export function initializeStorageService(appDataPath: string): void {
+export function initializeStorageService(appDataPath: string): StorageService {
   storageService = new StorageService(appDataPath);
+  return storageService;
 }
 
 /**
