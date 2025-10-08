@@ -21,7 +21,8 @@ export const Editor = () => {
 
   // Debounced session update (1 second delay)
   const debouncedUpdateSession = useDebounce(
-    useCallback((content: string) => {
+    useCallback((...args: unknown[]) => {
+      const content = args[0] as string;
       if (activeSession) {
         updateSession({
           ...activeSession,
@@ -36,6 +37,8 @@ export const Editor = () => {
           content,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          goalType: 'word' as const,
+          goalValue: 500,
         };
         addSession(newSession);
       }
