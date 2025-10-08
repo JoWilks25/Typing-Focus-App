@@ -25,8 +25,14 @@ vi.mock('../../../../src/renderer/src/hooks/useDebounce', () => ({
 }));
 
 vi.mock('../../../../src/renderer/src/utils/wordCount', () => ({
-    getWordCount: vi.fn(() => 2),
+    calculateWordCount: vi.fn(() => 2),
+    getWordCount: vi.fn(() => 2), // Legacy export
 }));
+
+vi.mock('../../../../src/renderer/src/hooks/useWordCount', () => ({
+    useWordCount: vi.fn(() => 0),
+}));
+
 
 // Mock crypto
 Object.defineProperty(global, 'crypto', {

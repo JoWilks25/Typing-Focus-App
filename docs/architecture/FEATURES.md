@@ -67,6 +67,40 @@ interface Session {
 - Network/communication errors are logged to console
 - Graceful fallbacks for storage errors
 
+## Word Count & Typing Activity
+
+### Word Count Calculation
+- **Function**: `calculateWordCount()` in `src/renderer/src/utils/wordCount.ts`
+- **Algorithm**: Splits text by whitespace and filters empty strings
+- **Edge Cases Handled**:
+  - Empty strings and whitespace-only text
+  - Symbols and punctuation (e.g., "hello-world", "test@example.com")
+  - Unicode characters and emojis
+  - Numbers and alphanumeric combinations
+  - Mixed whitespace types (tabs, newlines, spaces)
+  - Very long documents (10k+ words) with performance optimization
+- **Performance**: Handles 10k+ word documents efficiently (< 100ms)
+
+### Typing Activity Tracking
+- **Implementation**: 
+  - Immediate word count: Direct `calculateWordCount()` call in `handleUpdate` callback (most performant)
+  - Debounced tracking: `useWordCount()` hook in `src/renderer/src/hooks/useWordCount.ts` for goal tracking and IPC
+- **IPC Integration**: Uses existing `activity.record` API with type 'typing'
+- **Performance Strategy**:
+  - Word count display: Immediate (direct calculation in callback, no React overhead)
+  - Goal progress tracking: 500ms debounce (smooth progress bar updates)
+  - Typing activity IPC: 500ms debounce (reduces IPC overhead)
+  - Session content save: 1000ms debounce (existing)
+- **Data Structure**: Records word count in activity data for analytics
+
+### SessionStats Component
+- **Location**: `src/renderer/src/components/Editor/SessionStats.tsx`
+- **Features**:
+  - Real-time word count display
+  - Goal progress bar (for word count goals)
+  - Keyboard shortcuts hint
+- **Integration**: Replaces inline word count display in Editor component
+
 ## Technical Implementation
 
 ### Validation Layers

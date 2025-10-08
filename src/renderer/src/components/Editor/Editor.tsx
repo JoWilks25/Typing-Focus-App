@@ -6,7 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from '../../context/useSession';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
-import { getWordCount } from '../../utils/wordCount';
+import { calculateWordCount } from '../../utils/wordCount';
+import { useWordCount } from '../../hooks/useWordCount';
+import { SessionStats } from './SessionStats';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
 
@@ -51,8 +53,8 @@ export const Editor = () => {
 
   // Handle real-time updates (immediate word count, debounced session update)
   const handleUpdate = useCallback((content: string, text: string) => {
-    // Update word count immediately (no lag)
-    const count = getWordCount(text);
+    // Update word count immediately (most performant)
+    const count = calculateWordCount(text);
     setWordCount(count);
 
     // Debounce session update
@@ -90,11 +92,19 @@ export const Editor = () => {
     }
   }, [editor, currentContent, activeSession?.id]); // Include dependencies
 
+  // Get current editor text for debounced tracking
+  const editorText = useMemo(() => {
+    return editor?.getText() || '';
+  }, [editor]);
+
+  // Use debounced word count for goal tracking and IPC
+  const trackedWordCount = useWordCount(editorText, activeSession?.id);
+
   // Initialize word count from current content
   useEffect(() => {
     if (editor && currentContent) {
       const text = editor.getText();
-      setWordCount(getWordCount(text));
+      setWordCount(calculateWordCount(text));
     }
   }, [editor, currentContent]);
 
@@ -117,15 +127,7 @@ export const Editor = () => {
 
   return (
     <div className={styles.editor}>
-      {/* Word count display */}
-      <div className="flex justify-between items-center mb-4 px-2">
-        <div className="text-sm text-gray-400">
-          {wordCount} {wordCount === 1 ? 'word' : 'words'}
-        </div>
-        <div className="text-xs text-gray-500">
-          Cmd+S to save • Cmd+Q to end
-        </div>
-      </div>
+      <SessionStats wordCount={wordCount} trackedWordCount={trackedWordCount} />
 
       <div className={styles.editorContent}>
         <EditorContent editor={editor} />

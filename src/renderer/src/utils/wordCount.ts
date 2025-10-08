@@ -1,7 +1,7 @@
 // src/renderer/src/utils/wordCount.ts
 // Purpose: Word count utilities for the editor
 
-export function getWordCount(text: string): number {
+export function calculateWordCount(text: string): number {
   if (!text || text.trim().length === 0) {
     return 0;
   }
@@ -10,6 +10,9 @@ export function getWordCount(text: string): number {
   const words = text.trim().split(/\s+/).filter(word => word.length > 0);
   return words.length;
 }
+
+// Legacy export for backward compatibility
+export const getWordCount = calculateWordCount;
 
 export function getCharacterCount(text: string): number {
   return text ? text.length : 0;

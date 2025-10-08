@@ -32,7 +32,7 @@ export async function handleActivityRecord(request: ActivityRecordRequest) {
     if (!request.sessionId || request.sessionId.trim() === '') {
       return createErrorResult(toStructuredError(
         new Error('Session ID is required'),
-        ERROR_CODES.VALIDATION_ERROR
+      ERROR_CODES.VALIDATION_ERROR
       ));
     }
 
