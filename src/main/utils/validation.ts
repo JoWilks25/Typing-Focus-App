@@ -6,7 +6,7 @@ export type GoalType = 'word' | 'time';
 // Validation ranges
 const WORD_COUNT_MIN = 10;
 const WORD_COUNT_MAX = 10000;
-const TIME_DURATION_MIN = 1; // minutes
+const TIME_DURATION_MIN = 5; // minutes
 const TIME_DURATION_MAX = 480; // 8 hours
 
 /**

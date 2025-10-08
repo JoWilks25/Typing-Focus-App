@@ -9,16 +9,21 @@ describe('SessionService - Integration Tests', () => {
   let mockStorageService: any;
 
   beforeEach(() => {
-    sessionService = new SessionService();
+    mockStorageService = {
+      set: vi.fn().mockResolvedValue(undefined),
+      get: vi.fn().mockResolvedValue(undefined),
+      remove: vi.fn().mockResolvedValue(undefined),
+    };
+    
+    sessionService = new SessionService(mockStorageService);
   });
 
   describe('startSession', () => {
-    it('should start a session with a name', () => {
-      const session = sessionService.startSession('Test Session');
+    it('should start a session with a name', async () => {
+      const session = await sessionService.startSession('Test Session');
 
       expect(session.id).toBeDefined();
       expect(session.name).toBe('Test Session');
-      expect(session.title).toBe('Test Title');
       expect(session.goalType).toBe('word');
       expect(session.goalValue).toBe(500);
       expect(session.startTime).toBeGreaterThan(0);

@@ -38,7 +38,7 @@ describe('Main Process Validation Utilities', () => {
 
   describe('validateTimeGoal', () => {
     it('should validate time duration within acceptable range', () => {
-      expect(validateTimeGoal(1)).toBe(true);
+      expect(validateTimeGoal(5)).toBe(true);
       expect(validateTimeGoal(15)).toBe(true);
       expect(validateTimeGoal(30)).toBe(true);
       expect(validateTimeGoal(60)).toBe(true);
@@ -48,6 +48,8 @@ describe('Main Process Validation Utilities', () => {
     it('should reject time duration below minimum', () => {
       expect(validateTimeGoal(0)).toBe(false);
       expect(validateTimeGoal(0.5)).toBe(false);
+      expect(validateTimeGoal(1)).toBe(false);
+      expect(validateTimeGoal(4)).toBe(false);
       expect(validateTimeGoal(-1)).toBe(false);
     });
 
@@ -76,9 +78,10 @@ describe('Main Process Validation Utilities', () => {
 
     it('should validate time goals correctly', () => {
       expect(isValidGoal('time', 30)).toBe(true);
-      expect(isValidGoal('time', 1)).toBe(true);
+      expect(isValidGoal('time', 5)).toBe(true);
       expect(isValidGoal('time', 480)).toBe(true);
       expect(isValidGoal('time', 0.5)).toBe(false);
+      expect(isValidGoal('time', 1)).toBe(false);
       expect(isValidGoal('time', 600)).toBe(false);
     });
 
@@ -99,7 +102,7 @@ describe('Main Process Validation Utilities', () => {
     it('should export correct validation constants', () => {
       expect(VALIDATION_CONSTANTS.WORD_COUNT_MIN).toBe(10);
       expect(VALIDATION_CONSTANTS.WORD_COUNT_MAX).toBe(10000);
-      expect(VALIDATION_CONSTANTS.TIME_DURATION_MIN).toBe(1);
+      expect(VALIDATION_CONSTANTS.TIME_DURATION_MIN).toBe(5);
       expect(VALIDATION_CONSTANTS.TIME_DURATION_MAX).toBe(480);
     });
 

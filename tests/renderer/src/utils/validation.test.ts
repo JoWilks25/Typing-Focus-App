@@ -47,6 +47,8 @@ describe('Goal Validation Utilities', () => {
     it('should reject time durations below minimum', () => {
       expect(validateTimeDuration(0)).toBe(false);
       expect(validateTimeDuration(0.5)).toBe(false);
+      expect(validateTimeDuration(1)).toBe(false);
+      expect(validateTimeDuration(4)).toBe(false);
     });
 
     it('should reject time durations above maximum', () => {
@@ -55,7 +57,7 @@ describe('Goal Validation Utilities', () => {
     });
 
     it('should handle edge cases', () => {
-      expect(validateTimeDuration(1)).toBe(true); // minimum
+      expect(validateTimeDuration(5)).toBe(true); // minimum
       expect(validateTimeDuration(480)).toBe(true); // maximum
     });
   });

@@ -36,23 +36,30 @@ export function SessionSetup(): React.JSX.Element {
             return;
         }
 
-        // Create new session
-        const newSession = {
-            id: globalThis.crypto.randomUUID(),
-            name: `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`,
-            title: `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            content: '',
-            goalType,
-            goalValue,
-            startTime: Date.now(),
-            status: 'active' as const,
-        };
+        try {
+            // Create session via IPC - this will validate goals and persist to storage.json
+            const result = await window.electronAPI.session.start({
+                name: `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`,
+                goalType,
+                goalValue,
+            });
 
-        // Add session and navigate to editor
-        addSession(newSession);
-        setView('editor');
+            if (result.success) {
+                // Use the complete session object returned from main process
+                const newSession = result.data.session;
+
+                // Add session to local state and navigate to editor
+                addSession(newSession);
+                setView('editor');
+            } else {
+                // Handle validation errors from main process
+                console.error('Session creation failed:', result.error);
+                // You could show a toast notification here
+            }
+        } catch (error) {
+            console.error('Failed to create session:', error);
+            // Handle network/communication errors
+        }
     }, [isValid, goalType, goalValue, addSession, setView]);
 
     const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
