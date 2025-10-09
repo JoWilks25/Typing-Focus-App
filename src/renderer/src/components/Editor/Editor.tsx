@@ -9,6 +9,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
 import { InactivityModal } from '../Modals/InactivityModal';
 import { MainWindowDistractionWarning } from '../Modals/MainWindowDistractionWarning';
+import { TreeAnimation } from '../Animation/TreeAnimation';
 import { calculateWordCount } from '../../utils/wordCount';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
@@ -54,9 +55,8 @@ export const Editor = () => {
       const content = contentRef.current;
       if (activeSession) {
         try {
-          // Update session content via simplified API
-          const updatedSession = await window.api.session.updateContent(activeSession.id, content);
-          updateSession(updatedSession);
+          // Update session content via simplified API - backend only, no React state update
+          await window.api.session.updateContent(activeSession.id, content);
         } catch (error) {
           console.warn('Failed to save session to backend:', error);
         }
@@ -149,11 +149,10 @@ export const Editor = () => {
   const handleReturnToSession = useCallback(async () => {
     setShowDistractionWarning(false);
 
-    // Increment distraction count if we have an active session
+    // Increment distraction count if we have an active session - backend only, no React state update
     if (activeSession && window.api?.session) {
       try {
-        const updatedSession = await window.api.session.incrementDistraction(activeSession.id);
-        updateSession(updatedSession);
+        await window.api.session.incrementDistraction(activeSession.id);
       } catch (error) {
         console.warn('Failed to increment distraction count:', error);
       }
@@ -163,11 +162,10 @@ export const Editor = () => {
   const handleEndSessionAnyway = useCallback(async () => {
     setShowDistractionWarning(false);
 
-    // Abandon session if we have an active session
+    // Abandon session if we have an active session - backend only, no React state update
     if (activeSession && window.api?.session) {
       try {
-        const abandonedSession = await window.api.session.abandon(activeSession.id);
-        updateSession(abandonedSession);
+        await window.api.session.abandon(activeSession.id);
         handleEnd();
       } catch (error) {
         console.warn('Failed to abandon session:', error);
@@ -334,6 +332,22 @@ export const Editor = () => {
     return () => globalThis.clearInterval(progressInterval);
   }, [activeSession, localState.wordCount]);
 
+  // Calculate progress for tree animation
+  const treeProgress = useMemo(() => {
+    if (!activeSession) {
+      console.log('TreeAnimation: No active session');
+      return 0;
+    }
+
+    const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
+    const progress = activeSession.goalType === 'word'
+      ? Math.min((localState.wordCount / activeSession.goalValue) * 100, 100)
+      : Math.min((timeElapsed / (activeSession.goalValue * 60 * 1000)) * 100, 100);
+
+    console.log('TreeAnimation: Progress calculated:', progress, 'Active session:', !!activeSession);
+    return progress;
+  }, [activeSession, localState.wordCount]);
+
   if (!editor) {
     return (
       <div className={styles['editor-container']}>
@@ -352,8 +366,17 @@ export const Editor = () => {
         activeSession={activeSession}
       />
 
-      <div className={`${styles['editor-content']} ${styles['editor-padding']}`}>
-        <EditorContent editor={editor} />
+      <div className={styles['editor-main']}>
+        <div className={`${styles['editor-content']} ${styles['editor-padding']}`}>
+          <EditorContent editor={editor} />
+        </div>
+
+        <div className={styles['animation-sidebar']}>
+          <TreeAnimation
+            progress={treeProgress}
+            isActive={!!activeSession}
+          />
+        </div>
       </div>
 
       <InactivityModal
