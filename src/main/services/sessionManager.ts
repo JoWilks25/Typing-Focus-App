@@ -221,6 +221,58 @@ export class SessionManager {
   }
 
   /**
+   * Increment distraction count for a session
+   */
+  incrementDistractionCount(sessionId: string): Session {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const currentCount = session.distractionCount || 0;
+    const updatedSession: Session = {
+      ...session,
+      distractionCount: currentCount + 1,
+      updatedAt: new Date().toISOString()
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    return updatedSession;
+  }
+
+  /**
+   * Abandon a session (mark as abandoned)
+   */
+  abandonSession(sessionId: string): Session {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    if (session.status === 'stopped') {
+      throw new Error(`Session is already stopped: ${sessionId}`);
+    }
+
+    const updatedSession: Session = {
+      ...session,
+      status: 'abandoned',
+      isAbandoned: true,
+      endTime: Date.now(),
+      updatedAt: new Date().toISOString()
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    
+    // Clear active session if this was it
+    if (this.activeSessionId === sessionId) {
+      this.activeSessionId = null;
+      this.stopAutosave();
+    }
+    
+    return updatedSession;
+  }
+
+  /**
    * Calculate word count from content
    */
   private calculateWordCount(content: string): number {

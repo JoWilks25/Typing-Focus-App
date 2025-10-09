@@ -26,6 +26,8 @@ export interface ElectronAPI {
       goalType: GoalType;
       goalValue: number;
     }>;
+    incrementDistraction: (sessionId: string) => Promise<Session>;
+    abandon: (sessionId: string) => Promise<Session>;
   };
 
   // File API
@@ -48,9 +50,54 @@ export interface ElectronAPI {
     recordTyping: () => Promise<void>;
   };
 
+  // Floating Modal API
+  floatingModal: {
+    create: (options?: {
+      width?: number;
+      height?: number;
+      x?: number;
+      y?: number;
+      alwaysOnTop?: boolean;
+      resizable?: boolean;
+      minimizable?: boolean;
+      closable?: boolean;
+      title?: string;
+      content?: string;
+    }) => Promise<string>;
+    close: (id?: string) => Promise<boolean>;
+    closeAll: () => Promise<void>;
+    minimize: (id?: string) => Promise<boolean>;
+    move: (id: string | undefined, x: number, y: number) => Promise<boolean>;
+    resize: (id: string, width: number, height: number) => Promise<boolean>;
+    get: (id: string) => Promise<{
+      id: string;
+      options: Record<string, unknown>;
+      isVisible: boolean;
+      isMinimized: boolean;
+      position: [number, number];
+      size: [number, number];
+    } | null>;
+    getAll: () => Promise<Array<{
+      id: string;
+      options: Record<string, unknown>;
+      isVisible: boolean;
+      isMinimized: boolean;
+      position: [number, number];
+      size: [number, number];
+    }>>;
+    has: (id: string) => Promise<boolean>;
+    updateContent: (id: string, content: string) => Promise<boolean>;
+  };
+
+  // Window Focus API
+  windowFocus: {
+    focusMainWindow: () => Promise<void>;
+  };
+
   // Event listeners
   on: (channel: string, callback: (...args: unknown[]) => void) => void;
   removeListener: (channel: string, callback: (...args: unknown[]) => void) => void;
+  send: (channel: string, ...args: unknown[]) => void;
 }
 
 declare global {

@@ -27,6 +27,12 @@ const sessionAPI = {
   },
   getStats: (sessionId: string) => {
     return ipcRenderer.invoke('session:stats', sessionId);
+  },
+  incrementDistraction: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:increment-distraction', sessionId);
+  },
+  abandon: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:abandon', sessionId);
   }
 };
 
@@ -66,6 +72,72 @@ const activityAPI = {
   }
 };
 
+// Floating Modal API - simplified function-style interface
+const floatingModalAPI = {
+  create: (options?: {
+    width?: number;
+    height?: number;
+    x?: number;
+    y?: number;
+    alwaysOnTop?: boolean;
+    resizable?: boolean;
+    minimizable?: boolean;
+    closable?: boolean;
+    title?: string;
+    content?: string;
+  }): Promise<string> => {
+    return ipcRenderer.invoke('floating-modal:create', options);
+  },
+  close: (id?: string): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:close', id);
+  },
+  closeAll: (): Promise<void> => {
+    return ipcRenderer.invoke('floating-modal:close-all');
+  },
+  minimize: (id?: string): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:minimize', id);
+  },
+  move: (id: string | undefined, x: number, y: number): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:move', id, x, y);
+  },
+  resize: (id: string, width: number, height: number): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:resize', id, width, height);
+  },
+  get: (id: string): Promise<{
+    id: string;
+    options: Record<string, unknown>;
+    isVisible: boolean;
+    isMinimized: boolean;
+    position: [number, number];
+    size: [number, number];
+  } | null> => {
+    return ipcRenderer.invoke('floating-modal:get', id);
+  },
+  getAll: (): Promise<Array<{
+    id: string;
+    options: Record<string, unknown>;
+    isVisible: boolean;
+    isMinimized: boolean;
+    position: [number, number];
+    size: [number, number];
+  }>> => {
+    return ipcRenderer.invoke('floating-modal:get-all');
+  },
+  has: (id: string): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:has', id);
+  },
+  updateContent: (id: string, content: string): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:update-content', id, content);
+  }
+};
+
+// Window Focus API
+const windowFocusAPI = {
+  focusMainWindow: (): Promise<void> => {
+    return ipcRenderer.invoke('focus:main-window');
+  }
+};
+
 // Main API object - simplified
 const electronAPI = {
   // Simplified APIs
@@ -73,10 +145,17 @@ const electronAPI = {
   file: fileAPI,
   storage: storageAPI,
   activity: activityAPI,
+  floatingModal: floatingModalAPI,
+  windowFocus: windowFocusAPI,
   
   // Event listener for main→renderer events
   on: (channel: string, callback: (...args: unknown[]) => void) => {
     ipcRenderer.on(channel, callback);
+  },
+  
+  // Send events from renderer→main
+  send: (channel: string, ...args: unknown[]) => {
+    ipcRenderer.send(channel, ...args);
   },
   
   // Remove event listener

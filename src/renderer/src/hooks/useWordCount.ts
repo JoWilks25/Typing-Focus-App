@@ -22,15 +22,8 @@ export function useWordCount(text: string, sessionId?: string): number {
   // Debounced typing activity IPC (500ms)
   const debouncedRecordActivity = useDebounce(() => {
     if (sessionId && text) {
-      // Use the existing activity.record IPC to track typing activity
-      window.api.activity.record({
-        sessionId,
-        activity: { 
-          type: 'typing', 
-          timestamp: Date.now(),
-          data: { wordCount: calculateWordCount(text) }
-        }
-      }).catch((error) => {
+      // Use the existing activity.recordTyping IPC to track typing activity
+      window.api.activity.recordTyping().catch((error) => {
         // Silently handle IPC errors to avoid disrupting the user experience
         console.warn('Failed to record typing activity:', error);
       });
