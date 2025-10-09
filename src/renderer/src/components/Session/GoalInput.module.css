@@ -1,0 +1,52 @@
+/* src/renderer/src/components/Session/GoalInput.module.css */
+/* Purpose: Goal input field styling */
+
+.input-container {
+  margin-bottom: 1.5rem;
+}
+
+.input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e5e7eb; /* text-gray-200 */
+  margin-bottom: 0.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: white;
+  color: #111827; /* text-gray-900 */
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: #3b82f6;
+}
+
+.input-field-invalid {
+  border-color: #ef4444; /* border-red-500 */
+}
+
+.input-field-invalid:focus {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+}
+
+.input-hint {
+  font-size: 0.75rem;
+  color: #6b7280; /* text-gray-500 */
+  margin-top: 0.25rem;
+}
+
+.input-error {
+  font-size: 0.75rem;
+  color: #ef4444; /* text-red-500 */
+  margin-top: 0.25rem;
+}

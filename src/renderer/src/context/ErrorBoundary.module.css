@@ -1,0 +1,28 @@
+/* src/renderer/src/context/ErrorBoundary.module.css */
+/* Purpose: Error boundary styling */
+
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #111827; /* bg-gray-900 */
+}
+
+.error-content {
+  padding: 1.5rem;
+  background-color: #1f2937; /* bg-gray-800 */
+  border: 1px solid #ef4444; /* border-red-500 */
+  border-radius: 0.5rem;
+}
+
+.error-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f87171; /* text-red-400 */
+  margin-bottom: 0.5rem;
+}
+
+.error-message {
+  color: #d1d5db; /* text-gray-300 */
+}

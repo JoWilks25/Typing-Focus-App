@@ -86,6 +86,55 @@ focus-writer/
 - **WARN:** TypeScript is not strict for MVP, but try to address warnings when able.
 - **TIP:** Types go in `/src/renderer/src/types` (frontend) and `/src/main/types` (backend). No `/shared` folder for MVP.
 
+## Styling Guidelines
+
+**MUST:** Use CSS Modules for all component styling. This ensures proper style encapsulation and prevents CSS conflicts.
+
+### CSS Modules Standards
+
+- **File naming:** `ComponentName.module.css` (e.g., `Editor.module.css`)
+- **Class naming:** Use kebab-case for CSS class names (e.g., `.editor-content`, `.modal-header`)
+- **Import pattern:** `import styles from './Component.module.css'`
+- **Usage:** `className={styles['kebab-case-name']}`
+
+### Example CSS Module Usage
+
+```tsx
+// Component.tsx
+import styles from './Component.module.css';
+
+export const Component = () => {
+  return (
+    <div className={styles['component-container']}>
+      <h1 className={styles['component-title']}>Title</h1>
+    </div>
+  );
+};
+```
+
+```css
+/* Component.module.css */
+.component-container {
+  padding: 1rem;
+  background-color: #1f2937;
+}
+
+.component-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+```
+
+### Global Styles
+
+- Use `src/renderer/src/assets/main.css` for global base styles
+- Use `src/renderer/src/assets/base.css` for CSS custom properties/variables
+- Use `src/renderer/src/styles/global.css` for global resets and typography
+- Use `src/renderer/src/styles/theme.css` for design tokens
+
+**WARN:** Avoid global CSS classes. Use CSS Modules for component-specific styling.
+
 ---
 
 ## NPM Scripts

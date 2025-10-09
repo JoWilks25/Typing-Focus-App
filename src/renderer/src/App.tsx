@@ -6,6 +6,7 @@ import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
 import { useAppState } from './hooks/useAppState';
 import { useSession } from './hooks/useSession';
+import styles from './App.module.css';
 
 function AppContent(): React.JSX.Element {
   const { currentView, setView } = useAppState();
@@ -17,42 +18,42 @@ function AppContent(): React.JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className={styles['app-container']}>
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 py-4 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+      <header className={styles['header']}>
+        <div className={styles['header-content']}>
+          <h1 className={styles['app-title']}>
             Focus Writer
           </h1>
         </div>
       </header>
 
       {/* Navigation */}
-      <nav className="bg-gray-800 border-b border-gray-700 py-3 px-6">
-        <div className="max-w-7xl mx-auto flex justify-center gap-4">
+      <nav className={styles['navigation']}>
+        <div className={styles['nav-content']}>
           <button
             onClick={() => handleViewChange('dashboard')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'dashboard'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            className={`${styles['nav-button']} ${currentView === 'dashboard'
+              ? styles['nav-button-active']
+              : styles['nav-button-inactive']
               }`}
           >
             Dashboard View
           </button>
           <button
             onClick={() => handleViewChange('session-setup')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'session-setup'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            className={`${styles['nav-button']} ${currentView === 'session-setup'
+              ? styles['nav-button-active']
+              : styles['nav-button-inactive']
               }`}
           >
             New Session
           </button>
           <button
             onClick={() => handleViewChange('editor')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${currentView === 'editor'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            className={`${styles['nav-button']} ${currentView === 'editor'
+              ? styles['nav-button-active']
+              : styles['nav-button-inactive']
               }`}
           >
             Editor View
@@ -61,7 +62,7 @@ function AppContent(): React.JSX.Element {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-6">
+      <main className={styles['main-content']}>
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'session-setup' && <SessionSetup />}
         {currentView === 'editor' && <Editor />}
@@ -69,7 +70,7 @@ function AppContent(): React.JSX.Element {
       </main>
 
       {/* Footer with Versions */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 py-2">
+      <footer className={styles['footer']}>
         <Versions />
       </footer>
     </div>

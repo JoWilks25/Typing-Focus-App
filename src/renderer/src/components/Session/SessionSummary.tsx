@@ -5,6 +5,7 @@ import React, { useCallback, useMemo } from 'react';
 import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
 import type { Session } from '../../types/session';
+import styles from './SessionSummary.module.css';
 
 interface SessionSummaryProps {
     session: Session;
@@ -53,13 +54,13 @@ export function SessionSummary({ session }: SessionSummaryProps): React.JSX.Elem
     }, [resetSessions, setView]);
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className={styles['summary-container']}>
             {/* Header */}
-            <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">
+            <div className={styles['header']}>
+                <h1 className={styles['title']}>
                     {stats.isCompleted ? '🎉 Goal Achieved!' : 'Session Complete'}
                 </h1>
-                <p className="text-gray-300">
+                <p className={styles['subtitle']}>
                     {stats.isCompleted
                         ? 'Congratulations on reaching your writing goal!'
                         : 'Great effort! Here\'s how you did.'
@@ -67,95 +68,53 @@ export function SessionSummary({ session }: SessionSummaryProps): React.JSX.Elem
                 </p>
             </div>
 
-            {/* Session Info */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Session Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p className="text-sm text-gray-400">Session Name</p>
-                        <p className="text-white font-medium">{session.name}</p>
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-400">Goal Type</p>
-                        <p className="text-white font-medium capitalize">{session.goalType} Goal</p>
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-400">Target</p>
-                        <p className="text-white font-medium">
-                            {session.goalType === 'word'
-                                ? `${session.goalValue} words`
-                                : `${session.goalValue} minutes`
-                            }
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-400">Status</p>
-                        <p className={`font-medium ${stats.isCompleted ? 'text-green-400' : 'text-yellow-400'}`}>
-                            {stats.isCompleted ? 'Completed' : 'Incomplete'}
-                        </p>
+            {/* Statistics */}
+            <div className={styles['stats-grid']}>
+                <div className={styles['stat-card']}>
+                    <div className={styles['stat-label']}>Words Written</div>
+                    <div className={styles['stat-value']}>{session.currentWords}</div>
+                </div>
+                <div className={styles['stat-card']}>
+                    <div className={styles['stat-label']}>Goal Progress</div>
+                    <div className={styles['stat-value']}>{stats.progressPercentage}%</div>
+                </div>
+                <div className={styles['stat-card']}>
+                    <div className={styles['stat-label']}>Time Elapsed</div>
+                    <div className={styles['stat-value']}>
+                        {stats.timeElapsedMinutes}:{stats.timeElapsedSeconds.toString().padStart(2, '0')}
                     </div>
                 </div>
-            </div>
-
-            {/* Statistics */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Your Results</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-400">{session.currentWords}</p>
-                        <p className="text-sm text-gray-400">Words Written</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-green-400">{stats.progressPercentage}%</p>
-                        <p className="text-sm text-gray-400">Goal Progress</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-purple-400">
-                            {stats.timeElapsedMinutes}:{stats.timeElapsedSeconds.toString().padStart(2, '0')}
-                        </p>
-                        <p className="text-sm text-gray-400">Time Elapsed</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-orange-400">{stats.wordsPerMinute}</p>
-                        <p className="text-sm text-gray-400">Words/Min</p>
-                    </div>
+                <div className={styles['stat-card']}>
+                    <div className={styles['stat-label']}>Words/Min</div>
+                    <div className={styles['stat-value']}>{stats.wordsPerMinute}</div>
                 </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-400 mb-2">
-                    <span>Progress</span>
-                    <span>{stats.progressPercentage}%</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-3">
+            <div className={styles['progress-section']}>
+                <div className={styles['progress-title']}>Progress</div>
+                <div className={styles['progress-bar']}>
                     <div
-                        className={`h-3 rounded-full transition-all duration-500 ${stats.isCompleted ? 'bg-green-500' : 'bg-blue-500'
-                            }`}
+                        className={styles['progress-fill']}
                         style={{ width: `${Math.min(stats.progressPercentage, 100)}%` }}
                     />
                 </div>
+                <div className={styles['progress-text']}>{stats.progressPercentage}%</div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className={styles['actions']}>
                 <button
                     onClick={handleStartNewSession}
-                    className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className={`${styles['action-button']} ${styles['action-button-primary']}`}
                 >
                     Start New Session
                 </button>
                 <button
                     onClick={handleViewDashboard}
-                    className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    className={`${styles['action-button']} ${styles['action-button-secondary']}`}
                 >
                     View Dashboard
-                </button>
-                <button
-                    onClick={handleResetSessions}
-                    className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                >
-                    Clear All Sessions
                 </button>
             </div>
         </div>

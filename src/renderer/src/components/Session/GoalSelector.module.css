@@ -1,0 +1,60 @@
+/* src/renderer/src/components/Session/GoalSelector.module.css */
+/* Purpose: Goal type selector styling */
+
+.selector-container {
+  margin-bottom: 1.5rem;
+}
+
+.selector-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e5e7eb; /* text-gray-200 */
+  margin-bottom: 0.75rem;
+}
+
+.selector-group {
+  display: flex;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  background-color: white;
+}
+
+.goal-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.goal-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.goal-button-active {
+  background-color: #2563eb; /* bg-blue-600 */
+  color: white;
+}
+
+.goal-button-inactive {
+  background-color: #e5e7eb; /* bg-gray-200 */
+  color: #374151; /* text-gray-700 */
+}
+
+.goal-button-inactive:hover {
+  background-color: #d1d5db; /* hover:bg-gray-300 */
+}
+
+.goal-icon {
+  width: 1rem;
+  height: 1rem;
+}

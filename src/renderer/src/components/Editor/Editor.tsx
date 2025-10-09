@@ -336,23 +336,23 @@ export const Editor = () => {
 
   if (!editor) {
     return (
-      <div className="bg-gray-800 rounded-lg shadow-xl min-h-[500px]">
-        <div className={`p-8 min-h-[500px] focus:outline-none ${styles.editorContent}`}>
-          <p className="text-gray-400">Loading editor...</p>
+      <div className={styles['editor-container']}>
+        <div className={`${styles['editor-content']} ${styles['editor-loading']}`}>
+          <p className={styles['loading-text']}>Loading editor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-xl min-h-[500px]">
+    <div className={styles['editor-container']}>
       <SessionStats
         localState={localState}
         isFocused={!!editor?.isFocused}
         activeSession={activeSession}
       />
 
-      <div className={`p-8 min-h-[500px] focus:outline-none ${styles.editorContent}`}>
+      <div className={`${styles['editor-content']} ${styles['editor-padding']}`}>
         <EditorContent editor={editor} />
       </div>
 

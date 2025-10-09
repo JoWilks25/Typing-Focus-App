@@ -1,10 +1,12 @@
 // src/renderer/src/components/Animation/AnimationControls.tsx
 // Purpose: Controls for animation settings and behavior
 
+import styles from './AnimationControls.module.css';
+
 export const AnimationControls = () => {
   return (
-    <div className="flex gap-2 items-center">
-      <span className="text-sm text-gray-400">AnimationControls - Coming Soon</span>
+    <div className={styles['controls-container']}>
+      <h3 className={styles['controls-title']}>AnimationControls - Coming Soon</h3>
     </div>
   );
 };

@@ -1,11 +1,15 @@
 // src/renderer/src/components/Modals/SettingsModal.tsx
 // Purpose: Settings/preferences modal component
 
+import styles from './SettingsModal.module.css';
+
 export const SettingsModal = () => {
   return (
-    <div className="bg-gray-800 rounded-lg p-6 max-w-md">
-      <h3 className="text-xl font-semibold mb-4">Settings - Coming Soon</h3>
-      <p className="text-gray-400">App preferences will go here.</p>
+    <div className={styles['modal-overlay']}>
+      <div className={styles['modal-container']}>
+        <h3 className={styles['modal-title']}>Settings - Coming Soon</h3>
+        <p className={styles['modal-content']}>App preferences will go here.</p>
+      </div>
     </div>
   );
 };

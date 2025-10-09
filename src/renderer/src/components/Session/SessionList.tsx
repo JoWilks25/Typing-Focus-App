@@ -1,10 +1,12 @@
 // src/renderer/src/components/Session/SessionList.tsx
 // Purpose: Component to display list of sessions
 
+import styles from './SessionList.module.css';
+
 export const SessionList = () => {
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-gray-400">SessionList - Coming Soon</p>
+    <div className={styles['list-container']}>
+      <h3 className={styles['list-title']}>SessionList - Coming Soon</h3>
     </div>
   );
 };

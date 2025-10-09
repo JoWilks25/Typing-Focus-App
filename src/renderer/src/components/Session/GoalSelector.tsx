@@ -3,6 +3,7 @@
 
 import React from 'react';
 import type { GoalType } from '@renderer/types/session';
+import styles from './GoalSelector.module.css';
 
 interface GoalSelectorProps {
     goalType: GoalType;
@@ -18,13 +19,13 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
     };
 
     return (
-        <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-200 mb-3">
+        <div className={styles['selector-container']}>
+            <label className={styles['selector-label']}>
                 Choose your goal type
             </label>
 
             <div
-                className="flex rounded-lg overflow-hidden border border-gray-300 bg-white"
+                className={styles['selector-group']}
                 role="group"
                 aria-label="Choose your goal type"
             >
@@ -32,10 +33,7 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 <button
                     type="button"
                     data-testid="word-goal-button"
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${goalType === 'word'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                    className={`${styles['goal-button']} ${goalType === 'word' ? styles['goal-button-active'] : styles['goal-button-inactive']}`}
                     onClick={() => onGoalTypeChange('word')}
                     onKeyDown={(e) => handleKeyDown(e, 'word')}
                     aria-pressed={goalType === 'word'}
@@ -43,7 +41,7 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 >
                     {/* Document Icon */}
                     <svg
-                        className="w-4 h-4"
+                        className={styles['goal-icon']}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -63,10 +61,7 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 <button
                     type="button"
                     data-testid="time-goal-button"
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${goalType === 'time'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                    className={`${styles['goal-button']} ${goalType === 'time' ? styles['goal-button-active'] : styles['goal-button-inactive']}`}
                     onClick={() => onGoalTypeChange('time')}
                     onKeyDown={(e) => handleKeyDown(e, 'time')}
                     aria-pressed={goalType === 'time'}
@@ -74,7 +69,7 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 >
                     {/* Clock Icon */}
                     <svg
-                        className="w-4 h-4"
+                        className={styles['goal-icon']}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

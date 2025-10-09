@@ -1,10 +1,12 @@
 // src/renderer/src/components/Editor/EditorToolbar.tsx
 // Purpose: Toolbar component for editor actions
 
+import styles from './EditorToolbar.module.css';
+
 export const EditorToolbar = () => {
   return (
-    <div className="flex items-center gap-2 p-2 bg-gray-700 rounded">
-      <span className="text-sm text-gray-400">EditorToolbar - Coming Soon</span>
+    <div className={styles['toolbar-container']}>
+      <span className={styles['toolbar-text']}>EditorToolbar - Coming Soon</span>
     </div>
   );
 };

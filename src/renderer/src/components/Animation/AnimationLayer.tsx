@@ -1,10 +1,14 @@
 // src/renderer/src/components/Animation/AnimationLayer.tsx
 // Purpose: Background animation layer component
 
+import styles from './AnimationLayer.module.css';
+
 export const AnimationLayer = () => {
   return (
-    <div className="absolute inset-0 pointer-events-none opacity-20">
-      <p className="text-xs text-gray-600">AnimationLayer - Coming Soon</p>
+    <div className={styles['animation-layer']}>
+      <div className={styles['animation-content']}>
+        <p>AnimationLayer - Coming Soon</p>
+      </div>
     </div>
   );
 };

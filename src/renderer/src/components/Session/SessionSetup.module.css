@@ -1,0 +1,103 @@
+/* src/renderer/src/components/Session/SessionSetup.module.css */
+/* Purpose: Session setup form styling */
+
+.setup-container {
+  max-width: 28rem; /* max-w-md */
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700; /* font-bold */
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #d1d5db; /* text-gray-300 */
+}
+
+.advanced-section {
+  margin-bottom: 1.5rem;
+}
+
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #d1d5db; /* text-gray-300 */
+  cursor: pointer;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.advanced-toggle:hover {
+  color: white;
+}
+
+.advanced-arrow {
+  transform: transition-transform 0.2s ease;
+}
+
+.advanced-arrow-rotated {
+  transform: rotate(90deg);
+}
+
+.advanced-content {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background-color: #f9fafb; /* bg-gray-50 */
+  border-radius: 0.375rem;
+}
+
+.advanced-text {
+  font-size: 0.875rem;
+  color: #374151; /* text-gray-700 */
+}
+
+.submit-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submit-button-enabled {
+  background-color: #2563eb; /* bg-blue-600 */
+  color: white;
+}
+
+.submit-button-enabled:hover {
+  background-color: #1d4ed8; /* hover:bg-blue-700 */
+}
+
+.submit-button-disabled {
+  background-color: #d1d5db; /* bg-gray-300 */
+  color: #6b7280; /* text-gray-500 */
+  cursor: not-allowed;
+}
+
+.submit-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.submit-hint {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
