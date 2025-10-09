@@ -1,7 +1,9 @@
-import { ipcMain } from 'electron';
+import { ipcMain, BrowserWindow } from 'electron';
 import { SessionManager } from './services/sessionManager';
 import { FileManager } from './services/fileManager';
 import { inactivityService } from './services/InactivityService';
+import { focusMonitorService } from './services/FocusMonitorService';
+import { floatingModalService, type FloatingModalOptions } from './services/FloatingModalService';
 import { isValidGoal } from './utils/validation';
 import type { Session } from './types/session';
 // import type { GoalType } from '../../shared/types/validation';
@@ -31,7 +33,30 @@ export const IPC_CHANNELS = {
   STORAGE_REMOVE: 'storage:remove',
   
   // Activity operations
-  ACTIVITY_TYPING: 'activity:typing'
+  ACTIVITY_TYPING: 'activity:typing',
+  
+  // Distraction operations
+  SESSION_INCREMENT_DISTRACTION: 'session:increment-distraction',
+  SESSION_ABANDON: 'session:abandon',
+  
+  // Floating modal operations
+  FLOATING_MODAL_CREATE: 'floating-modal:create',
+  FLOATING_MODAL_CLOSE: 'floating-modal:close',
+  FLOATING_MODAL_CLOSE_ALL: 'floating-modal:close-all',
+  FLOATING_MODAL_MINIMIZE: 'floating-modal:minimize',
+  FLOATING_MODAL_MOVE: 'floating-modal:move',
+  FLOATING_MODAL_RESIZE: 'floating-modal:resize',
+  FLOATING_MODAL_GET: 'floating-modal:get',
+  FLOATING_MODAL_GET_ALL: 'floating-modal:get-all',
+  FLOATING_MODAL_HAS: 'floating-modal:has',
+  FLOATING_MODAL_UPDATE_CONTENT: 'floating-modal:update-content',
+  
+  // Window focus operations
+  FOCUS_MAIN_WINDOW: 'focus:main-window',
+  
+  // Distraction warning operations
+  DISTRACTION_WARNING_RETURN: 'distraction-warning:return',
+  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session'
 } as const;
 
 let sessionManager: SessionManager;
@@ -43,6 +68,9 @@ let fileManager: FileManager;
 export function initializeServices(appDataPath: string): void {
   sessionManager = new SessionManager();
   fileManager = new FileManager(appDataPath);
+  
+  // Set session manager reference in focus monitor service
+  focusMonitorService.setSessionManager(sessionManager);
 }
 
 /**
@@ -61,8 +89,9 @@ async function handleSessionStart(
 
   const session = await sessionManager.startSession(name, title, goalType, goalValue);
   
-  // Start inactivity tracking for the new session
+  // Start tracking services for the new session
   inactivityService.startTracking();
+  focusMonitorService.startMonitoring();
   
   return session;
 }
@@ -74,8 +103,9 @@ async function handleSessionStop(sessionId: string): Promise<Session> {
 
   const session = await sessionManager.stopSession(sessionId);
   
-  // Stop inactivity tracking when session ends
+  // Stop tracking services when session ends
   inactivityService.stopTracking();
+  focusMonitorService.stopMonitoring();
   
   return session;
 }
@@ -216,6 +246,154 @@ async function handleActivityTyping(): Promise<void> {
 }
 
 /**
+ * Distraction Handlers
+ */
+
+async function handleSessionIncrementDistraction(sessionId: string): Promise<Session> {
+  if (!sessionId || sessionId.trim() === '') {
+    throw new Error('Session ID is required');
+  }
+
+  return sessionManager.incrementDistractionCount(sessionId);
+}
+
+async function handleSessionAbandon(sessionId: string): Promise<Session> {
+  if (!sessionId || sessionId.trim() === '') {
+    throw new Error('Session ID is required');
+  }
+
+  return sessionManager.abandonSession(sessionId);
+}
+
+/**
+ * Floating Modal Handlers
+ */
+
+async function handleFloatingModalCreate(options: FloatingModalOptions = {}): Promise<string> {
+  return floatingModalService.createModal(options);
+}
+
+async function handleFloatingModalClose(id: string): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  return floatingModalService.closeModal(id);
+}
+
+async function handleFloatingModalCloseAll(): Promise<void> {
+  floatingModalService.closeAllModals();
+}
+
+async function handleFloatingModalMinimize(id: string): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  return floatingModalService.minimizeModal(id);
+}
+
+async function handleFloatingModalMove(id: string, x: number, y: number): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  if (typeof x !== 'number' || typeof y !== 'number') {
+    throw new Error('X and Y coordinates must be numbers');
+  }
+
+  return floatingModalService.moveModal(id, x, y);
+}
+
+async function handleFloatingModalResize(id: string, width: number, height: number): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  if (typeof width !== 'number' || typeof height !== 'number') {
+    throw new Error('Width and height must be numbers');
+  }
+
+  if (width < 200 || height < 150) {
+    throw new Error('Minimum size is 200x150 pixels');
+  }
+
+  return floatingModalService.resizeModal(id, width, height);
+}
+
+async function handleFloatingModalGet(id: string) {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  const modal = floatingModalService.getModal(id);
+  if (!modal) {
+    return null;
+  }
+
+  return {
+    id: modal.id,
+    options: modal.options,
+    isVisible: !modal.window.isDestroyed() && modal.window.isVisible(),
+    isMinimized: modal.window.isMinimized(),
+    position: modal.window.getPosition(),
+    size: modal.window.getSize()
+  };
+}
+
+async function handleFloatingModalGetAll() {
+  return floatingModalService.getAllModals().map(modal => ({
+    id: modal.id,
+    options: modal.options,
+    isVisible: !modal.window.isDestroyed() && modal.window.isVisible(),
+    isMinimized: modal.window.isMinimized(),
+    position: modal.window.getPosition(),
+    size: modal.window.getSize()
+  }));
+}
+
+async function handleFloatingModalHas(id: string): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  return floatingModalService.hasModal(id);
+}
+
+async function handleFloatingModalUpdateContent(id: string, content: string): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  const modal = floatingModalService.getModal(id);
+  if (!modal) {
+    return false;
+  }
+
+  modal.window.webContents.executeJavaScript(`
+    const contentDiv = document.getElementById('modal-content');
+    if (contentDiv) {
+      contentDiv.innerHTML = \`${content.replace(/`/g, '\\`')}\`;
+    }
+  `);
+
+  return true;
+}
+
+/**
+ * Window Focus Handlers
+ */
+
+async function handleFocusMainWindow(): Promise<void> {
+  const mainWindow = BrowserWindow.getAllWindows().find(window => !window.isDestroyed());
+  if (mainWindow) {
+    mainWindow.focus();
+    mainWindow.show();
+    mainWindow.moveTop();
+  }
+}
+
+/**
  * Register all IPC handlers
  */
 export function registerHandlers(): void {
@@ -289,6 +467,123 @@ export function registerHandlers(): void {
   // Activity handlers
   ipcMain.handle(IPC_CHANNELS.ACTIVITY_TYPING, async () => {
     return await handleActivityTyping();
+  });
+
+  // Distraction handlers
+  ipcMain.handle(IPC_CHANNELS.SESSION_INCREMENT_DISTRACTION, async (_, sessionId) => {
+    return await handleSessionIncrementDistraction(sessionId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SESSION_ABANDON, async (_, sessionId) => {
+    return await handleSessionAbandon(sessionId);
+  });
+
+  // Floating modal handlers
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_CREATE, async (_, options) => {
+    return await handleFloatingModalCreate(options);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_CLOSE, async (event, id) => {
+    // If no ID provided, try to find modal by window
+    if (!id) {
+      const window = BrowserWindow.fromWebContents(event.sender);
+      if (window) {
+        const modal = Array.from(floatingModalService.getAllModals()).find(m => m.window === window);
+        if (modal) {
+          return await handleFloatingModalClose(modal.id);
+        }
+      }
+      return false;
+    }
+    return await handleFloatingModalClose(id);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_CLOSE_ALL, async () => {
+    return await handleFloatingModalCloseAll();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_MINIMIZE, async (event, id) => {
+    // If no ID provided, try to find modal by window
+    if (!id) {
+      const window = BrowserWindow.fromWebContents(event.sender);
+      if (window) {
+        const modal = Array.from(floatingModalService.getAllModals()).find(m => m.window === window);
+        if (modal) {
+          return await handleFloatingModalMinimize(modal.id);
+        }
+      }
+      return false;
+    }
+    return await handleFloatingModalMinimize(id);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_MOVE, async (event, id, x, y) => {
+    // If no ID provided, try to find modal by window
+    if (!id) {
+      const window = BrowserWindow.fromWebContents(event.sender);
+      if (window) {
+        const modal = Array.from(floatingModalService.getAllModals()).find(m => m.window === window);
+        if (modal) {
+          return await handleFloatingModalMove(modal.id, x, y);
+        }
+      }
+      return false;
+    }
+    return await handleFloatingModalMove(id, x, y);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_RESIZE, async (_, id, width, height) => {
+    return await handleFloatingModalResize(id, width, height);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_GET, async (_, id) => {
+    return await handleFloatingModalGet(id);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_GET_ALL, async () => {
+    return await handleFloatingModalGetAll();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_HAS, async (_, id) => {
+    return await handleFloatingModalHas(id);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_UPDATE_CONTENT, async (_, id, content) => {
+    return await handleFloatingModalUpdateContent(id, content);
+  });
+
+  // Window focus handlers
+  ipcMain.handle(IPC_CHANNELS.FOCUS_MAIN_WINDOW, async () => {
+    return await handleFocusMainWindow();
+  });
+
+  // Distraction warning handlers
+  ipcMain.on(IPC_CHANNELS.DISTRACTION_WARNING_RETURN, async (_, modalId) => {
+    // Focus the main window first
+    await handleFocusMainWindow();
+    
+    // Close the floating modal
+    floatingModalService.closeModal(modalId);
+    
+    // Send event to renderer to handle return action
+    const mainWindow = BrowserWindow.getAllWindows().find(window => !window.isDestroyed());
+    if (mainWindow) {
+      mainWindow.webContents.send('distraction-warning:return');
+    }
+  });
+
+  ipcMain.on(IPC_CHANNELS.DISTRACTION_WARNING_END_SESSION, async (_, modalId) => {
+    // Focus the main window first
+    await handleFocusMainWindow();
+    
+    // Close the floating modal
+    floatingModalService.closeModal(modalId);
+    
+    // Send event to renderer to handle end session action
+    const mainWindow = BrowserWindow.getAllWindows().find(window => !window.isDestroyed());
+    if (mainWindow) {
+      mainWindow.webContents.send('distraction-warning:end-session');
+    }
   });
 }
 

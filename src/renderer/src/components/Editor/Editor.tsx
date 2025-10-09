@@ -8,6 +8,7 @@ import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
 import { InactivityModal } from '../Modals/InactivityModal';
+import { MainWindowDistractionWarning } from '../Modals/MainWindowDistractionWarning';
 import { calculateWordCount } from '../../utils/wordCount';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
@@ -28,6 +29,10 @@ export const Editor = () => {
 
   // State for inactivity modal
   const [showInactivityModal, setShowInactivityModal] = useState(false);
+
+  // State for distraction warning modal
+  const [showDistractionWarning, setShowDistractionWarning] = useState(false);
+  const [countdownSeconds, setCountdownSeconds] = useState(10);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -140,6 +145,39 @@ export const Editor = () => {
     handleEnd();
   }, [handleEnd]);
 
+  // Handle distraction warning modal actions
+  const handleReturnToSession = useCallback(async () => {
+    setShowDistractionWarning(false);
+
+    // Increment distraction count if we have an active session
+    if (activeSession && window.api?.session) {
+      try {
+        const updatedSession = await window.api.session.incrementDistraction(activeSession.id);
+        updateSession(updatedSession);
+      } catch (error) {
+        console.warn('Failed to increment distraction count:', error);
+      }
+    }
+  }, [activeSession, updateSession]);
+
+  const handleEndSessionAnyway = useCallback(async () => {
+    setShowDistractionWarning(false);
+
+    // Abandon session if we have an active session
+    if (activeSession && window.api?.session) {
+      try {
+        const abandonedSession = await window.api.session.abandon(activeSession.id);
+        updateSession(abandonedSession);
+        handleEnd();
+      } catch (error) {
+        console.warn('Failed to abandon session:', error);
+        handleEnd(); // Fallback to normal end
+      }
+    } else {
+      handleEnd();
+    }
+  }, [activeSession, updateSession, handleEnd]);
+
   // Initialize Tiptap editor
   const editor = useEditor(
     createEditorConfig({
@@ -208,6 +246,52 @@ export const Editor = () => {
     return undefined;
   }, []);
 
+  // Listen for distraction warning events from main process
+  useEffect(() => {
+    if (window.api?.on) {
+      const handleShowDistractionWarning = () => {
+        console.log('Editor: Showing distraction warning modal');
+        setShowDistractionWarning(true);
+        setCountdownSeconds(10);
+      };
+
+      const handleDismissDistractionWarning = () => {
+        console.log('Editor: Dismissing distraction warning modal');
+        setShowDistractionWarning(false);
+      };
+
+      const handleUpdateCountdown = (...args: unknown[]) => {
+        const seconds = args[1] as number; // args[0] is the event object, args[1] is the countdown value
+        console.log('Editor: Updating countdown to', seconds);
+        setCountdownSeconds(seconds);
+      };
+
+      const handleSessionAbandoned = () => {
+        setShowDistractionWarning(false);
+        // Session will be updated via the abandon handler
+      };
+
+      window.api.on('show-distraction-warning', handleShowDistractionWarning);
+      window.api.on('dismiss-distraction-warning', handleDismissDistractionWarning);
+      window.api.on('distraction-warning:return', handleReturnToSession);
+      window.api.on('distraction-warning:end-session', handleEndSessionAnyway);
+      window.api.on('update-countdown', handleUpdateCountdown);
+      window.api.on('session-abandoned', handleSessionAbandoned);
+
+      return () => {
+        if (window.api?.removeListener) {
+          window.api.removeListener('show-distraction-warning', handleShowDistractionWarning);
+          window.api.removeListener('dismiss-distraction-warning', handleDismissDistractionWarning);
+          window.api.removeListener('distraction-warning:return', handleReturnToSession);
+          window.api.removeListener('distraction-warning:end-session', handleEndSessionAnyway);
+          window.api.removeListener('update-countdown', handleUpdateCountdown);
+          window.api.removeListener('session-abandoned', handleSessionAbandoned);
+        }
+      };
+    }
+    return undefined;
+  }, []);
+
 
   // Separate progress update interval (45 seconds) - independent of timer display
   useEffect(() => {
@@ -252,8 +336,8 @@ export const Editor = () => {
 
   if (!editor) {
     return (
-      <div className={styles.editor}>
-        <div className={styles.editorContent}>
+      <div className="bg-gray-800 rounded-lg shadow-xl min-h-[500px]">
+        <div className={`p-8 min-h-[500px] focus:outline-none ${styles.editorContent}`}>
           <p className="text-gray-400">Loading editor...</p>
         </div>
       </div>
@@ -261,14 +345,14 @@ export const Editor = () => {
   }
 
   return (
-    <div className={styles.editor}>
+    <div className="bg-gray-800 rounded-lg shadow-xl min-h-[500px]">
       <SessionStats
         localState={localState}
         isFocused={!!editor?.isFocused}
         activeSession={activeSession}
       />
 
-      <div className={styles.editorContent}>
+      <div className={`p-8 min-h-[500px] focus:outline-none ${styles.editorContent}`}>
         <EditorContent editor={editor} />
       </div>
 
@@ -276,6 +360,13 @@ export const Editor = () => {
         isVisible={showInactivityModal}
         onClose={handleResumeSession}
         onEndSession={handleEndSession}
+      />
+
+      <MainWindowDistractionWarning
+        isVisible={showDistractionWarning}
+        secondsRemaining={countdownSeconds}
+        onReturn={handleReturnToSession}
+        onEndSession={handleEndSessionAnyway}
       />
     </div>
   );

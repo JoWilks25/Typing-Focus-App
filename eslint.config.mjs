@@ -115,7 +115,15 @@ export default [
         location: 'readonly',
         console: 'readonly',
         React: 'readonly',
-        NodeJS: 'readonly'
+        NodeJS: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLElement: 'readonly',
+        MouseEvent: 'readonly',
+        KeyboardEvent: 'readonly'
       }
     },
     plugins: {

@@ -83,6 +83,48 @@ interface ActivityAPI {
   reset(request: ActivityResetRequest): Promise<Result<ActivityResetResponse, StructuredError>>;
 }
 
+// Floating Modal API
+interface FloatingModalAPI {
+  create: (options?: {
+    width?: number;
+    height?: number;
+    x?: number;
+    y?: number;
+    alwaysOnTop?: boolean;
+    resizable?: boolean;
+    minimizable?: boolean;
+    closable?: boolean;
+    title?: string;
+    content?: string;
+    onClose?: () => void;
+    onMove?: (x: number, y: number) => void;
+    onMinimize?: () => void;
+  }) => Promise<string>;
+  close: (id: string) => Promise<boolean>;
+  closeAll: () => Promise<void>;
+  minimize: (id: string) => Promise<boolean>;
+  move: (id: string, x: number, y: number) => Promise<boolean>;
+  resize: (id: string, width: number, height: number) => Promise<boolean>;
+  get: (id: string) => Promise<{
+    id: string;
+    options: any;
+    isVisible: boolean;
+    isMinimized: boolean;
+    position: [number, number];
+    size: [number, number];
+  } | null>;
+  getAll: () => Promise<Array<{
+    id: string;
+    options: any;
+    isVisible: boolean;
+    isMinimized: boolean;
+    position: [number, number];
+    size: [number, number];
+  }>>;
+  has: (id: string) => Promise<boolean>;
+  updateContent: (id: string, content: string) => Promise<boolean>;
+}
+
 // Main API interface
 interface ElectronAPI {
   file: FileAPI;
@@ -90,6 +132,7 @@ interface ElectronAPI {
   session: SessionAPI;
   focus: FocusAPI;
   activity: ActivityAPI;
+  floatingModal: FloatingModalAPI;
   
   // Event listeners
   on: (channel: string, callback: (...args: any[]) => void) => void;

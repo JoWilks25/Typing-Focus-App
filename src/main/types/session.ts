@@ -14,7 +14,7 @@ export interface Session {
   goalValue: number;
   startTime: number;
   endTime?: number;
-  status: 'active' | 'stopped';
+  status: 'active' | 'stopped' | 'abandoned';
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   currentWords?: number;
@@ -27,4 +27,6 @@ export interface Session {
   isPaused?: boolean;
   pauseStartTime?: number;
   totalPauseTime?: number; // accumulated pause time in ms
+  distractionCount?: number;
+  isAbandoned?: boolean;
 }

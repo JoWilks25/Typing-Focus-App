@@ -1,16 +1,22 @@
-// src/renderer/src/components/Modals/InactivityModal.tsx
-// Purpose: Modal shown when user is inactive for 3 minutes
+// src/renderer/src/components/Modals/DistractionWarning.tsx
+// Purpose: Modal shown when user switches away from app during active session
 
 import { useEffect, useCallback } from 'react';
 import { useSession } from '../../hooks/useSession';
 
-interface InactivityModalProps {
+interface DistractionWarningProps {
     isVisible: boolean;
-    onClose: () => void;
+    secondsRemaining: number;
+    onReturn: () => void;
     onEndSession: () => void;
 }
 
-export const InactivityModal = ({ isVisible, onClose, onEndSession }: InactivityModalProps) => {
+export const DistractionWarning = ({
+    isVisible,
+    secondsRemaining,
+    onReturn,
+    onEndSession
+}: DistractionWarningProps) => {
     const { activeSession } = useSession();
 
     // Handle keyboard shortcuts
@@ -19,9 +25,9 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
 
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            onClose();
+            onReturn();
         }
-    }, [isVisible, onClose]);
+    }, [isVisible, onReturn]);
 
     // Add keyboard event listener
     useEffect(() => {
@@ -38,8 +44,9 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
             return { wordCount: 0, timeElapsed: '00:00' };
         }
 
-        const wordCount = activeSession.currentWords || 0;
-        const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
+        const wordCount = typeof activeSession.currentWords === 'number' ? activeSession.currentWords : 0;
+        const startTime = typeof activeSession.startTime === 'number' ? activeSession.startTime : Date.now();
+        const timeElapsed = Date.now() - startTime;
         const minutes = Math.floor(timeElapsed / 60000);
         const seconds = Math.floor((timeElapsed % 60000) / 1000);
         const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -55,24 +62,29 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[1000]">
-            <div className="bg-gray-800 rounded-xl p-8 max-w-md w-[90%] text-center shadow-2xl border-2 border-blue-500 max-h-[90vh] overflow-y-auto">
-                {/* Pause Icon */}
+            <div className="bg-gray-800 rounded-xl p-8 max-w-md w-[90%] text-center shadow-2xl border-2 border-amber-500 max-h-[90vh] overflow-y-auto">
+                {/* Warning Icon */}
                 <div className="mb-4">
-                    <div className="text-5xl inline-block drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">⏸️</div>
+                    <div className="text-5xl inline-block drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]">⚠️</div>
                 </div>
 
                 {/* Heading */}
-                <h2 className="text-gray-50 text-2xl font-semibold mb-4">Session Paused</h2>
+                <h2 className="text-gray-50 text-2xl font-semibold mb-4">Stay Focused?</h2>
 
                 {/* Main Message */}
-                <p className="text-gray-300 text-base leading-relaxed mb-4">
-                    We noticed you haven&apos;t typed for a while. Your timer has been paused to keep your session time accurate. Ready to continue?
+                <p className="text-gray-300 text-base leading-relaxed mb-6">
+                    You are about to leave your writing session. If you switch away before reaching your goal, your progress will be marked as incomplete and your tree will wilt.
                 </p>
 
-                {/* Subtext */}
-                <p className="text-gray-400 text-sm mb-6">
-                    Your progress is safe—no penalties applied.
-                </p>
+                {/* Countdown Timer */}
+                <div className="mb-6 p-5 bg-gray-700 rounded-lg border border-amber-500">
+                    <div className="text-gray-400 text-sm mb-2">Return within</div>
+                    <div className="flex items-baseline justify-center gap-1 my-3">
+                        <span className="text-amber-500 text-4xl font-bold drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">{typeof secondsRemaining === 'number' ? secondsRemaining : 10}</span>
+                        <span className="text-amber-500 text-lg font-medium">seconds</span>
+                    </div>
+                    <div className="text-gray-400 text-sm">to keep your progress</div>
+                </div>
 
                 {/* Current Stats */}
                 <div className="flex justify-center gap-8 mb-6 p-4 bg-gray-700 rounded-lg">
@@ -88,30 +100,25 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
 
                 {/* Tree Icon Placeholder */}
                 <div className="mb-8">
-                    <div className="text-3xl inline-block drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">🌱</div>
+                    <div className="text-3xl inline-block drop-shadow-[0_0_4px_rgba(245,158,11,0.3)]">🌱</div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 mb-4">
                     <button
-                        className="flex-1 bg-blue-500 text-white border-none rounded-lg py-3 px-6 text-base font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_4px_rgba(59,130,246,0.2)] hover:bg-blue-600 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(59,130,246,0.3)] focus:outline-2 focus:outline-blue-500 focus:outline-offset-2"
-                        onClick={onClose}
+                        className="flex-1 bg-amber-500 text-gray-800 border-none rounded-lg py-3 px-6 text-base font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_4px_rgba(245,158,11,0.2)] hover:bg-amber-600 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(245,158,11,0.3)] focus:outline-2 focus:outline-amber-500 focus:outline-offset-2"
+                        onClick={onReturn}
                         autoFocus
                     >
-                        Resume Writing
+                        Return to Session
                     </button>
                     <button
                         className="flex-1 bg-transparent text-gray-400 border border-gray-600 rounded-lg py-3 px-6 text-base font-medium cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:text-gray-300 hover:border-gray-500 focus:outline-2 focus:outline-gray-500 focus:outline-offset-2"
                         onClick={onEndSession}
                     >
-                        End Session
+                        End Session Anyway
                     </button>
                 </div>
-
-                {/* Bottom Hint */}
-                <p className="text-gray-500 text-xs">
-                    Taking a thinking break is normal! Press Space or Enter to resume quickly.
-                </p>
             </div>
         </div>
     );

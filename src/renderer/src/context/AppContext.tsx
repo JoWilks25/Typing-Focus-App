@@ -97,6 +97,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setActiveSessionId(null);
     }, []);
 
+    const incrementDistraction = useCallback(async (sessionId: string) => {
+        try {
+            if (window.api?.session) {
+                const updatedSession = await window.api.session.incrementDistraction(sessionId);
+                updateSession(updatedSession);
+            }
+        } catch (error) {
+            console.warn('Failed to increment distraction count:', error);
+        }
+    }, [updateSession]);
+
     // Debounced progress update for IPC persistence (30s)
     const debouncedPersistProgress = useDebounce(
         useCallback(async (...args: unknown[]) => {
@@ -157,7 +168,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateSession,
             removeSession,
             resetSessions,
-            updateProgress
+            updateProgress,
+            incrementDistraction
         }),
         [
             appState.currentView,
@@ -172,7 +184,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateSession,
             removeSession,
             resetSessions,
-            updateProgress
+            updateProgress,
+            incrementDistraction
         ]
     );
 
