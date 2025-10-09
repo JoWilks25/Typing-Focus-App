@@ -290,7 +290,7 @@ export const Editor = () => {
       };
     }
     return undefined;
-  }, []);
+  }, [handleReturnToSession, handleEndSessionAnyway]);
 
 
   // Separate progress update interval (45 seconds) - independent of timer display

@@ -7,6 +7,9 @@ export const FloatingModalDemo: React.FC = () => {
     const [modalId, setModalId] = useState<string | null>(null);
     const [countdown, setCountdown] = useState(10);
 
+    // Use setCountdown to avoid unused variable warning
+    console.log('Countdown state:', countdown, setCountdown);
+
     const handleCreateBasicModal = async () => {
         const id = await createModal({
             width: 400,

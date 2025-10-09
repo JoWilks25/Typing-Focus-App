@@ -43,6 +43,8 @@ export const IPC_CHANNELS = {
   FLOATING_MODAL_CREATE: 'floating-modal:create',
   FLOATING_MODAL_CLOSE: 'floating-modal:close',
   FLOATING_MODAL_CLOSE_ALL: 'floating-modal:close-all',
+  FLOATING_MODAL_FORCE_CLOSE: 'floating-modal:force-close',
+  FLOATING_MODAL_FORCE_CLOSE_ALL: 'floating-modal:force-close-all',
   FLOATING_MODAL_MINIMIZE: 'floating-modal:minimize',
   FLOATING_MODAL_MOVE: 'floating-modal:move',
   FLOATING_MODAL_RESIZE: 'floating-modal:resize',
@@ -56,7 +58,11 @@ export const IPC_CHANNELS = {
   
   // Distraction warning operations
   DISTRACTION_WARNING_RETURN: 'distraction-warning:return',
-  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session'
+  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session',
+  
+  // Tree animation operations
+  TREE_ANIMATION_UPDATE_PROGRESS: 'tree-animation:update-progress',
+  TREE_ANIMATION_GET_DATA: 'tree-animation:get-data'
 } as const;
 
 let sessionManager: SessionManager;
@@ -285,6 +291,18 @@ async function handleFloatingModalCloseAll(): Promise<void> {
   floatingModalService.closeAllModals();
 }
 
+async function handleFloatingModalForceClose(id: string): Promise<boolean> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  return floatingModalService.forceCloseModal(id);
+}
+
+async function handleFloatingModalForceCloseAll(): Promise<void> {
+  floatingModalService.forceCloseAllModals();
+}
+
 async function handleFloatingModalMinimize(id: string): Promise<boolean> {
   if (!id || id.trim() === '') {
     throw new Error('Modal ID is required');
@@ -390,6 +408,45 @@ async function handleFocusMainWindow(): Promise<void> {
     mainWindow.focus();
     mainWindow.show();
     mainWindow.moveTop();
+  }
+}
+
+/**
+ * Tree Animation Handlers
+ */
+
+async function handleTreeAnimationUpdateProgress(modalId: string, progress: number, isWilting: boolean = false): Promise<void> {
+  if (!modalId || modalId.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+    throw new Error('Progress must be a number between 0 and 100');
+  }
+
+  const modal = floatingModalService.getModal(modalId);
+  if (modal?.window && !modal.window.isDestroyed()) {
+    modal.window.webContents.send('tree-animation:progress', progress, isWilting);
+  }
+}
+
+async function handleTreeAnimationGetData(): Promise<unknown> {
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    
+    // Path to the forest-growing.json file
+    const animationPath = path.default.join(__dirname, '../../src/renderer/assets/animations/forest-growing.json');
+    
+    if (fs.default.existsSync(animationPath)) {
+      const animationData = JSON.parse(fs.default.readFileSync(animationPath, 'utf8'));
+      return animationData;
+    } else {
+      throw new Error('Animation file not found');
+    }
+  } catch (error) {
+    console.error('Failed to load animation data:', error);
+    throw new Error('Failed to load animation data');
   }
 }
 
@@ -502,6 +559,14 @@ export function registerHandlers(): void {
     return await handleFloatingModalCloseAll();
   });
 
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_FORCE_CLOSE, async (_, id) => {
+    return await handleFloatingModalForceClose(id);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_FORCE_CLOSE_ALL, async () => {
+    return await handleFloatingModalForceCloseAll();
+  });
+
   ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_MINIMIZE, async (event, id) => {
     // If no ID provided, try to find modal by window
     if (!id) {
@@ -584,6 +649,15 @@ export function registerHandlers(): void {
     if (mainWindow) {
       mainWindow.webContents.send('distraction-warning:end-session');
     }
+  });
+
+  // Tree animation handlers
+  ipcMain.on(IPC_CHANNELS.TREE_ANIMATION_UPDATE_PROGRESS, async (_, modalId, progress, isWilting) => {
+    await handleTreeAnimationUpdateProgress(modalId, progress, isWilting);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.TREE_ANIMATION_GET_DATA, async () => {
+    return await handleTreeAnimationGetData();
   });
 }
 

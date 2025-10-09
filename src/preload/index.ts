@@ -94,6 +94,12 @@ const floatingModalAPI = {
   closeAll: (): Promise<void> => {
     return ipcRenderer.invoke('floating-modal:close-all');
   },
+  forceClose: (id?: string): Promise<boolean> => {
+    return ipcRenderer.invoke('floating-modal:force-close', id);
+  },
+  forceCloseAll: (): Promise<void> => {
+    return ipcRenderer.invoke('floating-modal:force-close-all');
+  },
   minimize: (id?: string): Promise<boolean> => {
     return ipcRenderer.invoke('floating-modal:minimize', id);
   },
@@ -138,6 +144,13 @@ const windowFocusAPI = {
   }
 };
 
+// Tree Animation API
+const treeAnimationAPI = {
+  getData: (): Promise<unknown> => {
+    return ipcRenderer.invoke('tree-animation:get-data');
+  }
+};
+
 // Main API object - simplified
 const electronAPI = {
   // Simplified APIs
@@ -147,6 +160,7 @@ const electronAPI = {
   activity: activityAPI,
   floatingModal: floatingModalAPI,
   windowFocus: windowFocusAPI,
+  treeAnimation: treeAnimationAPI,
   
   // Event listener for main→renderer events
   on: (channel: string, callback: (...args: unknown[]) => void) => {

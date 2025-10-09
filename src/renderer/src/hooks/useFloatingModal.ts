@@ -78,6 +78,36 @@ export const useFloatingModal = () => {
     }
   }, []);
 
+  // Force close a specific modal
+  const forceCloseModal = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      const success = await window.api.floatingModal.forceClose(id);
+      if (success) {
+        setModals(prev => {
+          const newModals = new Map(prev);
+          newModals.delete(id);
+          return newModals;
+        });
+        modalRefs.current.delete(id);
+      }
+      return success;
+    } catch (error) {
+      console.error('Failed to force close floating modal:', error);
+      return false;
+    }
+  }, []);
+
+  // Force close all modals
+  const forceCloseAllModals = useCallback(async (): Promise<void> => {
+    try {
+      await window.api.floatingModal.forceCloseAll();
+      setModals(new Map());
+      modalRefs.current.clear();
+    } catch (error) {
+      console.error('Failed to force close all floating modals:', error);
+    }
+  }, []);
+
   // Minimize a specific modal
   const minimizeModal = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -486,6 +516,8 @@ export const useFloatingModal = () => {
     createModal,
     closeModal,
     closeAllModals,
+    forceCloseModal,
+    forceCloseAllModals,
     minimizeModal,
     moveModal,
     resizeModal,

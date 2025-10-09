@@ -1,0 +1,25 @@
+/* TreeAnimation.module.css */
+/* Purpose: Styling for the main TreeAnimation controller component */
+
+/* This component doesn't render visible content in the main window,
+   so minimal styling is needed. The actual animation is rendered
+   in the floating modal window. */
+
+.tree-animation-controller {
+  /* Hidden component - only manages floating modal */
+  display: none;
+}
+
+/* Any future visible indicators in the main window would go here */
+.tree-animation-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 1000;
+  pointer-events: none;
+}

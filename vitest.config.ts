@@ -38,5 +38,6 @@ export default defineConfig({
       '@renderer': new URL('./src/renderer/src', import.meta.url).pathname,
     },
   },
+  assetsInclude: ['**/*.json'],
 });
 

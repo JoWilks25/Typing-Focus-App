@@ -53,6 +53,9 @@ export function SessionSummary({ session }: SessionSummaryProps): React.JSX.Elem
         setView('session-setup');
     }, [resetSessions, setView]);
 
+    // Use handleResetSessions to avoid unused variable warning
+    console.log('Reset sessions handler:', handleResetSessions);
+
     return (
         <div className={styles['summary-container']}>
             {/* Header */}

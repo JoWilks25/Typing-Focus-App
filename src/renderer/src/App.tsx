@@ -2,6 +2,7 @@ import { Dashboard } from './components/Dashboard/Dashboard';
 import { Editor } from './components/Editor/Editor';
 import { SessionSetup } from './components/Session/SessionSetup';
 import { SessionSummary } from './components/Session/SessionSummary';
+import { TreeAnimation } from './components/Animation/TreeAnimation';
 import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
 import { useAppState } from './hooks/useAppState';
@@ -16,6 +17,35 @@ function AppContent(): React.JSX.Element {
     console.log(`Switching to ${view} view`);
     setView(view);
   };
+
+  // Calculate tree animation progress from active session
+  const calculateTreeProgress = (): { progress: number; isWilting: boolean } => {
+    if (!activeSession) {
+      return { progress: 0, isWilting: false };
+    }
+
+    const isWilting = activeSession.isAbandoned || activeSession.status === 'abandoned';
+
+    if (isWilting) {
+      // For abandoned sessions, show wilting state
+      return { progress: 0, isWilting: true };
+    }
+
+    // Calculate progress based on goal type
+    if (activeSession.goalType === 'word' && activeSession.goalValue > 0) {
+      const currentWords = activeSession.currentWords || 0;
+      const progress = Math.min((currentWords / activeSession.goalValue) * 100, 100);
+      return { progress, isWilting: false };
+    } else if (activeSession.goalType === 'time' && activeSession.goalValue > 0) {
+      const timeElapsed = activeSession.timeElapsed || 0;
+      const progress = Math.min((timeElapsed / activeSession.goalValue) * 100, 100);
+      return { progress, isWilting: false };
+    }
+
+    return { progress: 0, isWilting: false };
+  };
+
+  const { progress, isWilting } = calculateTreeProgress();
 
   return (
     <div className={styles['app-container']}>
@@ -73,6 +103,14 @@ function AppContent(): React.JSX.Element {
       <footer className={styles['footer']}>
         <Versions />
       </footer>
+
+      {/* Tree Animation - only show when there's an active session */}
+      {activeSession && (
+        <TreeAnimation
+          progress={progress}
+          isWilting={isWilting}
+        />
+      )}
     </div>
   );
 }

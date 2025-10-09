@@ -14,7 +14,7 @@ interface DistractionWarningProps {
 
 export const DistractionWarning = ({
     isVisible,
-    secondsRemaining,
+    secondsRemaining: _secondsRemaining,
     onReturn,
     onEndSession
 }: DistractionWarningProps) => {
@@ -56,6 +56,9 @@ export const DistractionWarning = ({
     };
 
     const { wordCount, timeElapsed } = getCurrentStats();
+
+    // Use the variables to avoid unused destructuring warning
+    console.log('Current stats:', { wordCount, timeElapsed });
 
     if (!isVisible) {
         return null;

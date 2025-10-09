@@ -68,7 +68,7 @@ export class FloatingModalService {
       closable: finalOptions.closable,
       skipTaskbar: false,
       webPreferences: {
-        preload: join(__dirname, '../../preload/index.js'),
+        preload: join(__dirname, '../preload/index.js'),
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
@@ -83,6 +83,12 @@ export class FloatingModalService {
 
     window.on('closed', () => {
       this.modals.delete(id);
+      console.log(`Floating modal ${id} closed and removed from registry`);
+    });
+
+    window.on('close', (_event) => {
+      // Allow the window to close normally
+      console.log(`Floating modal ${id} is closing`);
     });
 
     window.on('move', () => {
@@ -112,8 +118,43 @@ export class FloatingModalService {
   closeModal(id: string): boolean {
     const modal = this.modals.get(id);
     if (modal) {
-      modal.window.close();
-      return true;
+      try {
+        if (!modal.window.isDestroyed()) {
+          modal.window.close();
+          return true;
+        } else {
+          // Window is already destroyed, just remove from registry
+          this.modals.delete(id);
+          return true;
+        }
+      } catch (error) {
+        console.error(`Failed to close modal ${id}:`, error);
+        // Force remove from registry even if close failed
+        this.modals.delete(id);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Force close a modal (destroys the window immediately)
+   */
+  forceCloseModal(id: string): boolean {
+    const modal = this.modals.get(id);
+    if (modal) {
+      try {
+        if (!modal.window.isDestroyed()) {
+          modal.window.destroy();
+        }
+        this.modals.delete(id);
+        console.log(`Force closed modal ${id}`);
+        return true;
+      } catch (error) {
+        console.error(`Failed to force close modal ${id}:`, error);
+        this.modals.delete(id);
+        return false;
+      }
     }
     return false;
   }
@@ -122,9 +163,32 @@ export class FloatingModalService {
    * Close all modals
    */
   closeAllModals(): void {
-    this.modals.forEach(modal => {
-      modal.window.close();
+    this.modals.forEach((modal, id) => {
+      try {
+        if (!modal.window.isDestroyed()) {
+          modal.window.close();
+        }
+      } catch (error) {
+        console.error(`Failed to close modal ${id}:`, error);
+      }
     });
+  }
+
+  /**
+   * Force close all modals
+   */
+  forceCloseAllModals(): void {
+    this.modals.forEach((modal, id) => {
+      try {
+        if (!modal.window.isDestroyed()) {
+          modal.window.destroy();
+        }
+      } catch (error) {
+        console.error(`Failed to force close modal ${id}:`, error);
+      }
+    });
+    this.modals.clear();
+    console.log('Force closed all floating modals');
   }
 
   /**
@@ -316,13 +380,13 @@ export class FloatingModalService {
             
             if (closeButton) {
               closeButton.addEventListener('click', () => {
-                window.electronAPI?.floatingModal?.close();
+                window.api?.floatingModal?.close();
               });
             }
             
             if (minimizeButton) {
               minimizeButton.addEventListener('click', () => {
-                window.electronAPI?.floatingModal?.minimize();
+                window.api?.floatingModal?.minimize();
               });
             }
             
@@ -345,7 +409,7 @@ export class FloatingModalService {
               const deltaX = e.clientX - startX;
               const deltaY = e.clientY - startY;
               
-              window.electronAPI?.floatingModal?.move(deltaX, deltaY);
+              window.api?.floatingModal?.move(undefined, deltaX, deltaY);
             });
             
             document.addEventListener('mouseup', () => {

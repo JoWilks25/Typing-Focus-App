@@ -66,6 +66,8 @@ export interface ElectronAPI {
     }) => Promise<string>;
     close: (id?: string) => Promise<boolean>;
     closeAll: () => Promise<void>;
+    forceClose: (id?: string) => Promise<boolean>;
+    forceCloseAll: () => Promise<void>;
     minimize: (id?: string) => Promise<boolean>;
     move: (id: string | undefined, x: number, y: number) => Promise<boolean>;
     resize: (id: string, width: number, height: number) => Promise<boolean>;

@@ -46,11 +46,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // App state
     const [appState, setAppState] = useState<AppState>(() => loadAppState());
 
-    // Session state
-    const [sessions, setSessions] = useState<Session[]>(() => loadSessionState().sessions);
-    const [activeSessionId, setActiveSessionId] = useState<string | null>(
-        () => loadSessionState().activeSessionId
-    );
+    // Session state - start with empty sessions, don't load from storage on startup
+    const [sessions, setSessions] = useState<Session[]>([]);
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     // Persist app state
     useEffect(() => {
