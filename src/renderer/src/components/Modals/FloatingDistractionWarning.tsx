@@ -90,21 +90,13 @@ export const FloatingDistractionWarning: React.FC<FloatingDistractionWarningProp
     }
   }, [isVisible, createFloatingModal, closeFloatingModal]);
 
-  // Update countdown in real-time
+  // Update countdown in real-time by updating the modal content
   useEffect(() => {
     if (modalWindowId && isVisible) {
-      const updateCountdown = () => {
-        const countdownNumber = document.querySelector('.countdown-number');
-        if (countdownNumber) {
-          countdownNumber.textContent = secondsRemaining.toString();
-        }
-      };
-
-      const interval = setInterval(updateCountdown, 1000);
-      return () => clearInterval(interval);
+      const updatedContent = generateFloatingModalHtml(secondsRemaining, wordCount, timeElapsed, modalWindowId);
+      window.api.floatingModal.updateContent(modalWindowId, updatedContent);
     }
-    return undefined;
-  }, [modalWindowId, isVisible, secondsRemaining]);
+  }, [modalWindowId, isVisible, secondsRemaining, wordCount, timeElapsed]);
 
   // Cleanup on unmount
   useEffect(() => {

@@ -4,6 +4,7 @@
 import { EventEmitter } from 'events';
 import type { BrowserWindow } from 'electron';
 import type { SessionManager } from './sessionManager';
+import { TEST_CONFIG } from '../config/testConfig';
 
 export class FocusMonitorService extends EventEmitter {
   private mainWindow: BrowserWindow | null = null;
@@ -11,7 +12,9 @@ export class FocusMonitorService extends EventEmitter {
   private isMonitoring: boolean = false;
   private countdownTimer: NodeJS.Timeout | null = null;
   private countdownInterval: NodeJS.Timeout | null = null;
-  private readonly COUNTDOWN_DURATION = 10; // 10 seconds
+  // DISTRACTION WARNING COUNTDOWN DURATION
+  // This value is now configurable via TEST_CONFIG.DISTRACTION_COUNTDOWN_DURATION
+  private readonly COUNTDOWN_DURATION = TEST_CONFIG.DISTRACTION_COUNTDOWN_DURATION;
   private currentCountdown: number = 0;
 
   /**

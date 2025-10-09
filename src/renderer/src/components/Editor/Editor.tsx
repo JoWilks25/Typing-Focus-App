@@ -8,7 +8,7 @@ import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
 import { InactivityModal } from '../Modals/InactivityModal';
-import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
+import { MainWindowDistractionWarning } from '../Modals/MainWindowDistractionWarning';
 import { calculateWordCount } from '../../utils/wordCount';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
@@ -32,7 +32,7 @@ export const Editor = () => {
 
   // State for distraction warning modal
   const [showDistractionWarning, setShowDistractionWarning] = useState(false);
-  const [countdownSeconds, setCountdownSeconds] = useState(1000);
+  const [countdownSeconds, setCountdownSeconds] = useState(10);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -362,7 +362,7 @@ export const Editor = () => {
         onEndSession={handleEndSession}
       />
 
-      <FloatingDistractionWarning
+      <MainWindowDistractionWarning
         isVisible={showDistractionWarning}
         secondsRemaining={countdownSeconds}
         onReturn={handleReturnToSession}

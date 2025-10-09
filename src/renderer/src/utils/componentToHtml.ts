@@ -9,57 +9,227 @@ export function generateFloatingModalHtml(
   modalId: string
 ): string {
   return `
-    <div class="text-center text-gray-50 font-sans p-2 h-full flex flex-col justify-between">
+    <div class="floating-distraction-warning">
       <!-- Warning Icon -->
-      <div class="mb-2">
-        <div class="text-3xl inline-block drop-shadow-[0_0_8px_rgba(245,158,11,0.3)] animate-pulse">⚠️</div>
+      <div class="icon-container">
+        <div class="warning-icon">⚠️</div>
       </div>
 
       <!-- Heading -->
-      <h2 class="text-gray-50 text-xl font-semibold mb-2">Stay Focused?</h2>
+      <h2 class="heading">Stay Focused?</h2>
 
       <!-- Main Message -->
-      <p class="text-gray-300 text-sm leading-snug mb-4">
+      <p class="message">
         You are about to leave your writing session. If you switch away before reaching your goal, your progress will be marked as incomplete and your tree will wilt.
       </p>
 
       <!-- Countdown Timer -->
-      <div class="mb-4 p-3 bg-gray-700 rounded-lg border border-amber-500">
-        <div class="text-gray-400 text-sm mb-2">Return within</div>
-        <div class="flex items-baseline justify-center gap-1 my-3">
-          <span class="countdown-number text-amber-500 text-3xl font-bold drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">${typeof secondsRemaining === 'number' ? secondsRemaining : 10}</span>
-          <span class="text-amber-500 text-lg font-medium">seconds</span>
+      <div class="countdown-container">
+        <div class="countdown-label">Return within</div>
+        <div class="countdown-timer">
+          <span class="countdown-number">${typeof secondsRemaining === 'number' ? secondsRemaining : 10}</span>
+          <span class="countdown-unit">seconds</span>
         </div>
-        <div class="text-gray-400 text-sm">to keep your progress</div>
+        <div class="countdown-label">to keep your progress</div>
       </div>
 
       <!-- Current Stats -->
-      <div class="flex justify-center gap-6 mb-4 p-3 bg-gray-700 rounded-lg">
-        <div class="flex flex-col items-center gap-1">
-          <span class="text-gray-400 text-xs font-medium uppercase tracking-wider">Words:</span>
-          <span class="text-gray-50 text-lg font-semibold">${wordCount}</span>
+      <div class="stats-container">
+        <div class="stat">
+          <span class="stat-label">Words:</span>
+          <span class="stat-value">${wordCount}</span>
         </div>
-        <div class="flex flex-col items-center gap-1">
-          <span class="text-gray-400 text-xs font-medium uppercase tracking-wider">Time:</span>
-          <span class="text-gray-50 text-lg font-semibold">${timeElapsed}</span>
+        <div class="stat">
+          <span class="stat-label">Time:</span>
+          <span class="stat-value">${timeElapsed}</span>
         </div>
       </div>
 
       <!-- Tree Icon Placeholder -->
-      <div class="mb-4">
-        <div class="text-2xl inline-block drop-shadow-[0_0_4px_rgba(245,158,11,0.3)]">🌱</div>
+      <div class="tree-container">
+        <div class="tree-icon">🌱</div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex gap-3 mb-2">
-        <button id="return-button" class="flex-1 bg-amber-500 text-gray-800 border-none rounded-lg py-3 px-6 text-base font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_4px_rgba(245,158,11,0.2)] hover:bg-amber-600 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(245,158,11,0.3)]" onclick="handleReturn()">
+      <div class="button-container">
+        <button id="return-button" class="return-button" onclick="handleReturn()">
           Return to Session
         </button>
-        <button id="end-button" class="flex-1 bg-transparent text-gray-400 border border-gray-600 rounded-lg py-3 px-6 text-base font-medium cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:text-gray-300 hover:border-gray-500" onclick="handleEndSession()">
+        <button id="end-button" class="end-button" onclick="handleEndSession()">
           End Session Anyway
         </button>
       </div>
     </div>
+
+    <style>
+      .floating-distraction-warning {
+        text-align: center;
+        color: #f9fafb;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        padding: 8px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .icon-container {
+        margin-bottom: 8px;
+      }
+
+      .warning-icon {
+        font-size: 32px;
+        display: inline-block;
+        filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.3));
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+          filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.3));
+        }
+        50% {
+          transform: scale(1.05);
+          filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
+        }
+      }
+
+      .heading {
+        color: #f9fafb;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+      }
+
+      .message {
+        color: #d1d5db;
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0 0 16px 0;
+      }
+
+      .countdown-container {
+        margin-bottom: 16px;
+        padding: 12px;
+        background-color: #374151;
+        border-radius: 8px;
+        border: 1px solid #f59e0b;
+      }
+
+      .countdown-label {
+        color: #9ca3af;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .countdown-timer {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 4px;
+        margin: 12px 0;
+      }
+
+      .countdown-number {
+        color: #f59e0b;
+        font-size: 28px;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+      }
+
+      .countdown-unit {
+        color: #f59e0b;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .stats-container {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background-color: #374151;
+        border-radius: 8px;
+      }
+
+      .stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .stat-label {
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .stat-value {
+        color: #f9fafb;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .tree-container {
+        margin-bottom: 16px;
+      }
+
+      .tree-icon {
+        font-size: 24px;
+        display: inline-block;
+        filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.3));
+      }
+
+      .button-container {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .return-button {
+        flex: 1;
+        background-color: #f59e0b;
+        color: #1f2937;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+      }
+
+      .return-button:hover {
+        background-color: #d97706;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+      }
+
+      .end-button {
+        flex: 1;
+        background-color: transparent;
+        color: #9ca3af;
+        border: 1px solid #4b5563;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .end-button:hover {
+        background-color: #374151;
+        color: #d1d5db;
+        border-color: #6b7280;
+      }
+    </style>
 
 
     <script>
