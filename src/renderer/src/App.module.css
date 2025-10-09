@@ -1,0 +1,82 @@
+/* src/renderer/src/App.module.css */
+/* Purpose: Main app layout and styling */
+
+.app-container {
+  min-height: 100vh;
+  background-color: #111827; /* gray-900 */
+  color: #f3f4f6; /* gray-100 */
+}
+
+.header {
+  background-color: #1f2937; /* gray-800 */
+  border-bottom: 1px solid #374151; /* gray-700 */
+  padding: 1rem 1.5rem;
+}
+
+.header-content {
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+}
+
+.app-title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700; /* font-bold */
+  text-align: center;
+  background: linear-gradient(to right, #60a5fa, #a855f7); /* from-blue-400 to-purple-500 */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.navigation {
+  background-color: #1f2937; /* gray-800 */
+  border-bottom: 1px solid #374151; /* gray-700 */
+  padding: 0.75rem 1.5rem;
+}
+
+.nav-content {
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.nav-button {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button-active {
+  background-color: #2563eb; /* bg-blue-600 */
+  color: white;
+}
+
+.nav-button-inactive {
+  background-color: #374151; /* bg-gray-700 */
+  color: #d1d5db; /* text-gray-300 */
+}
+
+.nav-button-inactive:hover {
+  background-color: #4b5563; /* hover:bg-gray-600 */
+}
+
+.main-content {
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #1f2937; /* bg-gray-800 */
+  border-top: 1px solid #374151; /* border-gray-700 */
+  padding: 0.5rem;
+}

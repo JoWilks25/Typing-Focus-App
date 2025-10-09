@@ -9,6 +9,7 @@ import {
     getDefaultValue,
     formatGoalValue
 } from '@renderer/utils/validation';
+import styles from './GoalInput.module.css';
 
 interface GoalInputProps {
     goalType: GoalType;
@@ -58,8 +59,8 @@ export function GoalInput({ goalType, value, onChange, isValid }: GoalInputProps
     };
 
     return (
-        <div className="mb-6">
-            <label htmlFor="goal-input" className="block text-sm font-medium text-gray-200 mb-2">
+        <div className={styles['input-container']}>
+            <label htmlFor="goal-input" className={styles['input-label']}>
                 {getLabel()}
             </label>
 
@@ -71,17 +72,14 @@ export function GoalInput({ goalType, value, onChange, isValid }: GoalInputProps
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={getPlaceholder()}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 ${isValid
-                    ? 'border-gray-300'
-                    : 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                    }`}
+                className={`${styles['input-field']} ${!isValid ? styles['input-field-invalid'] : ''}`}
                 aria-describedby="goal-recommendation"
                 aria-invalid={!isValid}
             />
 
             <p
                 id="goal-recommendation"
-                className="mt-2 text-sm text-gray-300"
+                className={styles['input-hint']}
             >
                 {getRecommendationText()}
             </p>

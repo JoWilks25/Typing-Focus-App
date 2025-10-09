@@ -5,6 +5,7 @@ import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
 import { useMemo } from 'react';
 import type { Session } from '../../types/session';
+import styles from './SessionStats.module.css';
 
 interface LocalEditorState {
     content: string;
@@ -85,39 +86,39 @@ export const SessionStats = ({ localState, isFocused, activeSession }: SessionSt
     const goalProgress = goalValue > 0 ? Math.min(progress, 100) : null;
 
     return (
-        <div className="flex justify-between items-center mb-4 px-2">
-            <div className="flex items-center space-x-4">
+        <div className={styles['stats-container']}>
+            <div className={styles['stats-left']}>
                 {/* Word Count - Using local state for immediate updates */}
-                <div className="text-sm text-gray-400">
+                <div className={styles['word-count']}>
                     {localState.wordCount} {localState.wordCount === 1 ? 'word' : 'words'}
                 </div>
 
                 {/* Live Timer */}
-                <div className="flex items-center space-x-2">
-                    <div className={`text-sm font-mono ${isTimerRunning ? 'text-green-400' : 'text-gray-500'}`}>
+                <div className={styles['timer-container']}>
+                    <div className={`${styles['timer']} ${isTimerRunning ? styles['timer-running'] : styles['timer-paused']}`}>
                         {formattedTime}
                     </div>
                     {isTimerRunning && (
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                        <div className={styles['timer-indicator']} />
                     )}
                 </div>
 
                 {/* Goal Progress */}
                 {goalProgress !== null && (
-                    <div className="flex items-center space-x-2">
-                        <div className="text-xs text-gray-500">
+                    <div className={styles['goal-progress']}>
+                        <div className={styles['goal-label']}>
                             Goal: {goalValue} {goalType === 'word' ? 'words' : 'minutes'}
                         </div>
-                        <div className="w-20 h-2 bg-gray-600 rounded-full overflow-hidden">
+                        <div className={styles['progress-bar-container']}>
                             <div
-                                className={`h-full transition-all duration-300 ease-out ${hasReached100 ? 'bg-green-500' :
-                                    hasReached67 ? 'bg-yellow-500' :
-                                        hasReached33 ? 'bg-blue-500' : 'bg-gray-500'
+                                className={`${styles['progress-bar']} ${hasReached100 ? styles['progress-bar-green'] :
+                                        hasReached67 ? styles['progress-bar-yellow'] :
+                                            hasReached33 ? styles['progress-bar-blue'] : styles['progress-bar-gray']
                                     }`}
                                 style={{ width: `${goalProgress}%` }}
                             />
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className={styles['progress-percentage']}>
                             {Math.round(goalProgress)}%
                         </div>
                     </div>
@@ -125,19 +126,19 @@ export const SessionStats = ({ localState, isFocused, activeSession }: SessionSt
 
                 {/* Progress Indicator */}
                 {activeSession && (
-                    <div className="text-xs text-gray-500">
+                    <div className={styles['progress-indicator']}>
                         Progress: {Math.round(progress)}%
                     </div>
                 )}
             </div>
 
-            <div className="flex items-center space-x-4">
-                <div className="text-xs text-gray-500">
+            <div className={styles['stats-right']}>
+                <div className={styles['save-hint']}>
                     Cmd+S to save
                 </div>
                 <button
                     onClick={handleEndSession}
-                    className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    className={styles['end-session-button']}
                 >
                     End Session
                 </button>

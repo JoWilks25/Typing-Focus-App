@@ -1,15 +1,39 @@
 /* src/renderer/src/components/Editor/Editor.module.css */
 /* Purpose: ProseMirror-specific styles that require CSS selectors */
 
-.editorContent:empty:before {
+.editor-container {
+  background-color: #1f2937; /* bg-gray-800 */
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+}
+
+.editor-loading {
+  padding: 2rem;
+  min-height: 500px;
+  outline: none;
+}
+
+.loading-text {
+  color: #9ca3af; /* text-gray-400 */
+}
+
+.editor-padding {
+  padding: 2rem;
+  min-height: 500px;
+  outline: none;
+}
+
+.editor-content:empty:before {
   content: attr(data-placeholder);
-  @apply text-gray-400 italic;
+  color: #9ca3af; /* text-gray-400 */
+  font-style: italic;
   pointer-events: none;
 }
 
 /* Tiptap/ProseMirror specific styles */
-.editorContent .ProseMirror {
-  @apply focus:outline-none;
+.editor-content .ProseMirror {
+  outline: none !important;
   min-height: 400px;
   line-height: 1.6;
   font-size: 16px;
@@ -18,54 +42,125 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
-  outline: none;
   will-change: auto;
   transform: translateZ(0);
+  /* Remove any default focus styles */
+  box-shadow: none !important;
+  border: none !important;
 }
 
-.editorContent .ProseMirror p {
-  @apply mb-4;
+.editor-content .ProseMirror p {
+  margin-bottom: 1rem;
 }
 
-.editorContent .ProseMirror p:last-child {
-  @apply mb-0;
+.editor-content .ProseMirror p:last-child {
+  margin-bottom: 0;
 }
 
 /* Placeholder styling */
-.editorContent .ProseMirror p.is-editor-empty:first-child::before {
+.editor-content .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  @apply text-gray-400 italic;
+  color: #9ca3af; /* text-gray-400 */
+  font-style: italic;
   float: left;
   height: 0;
   pointer-events: none;
 }
 
-/* Focus state */
-.editorContent .ProseMirror:focus {
-  @apply outline-none;
+/* Focus state - remove any default focus outlines */
+.editor-content .ProseMirror:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Override ProseMirror default focus styles */
+.editor-content .ProseMirror:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* ProseMirror selection */
-.editorContent .ProseMirror .ProseMirror-selectednode {
+.editor-content .ProseMirror .ProseMirror-selectednode {
   outline: 2px solid #3b82f6; /* blue-500 */
   outline-offset: 2px;
 }
 
-/* ProseMirror cursor */
-.editorContent .ProseMirror .ProseMirror-cursor {
+/* ProseMirror cursor - create a blinking vertical line */
+.editor-content .ProseMirror .ProseMirror-cursor {
   border-left: 2px solid #3b82f6; /* blue-500 */
   margin-left: -1px;
   pointer-events: none;
   position: relative;
+  animation: blink 1s infinite;
+}
+
+/* Blinking animation for cursor */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Override any ProseMirror default focus styles that might create large boxes */
+.editor-content .ProseMirror *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure the editor container itself doesn't have focus styles */
+.editor-content:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Global overrides for any focus styles that might leak through */
+.editor-container *:focus,
+.editor-container *:focus-visible,
+.editor-container *:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Override any potential browser default focus styles */
+.editor-content .ProseMirror:focus,
+.editor-content .ProseMirror:focus-visible,
+.editor-content .ProseMirror:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  /* Remove any potential yellow browser default focus */
+  outline-color: transparent !important;
+  outline-style: none !important;
+  outline-width: 0 !important;
+}
+
+/* Additional overrides for the editor wrapper */
+.editor-content {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.editor-content:focus,
+.editor-content:focus-visible,
+.editor-content:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* ProseMirror drop cursor */
-.editorContent .ProseMirror .ProseMirror-dropcursor {
+.editor-content .ProseMirror .ProseMirror-dropcursor {
   position: relative;
   pointer-events: none;
 }
 
-.editorContent .ProseMirror .ProseMirror-dropcursor:after {
+.editor-content .ProseMirror .ProseMirror-dropcursor:after {
   content: "";
   position: absolute;
   top: -2px;

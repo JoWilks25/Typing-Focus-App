@@ -1,0 +1,165 @@
+/* src/renderer/src/components/Modals/FloatingDistractionWarning.module.css */
+/* Purpose: Floating distraction warning modal styling */
+
+.floating-modal {
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3); /* red-500 with opacity */
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(239, 68, 68, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+  transition: all 0.2s ease;
+  min-width: 300px;
+  min-height: 200px;
+  position: fixed;
+  z-index: 9999;
+}
+
+.floating-modal:hover {
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(239, 68, 68, 0.2);
+}
+
+.header {
+  height: 32px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  cursor: move;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.title {
+  color: #f9fafb;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.control-button {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.control-button:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+
+.control-button:active {
+  transform: scale(0.95);
+}
+
+.close-button {
+  background: #ef4444; /* red-500 */
+}
+
+.close-button:hover {
+  background: #dc2626; /* red-600 */
+}
+
+.content {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  color: #f9fafb;
+  background: transparent;
+  text-align: center;
+}
+
+.warning-icon {
+  margin-bottom: 12px;
+}
+
+.warning-emoji {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.3));
+}
+
+.warning-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f9fafb;
+  margin-bottom: 8px;
+}
+
+.warning-message {
+  font-size: 0.875rem;
+  color: #d1d5db;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.countdown {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ef4444;
+  margin-bottom: 16px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.return-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.return-button:hover {
+  background-color: #dc2626;
+}
+
+.end-button {
+  background-color: #6b7280;
+  color: white;
+}
+
+.end-button:hover {
+  background-color: #4b5563;
+}

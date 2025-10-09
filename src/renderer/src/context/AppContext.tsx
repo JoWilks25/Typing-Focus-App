@@ -8,6 +8,7 @@ import { AppContext, type AppContextValue } from './AppContextDef';
 import { loadAppState, saveAppState } from './appStorage';
 import { loadSessionState, saveSessionState } from './sessionStorage';
 import { useDebounce } from '../hooks/useDebounce';
+import styles from './ErrorBoundary.module.css';
 
 export class ErrorBoundary extends Component<
     { children: React.ReactNode },
@@ -29,10 +30,10 @@ export class ErrorBoundary extends Component<
     render() {
         if (this.state.hasError) {
             return (
-                <div className="flex items-center justify-center min-h-screen bg-gray-900">
-                    <div className="p-6 bg-gray-800 border border-red-500 rounded-lg">
-                        <h2 className="text-xl font-bold text-red-400 mb-2">Something went wrong</h2>
-                        <p className="text-gray-300">Try reloading the app.</p>
+                <div className={styles['error-container']}>
+                    <div className={styles['error-content']}>
+                        <h2 className={styles['error-title']}>Something went wrong</h2>
+                        <p className={styles['error-message']}>Try reloading the app.</p>
                     </div>
                 </div>
             );

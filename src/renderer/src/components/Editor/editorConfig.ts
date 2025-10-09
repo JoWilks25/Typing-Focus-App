@@ -31,8 +31,9 @@ export const createEditorConfig = (options: EditorConfigOptions = {}) => {
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none focus:outline-none',
+        class: 'prose prose-invert max-w-none',
         'data-placeholder': placeholder,
+        style: 'outline: none !important; box-shadow: none !important; border: none !important;',
       },
     },
     onUpdate: ({ editor }) => {

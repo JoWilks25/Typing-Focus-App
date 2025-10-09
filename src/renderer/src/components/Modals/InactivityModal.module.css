@@ -1,0 +1,159 @@
+/* src/renderer/src/components/Modals/InactivityModal.module.css */
+/* Purpose: Inactivity modal styling */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background-color: #1f2937; /* bg-gray-800 */
+  border-radius: 0.75rem;
+  padding: 2rem;
+  max-width: 28rem; /* max-w-md */
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 2px solid #3b82f6; /* border-blue-500 */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.pause-icon {
+  margin-bottom: 1rem;
+}
+
+.pause-emoji {
+  font-size: 3rem;
+  display: inline-block;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+}
+
+.modal-title {
+  color: #f9fafb; /* text-gray-50 */
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.main-message {
+  color: #d1d5db; /* text-gray-300 */
+  font-size: 1rem;
+  line-height: 1.625;
+  margin-bottom: 1rem;
+}
+
+.subtext {
+  color: #9ca3af; /* text-gray-400 */
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #374151; /* bg-gray-700 */
+  border-radius: 0.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  color: #9ca3af; /* text-gray-400 */
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  color: #f9fafb; /* text-gray-50 */
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.tree-icon {
+  margin-bottom: 2rem;
+}
+
+.tree-emoji {
+  font-size: 1.875rem;
+  display: inline-block;
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.3));
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.resume-button {
+  flex: 1;
+  background-color: #3b82f6; /* bg-blue-500 */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.resume-button:hover {
+  background-color: #2563eb; /* hover:bg-blue-600 */
+  transform: translateY(-0.125rem);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.resume-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.end-session-button {
+  flex: 1;
+  background-color: transparent;
+  color: #9ca3af; /* text-gray-400 */
+  border: 1px solid #4b5563; /* border-gray-600 */
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.end-session-button:hover {
+  background-color: #374151; /* hover:bg-gray-700 */
+  color: #d1d5db; /* hover:text-gray-300 */
+  border-color: #6b7280; /* hover:border-gray-500 */
+}
+
+.end-session-button:focus {
+  outline: 2px solid #6b7280;
+  outline-offset: 2px;
+}
+
+.bottom-hint {
+  color: #6b7280; /* text-gray-500 */
+  font-size: 0.75rem;
+}

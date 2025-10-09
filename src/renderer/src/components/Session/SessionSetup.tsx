@@ -8,6 +8,7 @@ import { useSession } from '@renderer/hooks/useSession';
 import { useAppState } from '@renderer/hooks/useAppState';
 import { isValidGoal, getDefaultValue } from '@renderer/utils/validation';
 import type { GoalType } from '@renderer/types/session';
+import styles from './SessionSetup.module.css';
 
 export function SessionSetup(): React.JSX.Element {
     const { addSession } = useSession();
@@ -58,14 +59,14 @@ export function SessionSetup(): React.JSX.Element {
     }, [isValid, handleSubmit]);
 
     return (
-        <div className="max-w-md mx-auto">
+        <div className={styles['setup-container']}>
             <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} role="form">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                <div className={styles['header']}>
+                    <h1 className={styles['title']}>
                         Ready to Write?
                     </h1>
-                    <p className="text-gray-300">
+                    <p className={styles['subtitle']}>
                         Set your goal and let&apos;s grow something great together
                     </p>
                 </div>
@@ -85,21 +86,21 @@ export function SessionSetup(): React.JSX.Element {
                 />
 
                 {/* Advanced Options */}
-                <div className="mb-6">
+                <div className={styles['advanced-section']}>
                     <button
                         type="button"
                         onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                        className={styles['advanced-toggle']}
                     >
-                        <span className={`transform transition-transform ${showAdvanced ? 'rotate-90' : ''}`}>
+                        <span className={`${styles['advanced-arrow']} ${showAdvanced ? styles['advanced-arrow-rotated'] : ''}`}>
                             &gt;
                         </span>
                         Advanced Options
                     </button>
 
                     {showAdvanced && (
-                        <div className="mt-3 p-4 bg-gray-50 rounded-md">
-                            <p className="text-sm text-gray-700">
+                        <div className={styles['advanced-content']}>
+                            <p className={styles['advanced-text']}>
                                 Advanced options will be available in future updates.
                             </p>
                         </div>
@@ -110,14 +111,11 @@ export function SessionSetup(): React.JSX.Element {
                 <button
                     type="submit"
                     disabled={!isValid}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isValid
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                    className={`${styles['submit-button']} ${isValid ? styles['submit-button-enabled'] : styles['submit-button-disabled']}`}
                 >
-                    <div className="flex items-center justify-center gap-2">
+                    <div>
                         Start Writing
-                        <span className="text-xs opacity-75">Press Enter ↵</span>
+                        <span className={styles['submit-hint']}>Press Enter ↵</span>
                     </div>
                 </button>
             </form>

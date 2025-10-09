@@ -1,0 +1,112 @@
+/* src/renderer/src/components/Session/SessionSummary.module.css */
+/* Purpose: Session summary display styling */
+
+.summary-container {
+  max-width: 32rem; /* max-w-lg */
+  margin: 0 auto;
+  background-color: #1f2937; /* bg-gray-800 */
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.summary-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f9fafb; /* text-gray-50 */
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background-color: #374151; /* bg-gray-700 */
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #9ca3af; /* text-gray-400 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f9fafb; /* text-gray-50 */
+}
+
+.progress-section {
+  margin-bottom: 2rem;
+}
+
+.progress-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #e5e7eb; /* text-gray-200 */
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #4b5563; /* bg-gray-600 */
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #22c55e; /* bg-green-500 */
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  color: #9ca3af; /* text-gray-400 */
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.action-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.action-button-primary {
+  background-color: #3b82f6; /* bg-blue-600 */
+  color: white;
+}
+
+.action-button-primary:hover {
+  background-color: #2563eb; /* hover:bg-blue-700 */
+}
+
+.action-button-secondary {
+  background-color: #6b7280; /* bg-gray-500 */
+  color: white;
+}
+
+.action-button-secondary:hover {
+  background-color: #4b5563; /* hover:bg-gray-600 */
+}

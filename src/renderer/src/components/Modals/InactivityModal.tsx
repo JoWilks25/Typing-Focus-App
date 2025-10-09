@@ -3,6 +3,7 @@
 
 import { useEffect, useCallback } from 'react';
 import { useSession } from '../../hooks/useSession';
+import styles from './InactivityModal.module.css';
 
 interface InactivityModalProps {
     isVisible: boolean;
@@ -54,54 +55,54 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
     }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[1000]">
-            <div className="bg-gray-800 rounded-xl p-8 max-w-md w-[90%] text-center shadow-2xl border-2 border-blue-500 max-h-[90vh] overflow-y-auto">
+        <div className={styles['modal-overlay']}>
+            <div className={styles['modal-container']}>
                 {/* Pause Icon */}
-                <div className="mb-4">
-                    <div className="text-5xl inline-block drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">⏸️</div>
+                <div className={styles['pause-icon']}>
+                    <div className={styles['pause-emoji']}>⏸️</div>
                 </div>
 
                 {/* Heading */}
-                <h2 className="text-gray-50 text-2xl font-semibold mb-4">Session Paused</h2>
+                <h2 className={styles['modal-title']}>Session Paused</h2>
 
                 {/* Main Message */}
-                <p className="text-gray-300 text-base leading-relaxed mb-4">
+                <p className={styles['main-message']}>
                     We noticed you haven&apos;t typed for a while. Your timer has been paused to keep your session time accurate. Ready to continue?
                 </p>
 
                 {/* Subtext */}
-                <p className="text-gray-400 text-sm mb-6">
+                <p className={styles['subtext']}>
                     Your progress is safe—no penalties applied.
                 </p>
 
                 {/* Current Stats */}
-                <div className="flex justify-center gap-8 mb-6 p-4 bg-gray-700 rounded-lg">
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Words:</span>
-                        <span className="text-gray-50 text-lg font-semibold">{wordCount}</span>
+                <div className={styles['stats-container']}>
+                    <div className={styles['stat-item']}>
+                        <span className={styles['stat-label']}>Words:</span>
+                        <span className={styles['stat-value']}>{wordCount}</span>
                     </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Time:</span>
-                        <span className="text-gray-50 text-lg font-semibold">{timeElapsed}</span>
+                    <div className={styles['stat-item']}>
+                        <span className={styles['stat-label']}>Time:</span>
+                        <span className={styles['stat-value']}>{timeElapsed}</span>
                     </div>
                 </div>
 
                 {/* Tree Icon Placeholder */}
-                <div className="mb-8">
-                    <div className="text-3xl inline-block drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">🌱</div>
+                <div className={styles['tree-icon']}>
+                    <div className={styles['tree-emoji']}>🌱</div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 mb-4">
+                <div className={styles['action-buttons']}>
                     <button
-                        className="flex-1 bg-blue-500 text-white border-none rounded-lg py-3 px-6 text-base font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_4px_rgba(59,130,246,0.2)] hover:bg-blue-600 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(59,130,246,0.3)] focus:outline-2 focus:outline-blue-500 focus:outline-offset-2"
+                        className={styles['resume-button']}
                         onClick={onClose}
                         autoFocus
                     >
                         Resume Writing
                     </button>
                     <button
-                        className="flex-1 bg-transparent text-gray-400 border border-gray-600 rounded-lg py-3 px-6 text-base font-medium cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:text-gray-300 hover:border-gray-500 focus:outline-2 focus:outline-gray-500 focus:outline-offset-2"
+                        className={styles['end-session-button']}
                         onClick={onEndSession}
                     >
                         End Session
@@ -109,7 +110,7 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
                 </div>
 
                 {/* Bottom Hint */}
-                <p className="text-gray-500 text-xs">
+                <p className={styles['bottom-hint']}>
                     Taking a thinking break is normal! Press Space or Enter to resume quickly.
                 </p>
             </div>
