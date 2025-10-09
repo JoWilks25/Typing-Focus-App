@@ -71,9 +71,8 @@ export const SessionStats = ({ localState, isFocused, activeSession }: SessionSt
         if (!activeSession) return;
 
         try {
-            // Stop the session via API
-            const stoppedSession = await window.api.session.stop(activeSession.id);
-            updateSession(stoppedSession);
+            // Stop the session via API - backend only, no React state update
+            await window.api.session.stop(activeSession.id);
 
             // Navigate to summary
             setView('session-summary');
@@ -112,8 +111,8 @@ export const SessionStats = ({ localState, isFocused, activeSession }: SessionSt
                         <div className={styles['progress-bar-container']}>
                             <div
                                 className={`${styles['progress-bar']} ${hasReached100 ? styles['progress-bar-green'] :
-                                        hasReached67 ? styles['progress-bar-yellow'] :
-                                            hasReached33 ? styles['progress-bar-blue'] : styles['progress-bar-gray']
+                                    hasReached67 ? styles['progress-bar-yellow'] :
+                                        hasReached33 ? styles['progress-bar-blue'] : styles['progress-bar-gray']
                                     }`}
                                 style={{ width: `${goalProgress}%` }}
                             />

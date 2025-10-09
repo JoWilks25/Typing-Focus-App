@@ -6,6 +6,25 @@
   border-radius: 0.5rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-main {
+  display: flex;
+  flex: 1;
+  gap: 1rem;
+  min-height: 400px;
+}
+
+.animation-sidebar {
+  flex: 0 0 auto;
+  width: 300px;
+  min-width: 250px;
+  max-width: 400px;
+  background-color: #374151; /* bg-gray-700 - make it visible */
+  border-radius: 0.5rem;
+  border: 2px solid #4b5563; /* border-gray-600 - make it more visible */
 }
 
 .editor-loading {
@@ -20,8 +39,9 @@
 
 .editor-padding {
   padding: 2rem;
-  min-height: 500px;
+  min-height: 400px;
   outline: none;
+  flex: 1;
 }
 
 .editor-content:empty:before {
@@ -169,4 +189,41 @@
   right: -2px;
   background: #3b82f6; /* blue-500 */
   pointer-events: none;
+}
+
+/* Responsive design for editor layout */
+@media (max-width: 1024px) {
+  .editor-main {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .animation-sidebar {
+    width: 100%;
+    max-width: none;
+    min-width: auto;
+    height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-main {
+    gap: 0.25rem;
+  }
+  
+  .animation-sidebar {
+    height: 200px;
+  }
+  
+  .editor-padding {
+    padding: 1rem;
+    min-height: 300px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .animation-sidebar {
+    width: 400px;
+    max-width: 500px;
+  }
 }
