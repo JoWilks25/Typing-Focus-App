@@ -128,6 +128,9 @@ const floatingModalAPI = {
   },
   updateContent: (id: string, content: string): Promise<boolean> => {
     return ipcRenderer.invoke('floating-modal:update-content', id, content);
+  },
+  executeJavaScript: (id: string, script: string): Promise<void> => {
+    return ipcRenderer.invoke('floating-modal:execute-javascript', id, script);
   }
 };
 

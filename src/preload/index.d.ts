@@ -87,6 +87,7 @@ export interface ElectronAPI {
     }>>;
     has: (id: string) => Promise<boolean>;
     updateContent: (id: string, content: string) => Promise<boolean>;
+    executeJavaScript: (id: string, script: string) => Promise<void>;
   };
 
   // Window Focus API

@@ -5,7 +5,6 @@ import styles from './FloatingModalDemo.module.css';
 export const FloatingModalDemo: React.FC = () => {
     const { createModal, closeModal, closeAllModals, createDistractionWarning } = useFloatingModal();
     const [modalId, setModalId] = useState<string | null>(null);
-    const [countdown, setCountdown] = useState(10);
 
     const handleCreateBasicModal = async () => {
         const id = await createModal({
@@ -36,7 +35,7 @@ export const FloatingModalDemo: React.FC = () => {
 
     const handleCreateDistractionWarning = async () => {
         const id = await createDistractionWarning(
-            countdown,
+            10, // countdown seconds
             150,
             '05:30',
             () => {

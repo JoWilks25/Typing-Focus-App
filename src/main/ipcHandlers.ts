@@ -50,6 +50,7 @@ export const IPC_CHANNELS = {
   FLOATING_MODAL_GET_ALL: 'floating-modal:get-all',
   FLOATING_MODAL_HAS: 'floating-modal:has',
   FLOATING_MODAL_UPDATE_CONTENT: 'floating-modal:update-content',
+  FLOATING_MODAL_EXECUTE_JAVASCRIPT: 'floating-modal:execute-javascript',
   
   // Window focus operations
   FOCUS_MAIN_WINDOW: 'focus:main-window',
@@ -380,6 +381,14 @@ async function handleFloatingModalUpdateContent(id: string, content: string): Pr
   return true;
 }
 
+async function handleFloatingModalExecuteJavaScript(id: string, script: string): Promise<void> {
+  if (!id || id.trim() === '') {
+    throw new Error('Modal ID is required');
+  }
+
+  return floatingModalService.executeJavaScript(id, script);
+}
+
 /**
  * Window Focus Handlers
  */
@@ -552,37 +561,75 @@ export function registerHandlers(): void {
     return await handleFloatingModalUpdateContent(id, content);
   });
 
+  ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_EXECUTE_JAVASCRIPT, async (_, id, script) => {
+    return await handleFloatingModalExecuteJavaScript(id, script);
+  });
+
   // Window focus handlers
   ipcMain.handle(IPC_CHANNELS.FOCUS_MAIN_WINDOW, async () => {
     return await handleFocusMainWindow();
   });
 
   // Distraction warning handlers
-  ipcMain.on(IPC_CHANNELS.DISTRACTION_WARNING_RETURN, async (_, modalId) => {
+  ipcMain.on(IPC_CHANNELS.DISTRACTION_WARNING_RETURN, async (event, modalId) => {
+    console.log('IPC: Received distraction-warning:return with modalId:', modalId);
+    
     // Focus the main window first
     await handleFocusMainWindow();
     
-    // Close the floating modal
-    floatingModalService.closeModal(modalId);
+    // Try to close the floating modal by ID first, then by window
+    let closed = floatingModalService.closeModal(modalId);
+    if (!closed && modalId && modalId.startsWith('temp-modal-')) {
+      // If it's a temp ID, find the modal by the window that sent the message
+      const modalWindow = BrowserWindow.fromWebContents(event.sender);
+      if (modalWindow) {
+        const modal = Array.from(floatingModalService.getAllModals()).find(m => m.window === modalWindow);
+        if (modal) {
+          console.log('IPC: Found modal by window, closing with ID:', modal.id);
+          closed = floatingModalService.closeModal(modal.id);
+        }
+      }
+    }
+    console.log('IPC: Modal closed:', closed);
     
     // Send event to renderer to handle return action
     const mainWindow = BrowserWindow.getAllWindows().find(window => !window.isDestroyed());
     if (mainWindow) {
+      console.log('IPC: Sending distraction-warning:return to main window');
       mainWindow.webContents.send('distraction-warning:return');
+    } else {
+      console.error('IPC: No main window found to send return event');
     }
   });
 
-  ipcMain.on(IPC_CHANNELS.DISTRACTION_WARNING_END_SESSION, async (_, modalId) => {
+  ipcMain.on(IPC_CHANNELS.DISTRACTION_WARNING_END_SESSION, async (event, modalId) => {
+    console.log('IPC: Received distraction-warning:end-session with modalId:', modalId);
+    
     // Focus the main window first
     await handleFocusMainWindow();
     
-    // Close the floating modal
-    floatingModalService.closeModal(modalId);
+    // Try to close the floating modal by ID first, then by window
+    let closed = floatingModalService.closeModal(modalId);
+    if (!closed && modalId && modalId.startsWith('temp-modal-')) {
+      // If it's a temp ID, find the modal by the window that sent the message
+      const modalWindow = BrowserWindow.fromWebContents(event.sender);
+      if (modalWindow) {
+        const modal = Array.from(floatingModalService.getAllModals()).find(m => m.window === modalWindow);
+        if (modal) {
+          console.log('IPC: Found modal by window, closing with ID:', modal.id);
+          closed = floatingModalService.closeModal(modal.id);
+        }
+      }
+    }
+    console.log('IPC: Modal closed:', closed);
     
     // Send event to renderer to handle end session action
     const mainWindow = BrowserWindow.getAllWindows().find(window => !window.isDestroyed());
     if (mainWindow) {
+      console.log('IPC: Sending distraction-warning:end-session to main window');
       mainWindow.webContents.send('distraction-warning:end-session');
+    } else {
+      console.error('IPC: No main window found to send end-session event');
     }
   });
 }
