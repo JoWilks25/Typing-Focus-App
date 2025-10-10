@@ -2,6 +2,7 @@
 // Purpose: Session statistics display component for word count, timer, and goal progress
 
 import { useAppState } from '../../hooks/useAppState';
+import { useSession } from '../../hooks/useSession';
 import { useMemo } from 'react';
 import type { Session } from '../../types/session';
 import styles from './SessionStats.module.css';
@@ -23,6 +24,7 @@ interface SessionStatsProps {
 
 export const SessionStats = ({ localState, isFocused, activeSession, currentContent }: SessionStatsProps) => {
     const { setView } = useAppState();
+    const { endSession } = useSession();
 
     // Calculate progress and timer state
     const { formattedTime, isTimerRunning, progress, hasReached33, hasReached67, hasReached100, goalType, goalValue } = useMemo(() => {
@@ -71,9 +73,9 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
 
         try {
             // End the session with final content and word count
-            const finalContent = currentContent; // Use current content from contentRef
+            const finalContent = currentContent || ''; // Use current content from contentRef, default to empty string
             const finalWordCount = localState.wordCount;
-            await (window.api.session as unknown as { end: (id: string, content: string, wordCount: number) => Promise<Session> }).end(activeSession.id, finalContent, finalWordCount);
+            await endSession(activeSession.id, finalContent, finalWordCount);
 
             // Navigate to summary
             setView('session-summary');

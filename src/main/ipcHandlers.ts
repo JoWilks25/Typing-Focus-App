@@ -65,6 +65,11 @@ export const IPC_CHANNELS = {
 let sessionManager: SessionManager;
 let fileManager: FileManager;
 
+// Export sessionManager for use in main process
+export function getSessionManager(): SessionManager | undefined {
+  return sessionManager;
+}
+
 /**
  * Initialize services
  */

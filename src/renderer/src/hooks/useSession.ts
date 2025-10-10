@@ -21,6 +21,8 @@ export function useSession() {
     removeSession: ctx.removeSession,
     resetSessions: ctx.resetSessions,
     updateProgress: ctx.updateProgress,
-    endSession: ctx.endSession
+    incrementDistraction: ctx.incrementDistraction,
+    endSession: ctx.endSession,
+    abandonSession: ctx.abandonSession
   };
 }

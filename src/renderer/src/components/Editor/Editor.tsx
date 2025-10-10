@@ -12,9 +12,9 @@ import { InactivityModal } from '../Modals/InactivityModal';
 import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
 import { TreeAnimation } from '../Animation/TreeAnimation';
 import { calculateWordCount } from '../../utils/wordCount';
-import type { Session } from '../../types/session';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
+import { CompletionModal } from '../Modals/CompletionModal';
 
 // Local editor state interface
 interface LocalEditorState {
@@ -26,22 +26,25 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, addSession } = useSession();
+  const { activeSession, endSession, abandonSession } = useSession();
   const { setView } = useAppState();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
   const activeSessionRef = useRef(activeSession);
-  const addSessionRef = useRef(addSession);
   const debouncedUpdateSessionRef = useRef<() => void>(() => { });
+
+  // Redirect to session setup if no active session
+  useEffect(() => {
+    if (!activeSession) {
+      console.log('No active session - redirecting to session setup');
+      setView('session-setup');
+    }
+  }, [activeSession, setView]);
 
   // Keep refs up to date
   useEffect(() => {
     activeSessionRef.current = activeSession;
   }, [activeSession]);
-
-  useEffect(() => {
-    addSessionRef.current = addSession;
-  }, [addSession]);
 
   // State for inactivity modal
   const [showInactivityModal, setShowInactivityModal] = useState(false);
@@ -81,22 +84,8 @@ export const Editor = () => {
         } catch (error) {
           console.warn('Failed to save session to backend:', error);
         }
-      } else {
-        // Create new session if none exists
-        const newSession = {
-          id: globalThis.crypto.randomUUID(),
-          name: 'Untitled Session',
-          title: 'Untitled Session',
-          content,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          goalType: 'word' as const,
-          goalValue: 500,
-          startTime: Date.now(),
-          status: 'active' as const,
-        };
-        addSessionRef.current(newSession);
       }
+      // Note: No automatic session creation - users must set up sessions via the SessionSetup modal
     }, []), // No dependencies to prevent editor recreation
     2000 // 2 second delay - only update backend after user stops typing
   );
@@ -158,7 +147,7 @@ export const Editor = () => {
         // End the session with final content and word count
         const finalContent = contentRef.current;
         const finalWordCount = localState.wordCount;
-        await (window.api.session as unknown as { end: (id: string, content: string, wordCount: number) => Promise<Session> }).end(activeSession.id, finalContent, finalWordCount);
+        await endSession(activeSession.id, finalContent, finalWordCount);
 
         // Navigate to summary
         setView('session-summary');
@@ -166,7 +155,7 @@ export const Editor = () => {
         console.error('Failed to end session:', error);
       }
     }
-  }, [activeSession, localState.wordCount, setView]);
+  }, [activeSession, localState.wordCount, endSession, setView]);
 
   // Handle inactivity modal actions
   const handleResumeSession = useCallback(() => {
@@ -206,11 +195,11 @@ export const Editor = () => {
   const handleEndSessionAnyway = useCallback(async () => {
     setShowDistractionWarning(false);
 
-    // Abandon session if we have an active session - backend only, no React state update
+    // Abandon session if we have an active session
     const currentSession = activeSessionRef.current;
-    if (currentSession && window.api?.session) {
+    if (currentSession) {
       try {
-        await window.api.session.abandon(currentSession.id);
+        await abandonSession(currentSession.id);
         // Navigate to summary after abandoning
         setView('session-summary');
       } catch (error) {
@@ -221,7 +210,7 @@ export const Editor = () => {
     } else {
       handleEnd();
     }
-  }, [handleEnd, setView]);
+  }, [handleEnd, setView, abandonSession]);
 
   // Keep refs up to date
   useEffect(() => {
@@ -230,14 +219,14 @@ export const Editor = () => {
   }, [handleReturnToSession, handleEndSessionAnyway]);
 
   // Completion modal handlers (commented out for now)
-  // const handleKeepWriting = useCallback(() => {
-  //   setShowCompletionModal(false);
-  // }, []);
+  const handleKeepWriting = useCallback(() => {
+    setShowCompletionModal(false);
+  }, []);
 
-  // const handleCompleteSession = useCallback(() => {
-  //   setShowCompletionModal(false);
-  //   handleEnd();
-  // }, [handleEnd]);
+  const handleCompleteSession = useCallback(() => {
+    setShowCompletionModal(false);
+    handleEnd();
+  }, [handleEnd]);
 
   // Initialize Tiptap editor
   const editor = useEditor(
@@ -330,9 +319,9 @@ export const Editor = () => {
         setShowDistractionWarning(false);
         // Abandon session and navigate to summary when countdown expires
         const currentSession = activeSessionRef.current;
-        if (currentSession && window.api?.session) {
+        if (currentSession) {
           try {
-            await window.api.session.abandon(currentSession.id);
+            await abandonSession(currentSession.id);
             // Navigate to summary after abandoning
             setView('session-summary');
           } catch (error) {
@@ -370,7 +359,7 @@ export const Editor = () => {
       };
     }
     return undefined;
-  }, [setView]); // Include setView to satisfy linter
+  }, [setView, abandonSession]); // Include setView and abandonSession
 
 
   // Separate progress update interval (45 seconds) - independent of timer display
@@ -430,6 +419,11 @@ export const Editor = () => {
     return progress;
   }, [activeSession, localState.wordCount]);
 
+  // Don't render editor if no active session
+  if (!activeSession) {
+    return null;
+  }
+
   if (!editor) {
     return (
       <div className={styles['editor-container']}>
@@ -476,7 +470,7 @@ export const Editor = () => {
         treeProgress={treeProgress}
       />
 
-      {/* {activeSession && showCompletionModal && (
+      {activeSession && showCompletionModal && (
         <CompletionModal
           session={activeSession}
           currentContent={contentRef.current}
@@ -484,7 +478,7 @@ export const Editor = () => {
           onKeepWriting={handleKeepWriting}
           onEndSession={handleCompleteSession}
         />
-      )} */}
+      )}
     </div>
   );
 };
