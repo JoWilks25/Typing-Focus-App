@@ -26,7 +26,7 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, endSession, abandonSession } = useSession();
+  const { activeSession, endSession, abandonSession, updateProgress } = useSession();
   const { setView } = useAppState();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
@@ -238,7 +238,7 @@ export const Editor = () => {
       onEnd: handleEnd,
       onBlur: handleEditorBlur,
     }),
-    [currentContent, handleUpdate, handleSave, handleEnd, handleEditorBlur]
+    [currentContent]
   );
 
   // Store editor reference for blur handler
@@ -256,19 +256,6 @@ export const Editor = () => {
       }
     }
   }, [editor, currentContent, activeSession?.id]);
-
-  // Watch for 100% progress to show completion modal
-  useEffect(() => {
-    if (!activeSession || hasShownCompletionModal) return;
-
-    const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
-
-    if (progressThresholds[100] && !showCompletionModal) {
-      setShowCompletionModal(true);
-      setHasShownCompletionModal(true);
-    }
-  }, [activeSession, hasShownCompletionModal, showCompletionModal]);
-
 
   // Focus editor on mount (only if no content exists)
   useEffect(() => {
@@ -299,19 +286,19 @@ export const Editor = () => {
   useEffect(() => {
     if (window.api?.on) {
       const handleShowDistractionWarning = () => {
-        console.log('Editor: Showing distraction warning modal');
+        console.debug('Editor: Showing distraction warning modal');
         setShowDistractionWarning(true);
         setCountdownSeconds(10);
       };
 
       const handleDismissDistractionWarning = () => {
-        console.log('Editor: Dismissing distraction warning modal');
+        console.debug('Editor: Dismissing distraction warning modal');
         setShowDistractionWarning(false);
       };
 
       const handleUpdateCountdown = (...args: unknown[]) => {
         const seconds = args[1] as number; // args[0] is the event object, args[1] is the countdown value
-        console.log('Editor: Updating countdown to', seconds);
+        console.debug('Editor: Updating countdown to', seconds);
         setCountdownSeconds(seconds);
       };
 
@@ -365,43 +352,45 @@ export const Editor = () => {
   // Separate progress update interval (45 seconds) - independent of timer display
   useEffect(() => {
     if (!activeSession) return;
-
     const progressInterval = globalThis.setInterval(() => {
-      if (localState.wordCount > 0) {
-        const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
-        // Calculate time elapsed for progress tracking
-        const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
+      const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
+      // Calculate time elapsed for progress tracking
+      const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
 
-        // Calculate current progress to check for threshold crossings
-        const goalValue = activeSession.goalValue || 500;
-        const goalType = activeSession.goalType || 'word';
-        const currentProgress = goalType === 'word'
-          ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
-          : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
+      // Calculate current progress to check for threshold crossings
+      const goalValue = activeSession.goalValue || 500;
+      const goalType = activeSession.goalType || 'word';
+      const currentProgress = goalType === 'word'
+        ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
+        : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
 
-        // Update thresholds if progress has crossed them
-        const newThresholds = { ...progressThresholds };
-        if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
-        if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
-        if (currentProgress >= 100 && !newThresholds[100]) newThresholds[100] = true;
-
-        // Update progress via simplified API
-        window.api.session.updateProgress(activeSession.id, localState.wordCount, timeElapsed, newThresholds)
-          .catch((error) => {
-            console.warn('Failed to update progress:', error);
-          });
-
-        console.log('Progress update via interval (backend only):', {
-          wordCount: localState.wordCount,
-          timeElapsed,
-          currentProgress,
-          newThresholds
-        });
+      // Update thresholds if progress has crossed them
+      const newThresholds = { ...progressThresholds };
+      console.log('currentProgress', currentProgress, 'newThresholds', newThresholds)
+      if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
+      if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
+      if (currentProgress >= 100 && !newThresholds[100]) {
+        newThresholds[100] = true;
+        // Show completion modal when reaching 100% (only if not already shown)
+        if (!hasShownCompletionModal) {
+          setShowCompletionModal(true);
+          setHasShownCompletionModal(true);
+        }
       }
-    }, 45000); // 45 seconds
+
+      // Use context's updateProgress function to update both React state and backend
+      updateProgress(localState.wordCount, timeElapsed, newThresholds);
+
+      console.log('Progress update via interval (React state + backend):', {
+        wordCount: localState.wordCount,
+        timeElapsed,
+        currentProgress,
+        newThresholds
+      });
+    }, 15000); // 15 seconds
 
     return () => globalThis.clearInterval(progressInterval);
-  }, [activeSession, localState.wordCount]);
+  }, [activeSession, localState.wordCount, updateProgress, hasShownCompletionModal]);
 
   // Calculate progress for tree animation
   const treeProgress = useMemo(() => {
@@ -415,7 +404,7 @@ export const Editor = () => {
       ? Math.min((localState.wordCount / activeSession.goalValue) * 100, 100)
       : Math.min((timeElapsed / (activeSession.goalValue * 60 * 1000)) * 100, 100);
 
-    console.log('TreeAnimation: Progress calculated:', progress, 'Active session:', !!activeSession);
+    console.debug('TreeAnimation: Progress calculated:', progress, 'Active session:', !!activeSession);
     return progress;
   }, [activeSession, localState.wordCount]);
 

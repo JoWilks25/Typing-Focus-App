@@ -13,7 +13,7 @@ interface TreeAnimationProps {
 }
 
 export const TreeAnimation = ({ progress, isActive }: TreeAnimationProps) => {
-    console.log('TreeAnimation: Rendering with progress:', progress, 'isActive:', isActive);
+    console.debug('TreeAnimation: Rendering with progress:', progress, 'isActive:', isActive);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const [currentAnimation, setCurrentAnimation] = useState<unknown>(null);
