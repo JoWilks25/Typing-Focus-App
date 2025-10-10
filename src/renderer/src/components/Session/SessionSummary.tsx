@@ -192,6 +192,7 @@ export function SessionSummary(): React.JSX.Element {
                     <TreeAnimation
                         progress={stats.progressPercentage}
                         isActive={treeAnimationState === 'mature'}
+                        playFullAnimation={stats.isCompleted} // Play full animation when goal is completed
                     />
                 </div>
                 <div className={styles['tree-status']}>
