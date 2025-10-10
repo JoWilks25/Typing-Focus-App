@@ -2,7 +2,7 @@
 // Purpose: Tree animation component with continuous growth based on progress
 
 import { useEffect, useRef, useState } from 'react';
-import Lottie from 'lottie-react';
+import Lottie, { type LottieRefCurrentProps } from 'lottie-react';
 import styles from './TreeAnimation.module.css';
 
 // Animation data will be loaded dynamically in the component
@@ -15,8 +15,8 @@ interface TreeAnimationProps {
 export const TreeAnimation = ({ progress, isActive }: TreeAnimationProps) => {
     console.log('TreeAnimation: Rendering with progress:', progress, 'isActive:', isActive);
 
-    const lottieRef = useRef<any>(null);
-    const [currentAnimation, setCurrentAnimation] = useState<any>(null);
+    const lottieRef = useRef<LottieRefCurrentProps>(null);
+    const [currentAnimation, setCurrentAnimation] = useState<unknown>(null);
     const [animationsLoaded, setAnimationsLoaded] = useState(false);
 
     // Load animations when component mounts

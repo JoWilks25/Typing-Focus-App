@@ -23,6 +23,7 @@ export interface AppContextValue extends AppState {
     resetSessions: () => void;
     updateProgress: (currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => void;
     incrementDistraction: (sessionId: string) => Promise<void>;
+    endSession: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
 }
 
 export const AppContext = createContext<AppContextValue | undefined>(undefined);

@@ -14,7 +14,7 @@ export interface Session {
   goalValue: number;
   startTime: number;
   endTime?: number;
-  status: 'active' | 'stopped' | 'abandoned';
+  status: 'active' | 'stopped' | 'abandoned' | 'completed' | 'incomplete';
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   currentWords?: number;

@@ -109,6 +109,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, [updateSession]);
 
+    const endSession = useCallback(async (sessionId: string, finalContent: string, finalWordCount: number): Promise<Session> => {
+        try {
+            if (window.api?.session) {
+                // Just persist to backend and clear active session - NO React state update
+                const endedSession = await (window.api.session as unknown as { end: (id: string, content: string, wordCount: number) => Promise<Session> }).end(sessionId, finalContent, finalWordCount);
+                setActiveSessionId(null); // Clear active session only
+                // NO updateSession() call - backend persisted, SessionSummary will fetch
+                return endedSession;
+            }
+            throw new Error('Session API not available');
+        } catch (error) {
+            console.warn('Failed to end session:', error);
+            throw error;
+        }
+    }, []); // Remove updateSession dependency
+
     // Debounced progress update for IPC persistence (30s)
     const debouncedPersistProgress = useDebounce(
         useCallback(async (...args: unknown[]) => {
@@ -170,7 +186,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             removeSession,
             resetSessions,
             updateProgress,
-            incrementDistraction
+            incrementDistraction,
+            endSession
         }),
         [
             appState.currentView,
@@ -186,7 +203,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             removeSession,
             resetSessions,
             updateProgress,
-            incrementDistraction
+            incrementDistraction,
+            endSession
         ]
     );
 

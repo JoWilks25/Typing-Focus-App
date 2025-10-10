@@ -10,11 +10,17 @@ const sessionAPI = {
   stop: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:stop', sessionId);
   },
+  end: (sessionId: string, finalContent: string, finalWordCount: number): Promise<Session> => {
+    return ipcRenderer.invoke('session:end', sessionId, finalContent, finalWordCount);
+  },
   get: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:get', sessionId);
   },
   getActive: (): Promise<Session | undefined> => {
     return ipcRenderer.invoke('session:get-active');
+  },
+  getLastEnded: (): Promise<Session | null> => {
+    return ipcRenderer.invoke('session:get-last-ended');
   },
   list: (): Promise<Session[]> => {
     return ipcRenderer.invoke('session:list');

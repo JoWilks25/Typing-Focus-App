@@ -5,12 +5,10 @@ import { SessionSummary } from './components/Session/SessionSummary';
 import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
 import { useAppState } from './hooks/useAppState';
-import { useSession } from './hooks/useSession';
 import styles from './App.module.css';
 
 function AppContent(): React.JSX.Element {
   const { currentView, setView } = useAppState();
-  const { activeSession } = useSession();
 
   const handleViewChange = (view: 'dashboard' | 'editor' | 'session-setup' | 'session-summary') => {
     console.log(`Switching to ${view} view`);
@@ -66,7 +64,7 @@ function AppContent(): React.JSX.Element {
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'session-setup' && <SessionSetup />}
         {currentView === 'editor' && <Editor />}
-        {currentView === 'session-summary' && activeSession && <SessionSummary session={activeSession} />}
+        {currentView === 'session-summary' && <SessionSummary />}
       </main>
 
       {/* Footer with Versions */}

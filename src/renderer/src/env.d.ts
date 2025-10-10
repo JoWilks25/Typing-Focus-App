@@ -12,8 +12,10 @@ declare global {
       session: {
         start: (name?: string, title?: string, goalType?: GoalType, goalValue?: number) => Promise<Session>;
         stop: (sessionId: string) => Promise<Session>;
+        end: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
         get: (sessionId: string) => Promise<Session>;
         getActive: () => Promise<Session | undefined>;
+        getLastEnded: () => Promise<Session | null>;
         list: () => Promise<Session[]>;
         updateContent: (sessionId: string, content: string) => Promise<Session>;
         updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => Promise<Session>;

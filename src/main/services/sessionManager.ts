@@ -1,5 +1,6 @@
 import { generateId } from '../utils/generateId';
 import { isValidGoal } from '../utils/validation';
+import { calculateSessionStats } from '../utils/calculateSessionStats';
 import { type GoalType } from '../../shared/types/validation';
 import type { Session } from '../types/session';
 
@@ -78,6 +79,47 @@ export class SessionManager {
       status: 'stopped',
       updatedAt: new Date().toISOString()
     };
+
+    this.sessions.set(sessionId, updatedSession);
+    
+    // Clear active session if this was it
+    if (this.activeSessionId === sessionId) {
+      this.activeSessionId = null;
+      this.stopAutosave();
+    }
+    
+    return updatedSession;
+  }
+
+  /**
+   * End a session with final content and calculate completion status
+   */
+  async endSession(sessionId: string, finalContent: string, finalWordCount: number): Promise<Session> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    if (session.status === 'stopped' || session.status === 'abandoned') {
+      throw new Error(`Session is already ended: ${sessionId}`);
+    }
+
+    const endTime = Date.now();
+    const timeElapsed = endTime - session.startTime;
+
+    // Update session with final data
+    const updatedSession: Session = {
+      ...session,
+      content: finalContent,
+      currentWords: finalWordCount,
+      timeElapsed,
+      endTime,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Calculate final stats to determine completion status
+    const stats = calculateSessionStats(updatedSession);
+    updatedSession.status = stats.finalStatus;
 
     this.sessions.set(sessionId, updatedSession);
     

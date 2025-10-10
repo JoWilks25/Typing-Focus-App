@@ -14,8 +14,10 @@ export const IPC_CHANNELS = {
   // Session operations
   SESSION_START: 'session:start',
   SESSION_STOP: 'session:stop',
+  SESSION_END: 'session:end',
   SESSION_GET: 'session:get',
   SESSION_GET_ACTIVE: 'session:get-active',
+  SESSION_GET_LAST_ENDED: 'session:get-last-ended',
   SESSION_LIST: 'session:list',
   SESSION_UPDATE_CONTENT: 'session:update-content',
   SESSION_UPDATE_PROGRESS: 'session:update-progress',
@@ -111,6 +113,31 @@ async function handleSessionStop(sessionId: string): Promise<Session> {
   return session;
 }
 
+async function handleSessionEnd(sessionId: string, finalContent: string, finalWordCount: number): Promise<Session> {
+  if (!sessionId || sessionId.trim() === '') {
+    throw new Error('Session ID is required');
+  }
+
+  if (typeof finalWordCount !== 'number' || finalWordCount < 0) {
+    throw new Error('Final word count must be a non-negative number');
+  }
+
+  // End the session with final data
+  const session = await sessionManager.endSession(sessionId, finalContent, finalWordCount);
+  
+  // Write session to history file
+  await fileManager.appendSessionHistory(session);
+  
+  // Clear active session from storage
+  await fileManager.remove('active-session');
+  
+  // Stop tracking services when session ends
+  inactivityService.stopTracking();
+  focusMonitorService.stopMonitoring();
+  
+  return session;
+}
+
 async function handleSessionGet(sessionId: string): Promise<Session> {
   if (!sessionId || sessionId.trim() === '') {
     throw new Error('Session ID is required');
@@ -126,6 +153,10 @@ async function handleSessionGet(sessionId: string): Promise<Session> {
 
 async function handleSessionGetActive(): Promise<Session | undefined> {
   return sessionManager.getActiveSession();
+}
+
+async function handleSessionGetLastEnded(): Promise<Session | null> {
+  return await fileManager.getLastEndedSession();
 }
 
 async function handleSessionList(): Promise<Session[]> {
@@ -263,7 +294,15 @@ async function handleSessionAbandon(sessionId: string): Promise<Session> {
     throw new Error('Session ID is required');
   }
 
-  return sessionManager.abandonSession(sessionId);
+  const session = sessionManager.abandonSession(sessionId);
+  
+  // Write abandoned session to history file
+  await fileManager.appendSessionHistory(session);
+  
+  // Clear active session from storage
+  await fileManager.remove('active-session');
+  
+  return session;
 }
 
 /**
@@ -419,12 +458,20 @@ export function registerHandlers(): void {
     return await handleSessionStop(sessionId);
   });
 
+  ipcMain.handle(IPC_CHANNELS.SESSION_END, async (_, sessionId, finalContent, finalWordCount) => {
+    return await handleSessionEnd(sessionId, finalContent, finalWordCount);
+  });
+
   ipcMain.handle(IPC_CHANNELS.SESSION_GET, async (_, sessionId) => {
     return await handleSessionGet(sessionId);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_GET_ACTIVE, async () => {
     return await handleSessionGetActive();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SESSION_GET_LAST_ENDED, async () => {
+    return await handleSessionGetLastEnded();
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_LIST, async () => {

@@ -18,9 +18,10 @@ interface SessionStatsProps {
     localState: LocalEditorState; // Local editor state for immediate UI updates
     isFocused: boolean; // Whether the editor is focused for timer accuracy
     activeSession: Session | null; // Active session for goal tracking
+    currentContent?: string; // Current content from contentRef for end session
 }
 
-export const SessionStats = ({ localState, isFocused, activeSession }: SessionStatsProps) => {
+export const SessionStats = ({ localState, isFocused, activeSession, currentContent }: SessionStatsProps) => {
     const { setView } = useAppState();
 
     // Calculate progress and timer state
@@ -69,8 +70,10 @@ export const SessionStats = ({ localState, isFocused, activeSession }: SessionSt
         if (!activeSession) return;
 
         try {
-            // Stop the session via API - backend only, no React state update
-            await window.api.session.stop(activeSession.id);
+            // End the session with final content and word count
+            const finalContent = currentContent; // Use current content from contentRef
+            const finalWordCount = localState.wordCount;
+            await (window.api.session as unknown as { end: (id: string, content: string, wordCount: number) => Promise<Session> }).end(activeSession.id, finalContent, finalWordCount);
 
             // Navigate to summary
             setView('session-summary');

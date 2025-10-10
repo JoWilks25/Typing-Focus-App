@@ -4,6 +4,7 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '../../hooks/useSession';
+import { useAppState } from '../../hooks/useAppState';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
@@ -11,6 +12,7 @@ import { InactivityModal } from '../Modals/InactivityModal';
 import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
 import { TreeAnimation } from '../Animation/TreeAnimation';
 import { calculateWordCount } from '../../utils/wordCount';
+import type { Session } from '../../types/session';
 import styles from './Editor.module.css';
 import 'prosemirror-view/style/prosemirror.css';
 
@@ -24,9 +26,22 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, addSession, updateSession } = useSession();
+  const { activeSession, addSession } = useSession();
+  const { setView } = useAppState();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
+  const activeSessionRef = useRef(activeSession);
+  const addSessionRef = useRef(addSession);
+  const debouncedUpdateSessionRef = useRef<() => void>(() => { });
+
+  // Keep refs up to date
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
+
+  useEffect(() => {
+    addSessionRef.current = addSession;
+  }, [addSession]);
 
   // State for inactivity modal
   const [showInactivityModal, setShowInactivityModal] = useState(false);
@@ -34,6 +49,10 @@ export const Editor = () => {
   // State for distraction warning modal
   const [showDistractionWarning, setShowDistractionWarning] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState(10);
+
+  // State for completion modal
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -53,10 +72,12 @@ export const Editor = () => {
   const debouncedUpdateSession = useDebounce(
     useCallback(async () => {
       const content = contentRef.current;
-      if (activeSession) {
+      // Get current activeSession from ref to avoid dependency issues
+      const currentActiveSession = activeSessionRef.current;
+      if (currentActiveSession) {
         try {
           // Update session content via simplified API - backend only, no React state update
-          await window.api.session.updateContent(activeSession.id, content);
+          await window.api.session.updateContent(currentActiveSession.id, content);
         } catch (error) {
           console.warn('Failed to save session to backend:', error);
         }
@@ -74,11 +95,16 @@ export const Editor = () => {
           startTime: Date.now(),
           status: 'active' as const,
         };
-        addSession(newSession);
+        addSessionRef.current(newSession);
       }
-    }, [activeSession, addSession, updateSession]),
+    }, []), // No dependencies to prevent editor recreation
     2000 // 2 second delay - only update backend after user stops typing
   );
+
+  // Store debounced function reference
+  useEffect(() => {
+    debouncedUpdateSessionRef.current = debouncedUpdateSession;
+  }, [debouncedUpdateSession]);
 
   const handleEditorBlur = useCallback((event: React.FocusEvent) => {
     // Log blur events for debugging with detailed information
@@ -114,8 +140,8 @@ export const Editor = () => {
     }
 
     // Trigger backend update after user stops typing
-    debouncedUpdateSession();
-  }, [debouncedUpdateSession]);
+    debouncedUpdateSessionRef.current?.();
+  }, []); // No dependencies to prevent editor recreation
 
   // Handle save action
   const handleSave = useCallback(() => {
@@ -124,10 +150,23 @@ export const Editor = () => {
   }, []);
 
   // Handle end action
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback(async () => {
     console.log('End session triggered');
-    // Additional end session logic can be added here
-  }, []);
+
+    if (activeSession) {
+      try {
+        // End the session with final content and word count
+        const finalContent = contentRef.current;
+        const finalWordCount = localState.wordCount;
+        await (window.api.session as unknown as { end: (id: string, content: string, wordCount: number) => Promise<Session> }).end(activeSession.id, finalContent, finalWordCount);
+
+        // Navigate to summary
+        setView('session-summary');
+      } catch (error) {
+        console.error('Failed to end session:', error);
+      }
+    }
+  }, [activeSession, localState.wordCount, setView]);
 
   // Handle inactivity modal actions
   const handleResumeSession = useCallback(() => {
@@ -145,36 +184,60 @@ export const Editor = () => {
     handleEnd();
   }, [handleEnd]);
 
+  // Refs for distraction warning handlers to avoid dependency issues
+  const handleReturnToSessionRef = useRef<(() => Promise<void>) | undefined>(undefined);
+  const handleEndSessionAnywayRef = useRef<(() => Promise<void>) | undefined>(undefined);
+
   // Handle distraction warning modal actions
   const handleReturnToSession = useCallback(async () => {
     setShowDistractionWarning(false);
 
     // Increment distraction count if we have an active session - backend only, no React state update
-    if (activeSession && window.api?.session) {
+    const currentSession = activeSessionRef.current;
+    if (currentSession && window.api?.session) {
       try {
-        await window.api.session.incrementDistraction(activeSession.id);
+        await window.api.session.incrementDistraction(currentSession.id);
       } catch (error) {
         console.warn('Failed to increment distraction count:', error);
       }
     }
-  }, [activeSession, updateSession]);
+  }, []);
 
   const handleEndSessionAnyway = useCallback(async () => {
     setShowDistractionWarning(false);
 
     // Abandon session if we have an active session - backend only, no React state update
-    if (activeSession && window.api?.session) {
+    const currentSession = activeSessionRef.current;
+    if (currentSession && window.api?.session) {
       try {
-        await window.api.session.abandon(activeSession.id);
-        handleEnd();
+        await window.api.session.abandon(currentSession.id);
+        // Navigate to summary after abandoning
+        setView('session-summary');
       } catch (error) {
         console.warn('Failed to abandon session:', error);
-        handleEnd(); // Fallback to normal end
+        // Fallback to normal end
+        handleEnd();
       }
     } else {
       handleEnd();
     }
-  }, [activeSession, updateSession, handleEnd]);
+  }, [handleEnd, setView]);
+
+  // Keep refs up to date
+  useEffect(() => {
+    handleReturnToSessionRef.current = handleReturnToSession;
+    handleEndSessionAnywayRef.current = handleEndSessionAnyway;
+  }, [handleReturnToSession, handleEndSessionAnyway]);
+
+  // Completion modal handlers (commented out for now)
+  // const handleKeepWriting = useCallback(() => {
+  //   setShowCompletionModal(false);
+  // }, []);
+
+  // const handleCompleteSession = useCallback(() => {
+  //   setShowCompletionModal(false);
+  //   handleEnd();
+  // }, [handleEnd]);
 
   // Initialize Tiptap editor
   const editor = useEditor(
@@ -205,19 +268,18 @@ export const Editor = () => {
     }
   }, [editor, currentContent, activeSession?.id]);
 
-  // Initialize local state when session changes
+  // Watch for 100% progress to show completion modal
   useEffect(() => {
-    if (activeSession?.content && activeSession.content !== localState.content) {
-      const text = activeSession.content.replace(/<[^>]*>/g, ''); // Strip HTML tags
-      setLocalState({
-        content: activeSession.content,
-        text,
-        wordCount: calculateWordCount(text),
-        characterCount: text.length,
-        lastUpdated: Date.now()
-      });
+    if (!activeSession || hasShownCompletionModal) return;
+
+    const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
+
+    if (progressThresholds[100] && !showCompletionModal) {
+      setShowCompletionModal(true);
+      setHasShownCompletionModal(true);
     }
-  }, [activeSession?.content, localState.content]);
+  }, [activeSession, hasShownCompletionModal, showCompletionModal]);
+
 
   // Focus editor on mount (only if no content exists)
   useEffect(() => {
@@ -264,15 +326,35 @@ export const Editor = () => {
         setCountdownSeconds(seconds);
       };
 
-      const handleSessionAbandoned = () => {
+      const handleSessionAbandoned = async () => {
         setShowDistractionWarning(false);
-        // Session will be updated via the abandon handler
+        // Abandon session and navigate to summary when countdown expires
+        const currentSession = activeSessionRef.current;
+        if (currentSession && window.api?.session) {
+          try {
+            await window.api.session.abandon(currentSession.id);
+            // Navigate to summary after abandoning
+            setView('session-summary');
+          } catch (error) {
+            console.warn('Failed to abandon session:', error);
+            // Still navigate to summary even if abandon fails
+            setView('session-summary');
+          }
+        }
+      };
+
+      const handleReturn = async () => {
+        await handleReturnToSessionRef.current?.();
+      };
+
+      const handleEndAnyway = async () => {
+        await handleEndSessionAnywayRef.current?.();
       };
 
       window.api.on('show-distraction-warning', handleShowDistractionWarning);
       window.api.on('dismiss-distraction-warning', handleDismissDistractionWarning);
-      window.api.on('distraction-warning:return', handleReturnToSession);
-      window.api.on('distraction-warning:end-session', handleEndSessionAnyway);
+      window.api.on('distraction-warning:return', handleReturn);
+      window.api.on('distraction-warning:end-session', handleEndAnyway);
       window.api.on('update-countdown', handleUpdateCountdown);
       window.api.on('session-abandoned', handleSessionAbandoned);
 
@@ -280,15 +362,15 @@ export const Editor = () => {
         if (window.api?.removeListener) {
           window.api.removeListener('show-distraction-warning', handleShowDistractionWarning);
           window.api.removeListener('dismiss-distraction-warning', handleDismissDistractionWarning);
-          window.api.removeListener('distraction-warning:return', handleReturnToSession);
-          window.api.removeListener('distraction-warning:end-session', handleEndSessionAnyway);
+          window.api.removeListener('distraction-warning:return', handleReturn);
+          window.api.removeListener('distraction-warning:end-session', handleEndAnyway);
           window.api.removeListener('update-countdown', handleUpdateCountdown);
           window.api.removeListener('session-abandoned', handleSessionAbandoned);
         }
       };
     }
     return undefined;
-  }, []);
+  }, [setView]); // Include setView to satisfy linter
 
 
   // Separate progress update interval (45 seconds) - independent of timer display
@@ -364,6 +446,7 @@ export const Editor = () => {
         localState={localState}
         isFocused={!!editor?.isFocused}
         activeSession={activeSession}
+        currentContent={contentRef.current}
       />
 
       <div className={styles['editor-main']}>
@@ -392,6 +475,16 @@ export const Editor = () => {
         onEndSession={handleEndSessionAnyway}
         treeProgress={treeProgress}
       />
+
+      {/* {activeSession && showCompletionModal && (
+        <CompletionModal
+          session={activeSession}
+          currentContent={contentRef.current}
+          currentWordCount={localState.wordCount}
+          onKeepWriting={handleKeepWriting}
+          onEndSession={handleCompleteSession}
+        />
+      )} */}
     </div>
   );
 };

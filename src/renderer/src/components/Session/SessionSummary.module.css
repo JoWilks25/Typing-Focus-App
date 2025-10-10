@@ -10,6 +10,24 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+.header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f9fafb; /* text-gray-50 */
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #9ca3af; /* text-gray-400 */
+  margin-bottom: 0;
+}
+
 .summary-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -44,6 +62,26 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #f9fafb; /* text-gray-50 */
+}
+
+.tree-section {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.tree-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+  min-height: 200px;
+}
+
+.tree-status {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #f9fafb;
+  text-align: center;
 }
 
 .progress-section {

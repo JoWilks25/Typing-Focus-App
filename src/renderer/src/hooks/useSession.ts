@@ -20,6 +20,7 @@ export function useSession() {
     updateSession: ctx.updateSession,
     removeSession: ctx.removeSession,
     resetSessions: ctx.resetSessions,
-    updateProgress: ctx.updateProgress
+    updateProgress: ctx.updateProgress,
+    endSession: ctx.endSession
   };
 }
