@@ -60,12 +60,16 @@ interface StorageAPI {
 interface SessionAPI {
   start(name?: string, title?: string, goalType?: 'word' | 'time', goalValue?: number): Promise<any>;
   stop(sessionId: string): Promise<any>;
+  end(sessionId: string, finalContent: string, finalWordCount: number): Promise<any>;
   get(sessionId: string): Promise<any>;
   getActive(): Promise<any>;
+  getLastEnded(): Promise<any>;
   list(): Promise<any[]>;
   updateContent(sessionId: string, content: string): Promise<any>;
   updateProgress(sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }): Promise<any>;
   getStats(sessionId: string): Promise<any>;
+  incrementDistraction(sessionId: string): Promise<any>;
+  abandon(sessionId: string): Promise<any>;
 }
 
 // Focus API

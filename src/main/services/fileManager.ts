@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import { resolve, join, dirname } from 'path';
+import type { Session } from '../types/session';
 
 /**
  * FileManager provides simplified file operations and JSON storage.
@@ -8,10 +9,12 @@ import { resolve, join, dirname } from 'path';
 export class FileManager {
   private readonly baseDir: string;
   private readonly storagePath: string;
+  private readonly sessionHistoryPath: string;
 
   constructor(appDataPath: string) {
     this.baseDir = resolve(appDataPath);
     this.storagePath = join(appDataPath, 'storage.json');
+    this.sessionHistoryPath = join(appDataPath, 'session-history.json');
   }
 
   /**
@@ -202,5 +205,66 @@ export class FileManager {
    */
   getStoragePath(): string {
     return this.storagePath;
+  }
+
+  /**
+   * Append a session to the session history file
+   */
+  async appendSessionHistory(session: Session): Promise<void> {
+    try {
+      // Ensure the app data directory exists
+      await fs.mkdir(dirname(this.sessionHistoryPath), { recursive: true });
+
+      // Read existing session history
+      let sessionHistory: Session[] = [];
+      try {
+        const content = await fs.readFile(this.sessionHistoryPath, 'utf8');
+        sessionHistory = JSON.parse(content);
+        if (!Array.isArray(sessionHistory)) {
+          sessionHistory = [];
+        }
+      } catch (error) {
+        // If file doesn't exist or is corrupted, start with empty array
+        if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
+          console.warn('Session history file corrupted, starting fresh:', error);
+        }
+      }
+
+      // Append the new session to the beginning of the array
+      sessionHistory.unshift(session);
+
+      // Write back to file
+      await fs.writeFile(this.sessionHistoryPath, JSON.stringify(sessionHistory, null, 2), 'utf8');
+    } catch (error) {
+      throw new Error(`Failed to append session to history: ${error}`);
+    }
+  }
+
+  /**
+   * Get the session history file path
+   */
+  getSessionHistoryPath(): string {
+    return this.sessionHistoryPath;
+  }
+
+  /**
+   * Get the most recently ended session from history
+   */
+  async getLastEndedSession(): Promise<Session | null> {
+    try {
+      const content = await fs.readFile(this.sessionHistoryPath, 'utf8');
+      const sessionHistory: Session[] = JSON.parse(content);
+      if (!Array.isArray(sessionHistory) || sessionHistory.length === 0) {
+        return null;
+      }
+      // Return the first session (most recent)
+      return sessionHistory[0];
+    } catch (error) {
+      // If file doesn't exist, return null
+      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+        return null;
+      }
+      throw new Error(`Failed to get last ended session: ${error}`);
+    }
   }
 }

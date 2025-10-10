@@ -48,14 +48,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Session state
     const [sessions, setSessions] = useState<Session[]>(() => loadSessionState().sessions);
-    const [activeSessionId, setActiveSessionId] = useState<string | null>(
-        () => loadSessionState().activeSessionId
-    );
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null); // Start with null, will be set after validation
 
     // Persist app state
     useEffect(() => {
         saveAppState(appState);
     }, [appState]);
+
+    // Validate active session on startup
+    useEffect(() => {
+        const validateActiveSession = async () => {
+            const storedState = loadSessionState();
+            console.log('App startup - checking stored session state:', {
+                hasActiveSessionId: !!storedState.activeSessionId,
+                activeSessionId: storedState.activeSessionId,
+                sessionCount: storedState.sessions.length
+            });
+
+            if (storedState.activeSessionId) {
+                try {
+                    // Check if the stored active session is actually still active in the backend
+                    const backendActiveSession = await window.api.session.getActive();
+                    console.log('Backend active session check:', {
+                        hasBackendSession: !!backendActiveSession,
+                        backendSessionId: backendActiveSession?.id,
+                        storedSessionId: storedState.activeSessionId,
+                        matches: backendActiveSession?.id === storedState.activeSessionId
+                    });
+
+                    if (backendActiveSession && backendActiveSession.id === storedState.activeSessionId) {
+                        // Backend confirms this session is still active
+                        setActiveSessionId(storedState.activeSessionId);
+                        console.log('✅ Validated active session from storage:', storedState.activeSessionId);
+                    } else {
+                        // Backend says no active session, clear localStorage
+                        console.log('❌ Stored active session is no longer active in backend, clearing state');
+                        setActiveSessionId(null);
+                        saveSessionState({ sessions: storedState.sessions, activeSessionId: null });
+                    }
+                } catch (error) {
+                    console.warn('Failed to validate active session:', error);
+                    // On error, clear the active session to be safe
+                    setActiveSessionId(null);
+                    saveSessionState({ sessions: storedState.sessions, activeSessionId: null });
+                }
+            } else {
+                console.log('No stored active session found');
+            }
+        };
+
+        validateActiveSession();
+    }, []); // Run once on mount
 
     // Persist session state
     useEffect(() => {
@@ -108,6 +151,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             console.warn('Failed to increment distraction count:', error);
         }
     }, [updateSession]);
+
+    const endSession = useCallback(async (sessionId: string, finalContent: string, finalWordCount: number): Promise<Session> => {
+        try {
+            if (window.api?.session) {
+                // Just persist to backend and clear active session - NO React state update
+                const endedSession = await (window.api.session as unknown as { end: (id: string, content: string, wordCount: number) => Promise<Session> }).end(sessionId, finalContent, finalWordCount);
+                setActiveSessionId(null); // Clear active session only
+                // NO updateSession() call - backend persisted, SessionSummary will fetch
+                return endedSession;
+            }
+            throw new Error('Session API not available');
+        } catch (error) {
+            console.warn('Failed to end session:', error);
+            throw error;
+        }
+    }, []); // Remove updateSession dependency
+
+    const abandonSession = useCallback(async (sessionId: string): Promise<Session> => {
+        try {
+            if (window.api?.session) {
+                // Abandon session and clear active session state
+                const abandonedSession = await (window.api.session as unknown as { abandon: (id: string) => Promise<Session> }).abandon(sessionId);
+                setActiveSessionId(null); // Clear active session only
+                return abandonedSession;
+            }
+            throw new Error('Session API not available');
+        } catch (error) {
+            console.warn('Failed to abandon session:', error);
+            throw error;
+        }
+    }, []);
 
     // Debounced progress update for IPC persistence (30s)
     const debouncedPersistProgress = useDebounce(
@@ -170,7 +244,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             removeSession,
             resetSessions,
             updateProgress,
-            incrementDistraction
+            incrementDistraction,
+            endSession,
+            abandonSession
         }),
         [
             appState.currentView,
@@ -186,7 +262,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             removeSession,
             resetSessions,
             updateProgress,
-            incrementDistraction
+            incrementDistraction,
+            endSession,
+            abandonSession
         ]
     );
 

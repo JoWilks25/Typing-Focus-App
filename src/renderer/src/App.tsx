@@ -17,6 +17,9 @@ function AppContent(): React.JSX.Element {
     setView(view);
   };
 
+  // Check if user is in an active session in the editor
+  const isInActiveEditorSession = currentView === 'editor' && !!activeSession;
+
   return (
     <div className={styles['app-container']}>
       {/* Header */}
@@ -32,29 +35,41 @@ function AppContent(): React.JSX.Element {
       <nav className={styles['navigation']}>
         <div className={styles['nav-content']}>
           <button
-            onClick={() => handleViewChange('dashboard')}
-            className={`${styles['nav-button']} ${currentView === 'dashboard'
-              ? styles['nav-button-active']
-              : styles['nav-button-inactive']
+            onClick={() => !isInActiveEditorSession && handleViewChange('dashboard')}
+            disabled={isInActiveEditorSession}
+            className={`${styles['nav-button']} ${isInActiveEditorSession
+              ? styles['nav-button-disabled']
+              : currentView === 'dashboard'
+                ? styles['nav-button-active']
+                : styles['nav-button-inactive']
               }`}
+            title={isInActiveEditorSession ? 'Finish your session to access dashboard' : 'Dashboard View'}
           >
             Dashboard View
           </button>
           <button
-            onClick={() => handleViewChange('session-setup')}
-            className={`${styles['nav-button']} ${currentView === 'session-setup'
-              ? styles['nav-button-active']
-              : styles['nav-button-inactive']
+            onClick={() => !isInActiveEditorSession && handleViewChange('session-setup')}
+            disabled={isInActiveEditorSession}
+            className={`${styles['nav-button']} ${isInActiveEditorSession
+              ? styles['nav-button-disabled']
+              : currentView === 'session-setup'
+                ? styles['nav-button-active']
+                : styles['nav-button-inactive']
               }`}
+            title={isInActiveEditorSession ? 'Finish your session to start a new one' : 'New Session'}
           >
             New Session
           </button>
           <button
-            onClick={() => handleViewChange('editor')}
-            className={`${styles['nav-button']} ${currentView === 'editor'
-              ? styles['nav-button-active']
-              : styles['nav-button-inactive']
+            onClick={() => activeSession && handleViewChange('editor')}
+            disabled={!activeSession}
+            className={`${styles['nav-button']} ${!activeSession
+              ? styles['nav-button-disabled']
+              : currentView === 'editor'
+                ? styles['nav-button-active']
+                : styles['nav-button-inactive']
               }`}
+            title={!activeSession ? 'Start a session to access the editor' : 'Editor View'}
           >
             Editor View
           </button>
@@ -66,7 +81,7 @@ function AppContent(): React.JSX.Element {
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'session-setup' && <SessionSetup />}
         {currentView === 'editor' && <Editor />}
-        {currentView === 'session-summary' && activeSession && <SessionSummary session={activeSession} />}
+        {currentView === 'session-summary' && <SessionSummary />}
       </main>
 
       {/* Footer with Versions */}

@@ -174,7 +174,17 @@ export default [
         navigator: 'readonly',
         location: 'readonly',
         React: 'readonly',
-        URL: 'readonly'
+        URL: 'readonly',
+        // Vitest globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly'
       }
     },
     plugins: {

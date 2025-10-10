@@ -2,6 +2,7 @@
 // Purpose: Session statistics display component for word count, timer, and goal progress
 
 import { useAppState } from '../../hooks/useAppState';
+import { useSession } from '../../hooks/useSession';
 import { useMemo } from 'react';
 import type { Session } from '../../types/session';
 import styles from './SessionStats.module.css';
@@ -18,10 +19,12 @@ interface SessionStatsProps {
     localState: LocalEditorState; // Local editor state for immediate UI updates
     isFocused: boolean; // Whether the editor is focused for timer accuracy
     activeSession: Session | null; // Active session for goal tracking
+    currentContent?: string; // Current content from contentRef for end session
 }
 
-export const SessionStats = ({ localState, isFocused, activeSession }: SessionStatsProps) => {
+export const SessionStats = ({ localState, isFocused, activeSession, currentContent }: SessionStatsProps) => {
     const { setView } = useAppState();
+    const { endSession } = useSession();
 
     // Calculate progress and timer state
     const { formattedTime, isTimerRunning, progress, hasReached33, hasReached67, hasReached100, goalType, goalValue } = useMemo(() => {
@@ -69,8 +72,10 @@ export const SessionStats = ({ localState, isFocused, activeSession }: SessionSt
         if (!activeSession) return;
 
         try {
-            // Stop the session via API - backend only, no React state update
-            await window.api.session.stop(activeSession.id);
+            // End the session with final content and word count
+            const finalContent = currentContent || ''; // Use current content from contentRef, default to empty string
+            const finalWordCount = localState.wordCount;
+            await endSession(activeSession.id, finalContent, finalWordCount);
 
             // Navigate to summary
             setView('session-summary');
