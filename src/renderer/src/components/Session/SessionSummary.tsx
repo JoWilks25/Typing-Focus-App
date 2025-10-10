@@ -191,12 +191,10 @@ export function SessionSummary(): React.JSX.Element {
                 <div className={styles['tree-container']}>
                     <TreeAnimation
                         progress={stats.progressPercentage}
-                        isActive={treeAnimationState === 'mature'}
+                        isActive={true} // Always show animation in session summary
                         playFullAnimation={stats.isCompleted} // Play full animation when goal is completed
+                        showWiltedTree={!stats.isCompleted} // Show wilted tree emoji when goal is not completed
                     />
-                </div>
-                <div className={styles['tree-status']}>
-                    {treeAnimationState === 'mature' ? '🌳 Healthy Tree' : '🍂 Wilted Tree'}
                 </div>
             </div>
 
