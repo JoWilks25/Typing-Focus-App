@@ -8,7 +8,7 @@ import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
 import { InactivityModal } from '../Modals/InactivityModal';
-import { MainWindowDistractionWarning } from '../Modals/MainWindowDistractionWarning';
+import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
 import { TreeAnimation } from '../Animation/TreeAnimation';
 import { calculateWordCount } from '../../utils/wordCount';
 import styles from './Editor.module.css';
@@ -385,11 +385,12 @@ export const Editor = () => {
         onEndSession={handleEndSession}
       />
 
-      <MainWindowDistractionWarning
+      <FloatingDistractionWarning
         isVisible={showDistractionWarning}
         secondsRemaining={countdownSeconds}
         onReturn={handleReturnToSession}
         onEndSession={handleEndSessionAnyway}
+        treeProgress={treeProgress}
       />
     </div>
   );

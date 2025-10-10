@@ -33,6 +33,7 @@ export class FloatingModalService {
    */
   createModal(options: FloatingModalOptions = {}): string {
     const id = `floating-modal-${this.nextId++}`;
+    console.log('FloatingModalService: Creating modal with ID:', id);
     
     // Get primary display info for positioning
     const primaryDisplay = screen.getPrimaryDisplay();
@@ -55,6 +56,9 @@ export class FloatingModalService {
     const finalOptions = { ...defaultOptions, ...options };
 
     // Create the window
+    const preloadPath = join(__dirname, '../preload/index.js');
+    console.log('FloatingModalService: Creating modal with preload path:', preloadPath);
+    
     const window = new BrowserWindow({
       width: finalOptions.width,
       height: finalOptions.height,
@@ -68,7 +72,7 @@ export class FloatingModalService {
       closable: finalOptions.closable,
       skipTaskbar: false,
       webPreferences: {
-        preload: join(__dirname, '../../preload/index.js'),
+        preload: preloadPath,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
@@ -110,11 +114,16 @@ export class FloatingModalService {
    * Close a specific modal
    */
   closeModal(id: string): boolean {
+    console.log('FloatingModalService: Attempting to close modal with ID:', id);
+    console.log('FloatingModalService: Available modals:', Array.from(this.modals.keys()));
+    
     const modal = this.modals.get(id);
     if (modal) {
+      console.log('FloatingModalService: Found modal, closing...');
       modal.window.close();
       return true;
     }
+    console.log('FloatingModalService: Modal not found with ID:', id);
     return false;
   }
 
@@ -182,6 +191,18 @@ export class FloatingModalService {
    */
   hasModal(id: string): boolean {
     return this.modals.has(id);
+  }
+
+  /**
+   * Execute JavaScript in a modal window
+   */
+  executeJavaScript(id: string, script: string): Promise<void> {
+    const modal = this.modals.get(id);
+    if (!modal) {
+      return Promise.reject(new Error(`Modal not found: ${id}`));
+    }
+    
+    return modal.window.webContents.executeJavaScript(script);
   }
 
   /**
@@ -358,6 +379,18 @@ export class FloatingModalService {
 
     // Load the HTML content
     window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    
+    // Add debugging to verify preload script is loaded
+    window.webContents.once('dom-ready', () => {
+      window.webContents.executeJavaScript(`
+        console.log('Floating Modal: DOM ready');
+        console.log('Floating Modal: window.api available:', !!window.api);
+        console.log('Floating Modal: window.api.send available:', !!(window.api && window.api.send));
+        if (window.api) {
+          console.log('Floating Modal: API methods:', Object.keys(window.api));
+        }
+      `).catch(console.error);
+    });
   }
 
 }

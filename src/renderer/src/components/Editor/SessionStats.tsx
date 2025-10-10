@@ -1,7 +1,6 @@
 // src/renderer/src/components/Editor/SessionStats.tsx
 // Purpose: Session statistics display component for word count, timer, and goal progress
 
-import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
 import { useMemo } from 'react';
 import type { Session } from '../../types/session';
@@ -22,7 +21,6 @@ interface SessionStatsProps {
 }
 
 export const SessionStats = ({ localState, isFocused, activeSession }: SessionStatsProps) => {
-    const { updateSession } = useSession();
     const { setView } = useAppState();
 
     // Calculate progress and timer state

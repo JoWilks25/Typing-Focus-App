@@ -2,7 +2,6 @@
 // Purpose: Session completion summary component
 
 import React, { useCallback, useMemo } from 'react';
-import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
 import type { Session } from '../../types/session';
 import styles from './SessionSummary.module.css';
@@ -12,7 +11,6 @@ interface SessionSummaryProps {
 }
 
 export function SessionSummary({ session }: SessionSummaryProps): React.JSX.Element {
-    const { resetSessions } = useSession();
     const { setView } = useAppState();
 
     // Calculate completion status and statistics
@@ -48,10 +46,7 @@ export function SessionSummary({ session }: SessionSummaryProps): React.JSX.Elem
         setView('dashboard');
     }, [setView]);
 
-    const handleResetSessions = useCallback(() => {
-        resetSessions();
-        setView('session-setup');
-    }, [resetSessions, setView]);
+    // Note: handleResetSessions removed as it was unused
 
     return (
         <div className={styles['summary-container']}>

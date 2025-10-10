@@ -1,4 +1,22 @@
 /**
+ * Helper function to get tree emoji based on progress
+ */
+function getTreeEmoji(progress: number): string {
+  if (progress < 34) return '🌱'; // Seedling
+  if (progress < 67) return '🌿'; // Small tree
+  return '🌳'; // Mature tree
+}
+
+/**
+ * Helper function to get tree stage label based on progress
+ */
+function getTreeStageLabel(progress: number): string {
+  if (progress < 34) return 'Seedling Stage';
+  if (progress < 67) return 'Growing Tree';
+  return 'Mature Tree';
+}
+
+/**
  * Generate HTML string directly for floating modal content
  * This is more reliable for floating modals since they need plain HTML
  */
@@ -6,7 +24,8 @@ export function generateFloatingModalHtml(
   secondsRemaining: number,
   wordCount: number,
   timeElapsed: string,
-  modalId: string
+  modalId: string,
+  treeProgress: number = 0
 ): string {
   return `
     <div class="floating-distraction-warning">
@@ -45,9 +64,16 @@ export function generateFloatingModalHtml(
         </div>
       </div>
 
-      <!-- Tree Icon Placeholder -->
+      <!-- Tree Progress Display -->
       <div class="tree-container">
-        <div class="tree-icon">🌱</div>
+        <div class="tree-progress">
+          <div class="tree-icon-large">${getTreeEmoji(treeProgress)}</div>
+          <div class="progress-label">${getTreeStageLabel(treeProgress)}</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: ${Math.min(treeProgress, 100)}%"></div>
+          </div>
+          <div class="progress-percentage">${Math.floor(treeProgress)}% complete</div>
+        </div>
       </div>
 
       <!-- Action Buttons -->
@@ -177,12 +203,56 @@ export function generateFloatingModalHtml(
 
       .tree-container {
         margin-bottom: 16px;
+        padding: 16px;
+        background-color: rgba(55, 65, 81, 0.6);
+        border-radius: 8px;
       }
 
-      .tree-icon {
-        font-size: 24px;
+      .tree-progress {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .tree-icon-large {
+        font-size: 48px;
         display: inline-block;
-        filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.3));
+        filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+        animation: treeGrow 0.5s ease-out;
+      }
+
+      @keyframes treeGrow {
+        0% { transform: scale(0.9); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      .progress-label {
+        color: #10b981;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background-color: rgba(55, 65, 81, 0.8);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #34d399);
+        border-radius: 4px;
+        transition: width 0.3s ease-out;
+      }
+
+      .progress-percentage {
+        color: #d1d5db;
+        font-size: 12px;
       }
 
       .button-container {
@@ -233,14 +303,103 @@ export function generateFloatingModalHtml(
 
 
     <script>
+      console.log('Modal: Script starting...');
+      
+      let countdownTimer = null;
+      let countdownValue = ${typeof secondsRemaining === 'number' ? secondsRemaining : 10};
+      
+      console.log('Modal: Initial countdown value:', countdownValue);
+      console.log('Modal: Document ready state:', document.readyState);
+      
+      // Start countdown timer when page loads
+      function startCountdown() {
+        try {
+          console.log('Modal: Starting countdown timer');
+          const countdownElement = document.querySelector('.countdown-number');
+          console.log('Modal: Countdown element found:', !!countdownElement);
+          
+          if (!countdownElement) {
+            console.error('Modal: Countdown element not found!');
+            return;
+          }
+          
+          console.log('Modal: Setting up interval timer');
+          countdownTimer = setInterval(() => {
+            try {
+              countdownValue--;
+              console.log('Modal: Countdown tick:', countdownValue);
+              countdownElement.textContent = countdownValue;
+              
+              if (countdownValue <= 0) {
+                console.log('Modal: Countdown expired, ending session');
+                clearInterval(countdownTimer);
+                // Auto-end session when countdown reaches 0
+                handleEndSession();
+              }
+            } catch (error) {
+              console.error('Modal: Error in countdown tick:', error);
+            }
+          }, 1000);
+        } catch (error) {
+          console.error('Modal: Error in startCountdown:', error);
+        }
+      }
+      
       function handleReturn() {
-        // Send message to main window to handle return action
-        window.api?.send('distraction-warning:return', '${modalId}');
+        // Clear countdown timer
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+        
+        // Get modal ID from global variable or use the one from template
+        const modalId = window.currentModalId || '${modalId}';
+        console.log('Modal: Sending return action with modalId:', modalId);
+        if (window.api && window.api.send) {
+          window.api.send('distraction-warning:return', modalId);
+        } else {
+          console.error('Modal: window.api.send not available');
+        }
       }
 
       function handleEndSession() {
-        // Send message to main window to handle end session action
-        window.api?.send('distraction-warning:end-session', '${modalId}');
+        // Clear countdown timer
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+        
+        // Get modal ID from global variable or use the one from template
+        const modalId = window.currentModalId || '${modalId}';
+        console.log('Modal: Sending end session action with modalId:', modalId);
+        if (window.api && window.api.send) {
+          window.api.send('distraction-warning:end-session', modalId);
+        } else {
+          console.error('Modal: window.api.send not available');
+        }
+      }
+      
+      // Start countdown when DOM is ready
+      try {
+        console.log('Modal: Document ready state:', document.readyState);
+        
+        if (document.readyState === 'loading') {
+          console.log('Modal: Document still loading, waiting for DOMContentLoaded');
+          document.addEventListener('DOMContentLoaded', startCountdown);
+        } else {
+          console.log('Modal: Document already loaded, starting countdown immediately');
+          startCountdown();
+        }
+        
+        // Also try starting after a short delay as backup
+        setTimeout(() => {
+          console.log('Modal: Backup countdown start attempt');
+          if (!countdownTimer) {
+            startCountdown();
+          }
+        }, 500);
+      } catch (error) {
+        console.error('Modal: Error in countdown initialization:', error);
       }
     </script>
   `;
