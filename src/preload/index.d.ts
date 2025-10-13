@@ -8,9 +8,15 @@ export interface ElectronAPI {
     versions: NodeJS.ProcessVersions;
   };
 
+  // Dialog API
+  dialog: {
+    showOpenDirectory: () => Promise<{ directoryPath?: string; canceled: boolean }>;
+    getDefaultSaveDirectory: () => Promise<string>;
+  };
+
   // Session API
   session: {
-    start: (name?: string, title?: string, goalType?: GoalType, goalValue?: number) => Promise<Session>;
+    start: (filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number) => Promise<Session>;
     stop: (sessionId: string) => Promise<Session>;
     end: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
     get: (sessionId: string) => Promise<Session>;

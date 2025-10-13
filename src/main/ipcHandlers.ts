@@ -59,7 +59,11 @@ export const IPC_CHANNELS = {
   
   // Distraction warning operations
   DISTRACTION_WARNING_RETURN: 'distraction-warning:return',
-  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session'
+  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session',
+  
+  // Dialog operations
+  DIALOG_SHOW_OPEN_DIRECTORY: 'dialog:show-open-directory',
+  DIALOG_GET_DEFAULT_SAVE_DIRECTORY: 'dialog:get-default-save-directory'
 } as const;
 
 let sessionManager: SessionManager;
@@ -77,6 +81,9 @@ export function initializeServices(appDataPath: string): void {
   sessionManager = new SessionManager();
   fileManager = new FileManager(appDataPath);
   
+  // Set file manager reference in session manager
+  sessionManager.setFileManager(fileManager);
+  
   // Set session manager reference in focus monitor service
   focusMonitorService.setSessionManager(sessionManager);
 }
@@ -86,16 +93,21 @@ export function initializeServices(appDataPath: string): void {
  */
 
 async function handleSessionStart(
+  filePath: string,
   name?: string,
   title?: string,
   goalType: GoalType = 'word',
   goalValue: number = 500
 ): Promise<Session> {
+  if (!filePath || filePath.trim() === '') {
+    throw new Error('File path is required');
+  }
+  
   if (!isValidGoal(goalType, goalValue)) {
     throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
   }
 
-  const session = await sessionManager.startSession(name, title, goalType, goalValue);
+  const session = await sessionManager.startSession(filePath, name, title, goalType, goalValue);
   
   // Start tracking services for the new session
   inactivityService.startTracking();
@@ -434,6 +446,38 @@ async function handleFloatingModalExecuteJavaScript(id: string, script: string):
 }
 
 /**
+ * Dialog Handlers
+ */
+
+async function handleDialogShowOpenDirectory(): Promise<{ directoryPath?: string; canceled: boolean }> {
+  const { dialog } = require('electron');
+  const result = await dialog.showOpenDialog({
+    title: 'Choose Save Directory',
+    properties: ['openDirectory', 'createDirectory'],
+    defaultPath: await handleDialogGetDefaultSaveDirectory()
+  });
+  return { 
+    directoryPath: result.filePaths[0], 
+    canceled: result.canceled 
+  };
+}
+
+async function handleDialogGetDefaultSaveDirectory(): Promise<string> {
+  const { app } = require('electron');
+  const path = require('path');
+  
+  // Default to ~/Documents/Writing
+  const documentsPath = app.getPath('documents');
+  const defaultPath = path.join(documentsPath, 'Writing');
+  
+  // Ensure directory exists
+  const fs = require('fs').promises;
+  await fs.mkdir(defaultPath, { recursive: true });
+  
+  return defaultPath;
+}
+
+/**
  * Window Focus Handlers
  */
 
@@ -455,8 +499,8 @@ export function registerHandlers(): void {
   }
 
   // Session handlers
-  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, name, title, goalType, goalValue) => {
-    return await handleSessionStart(name, title, goalType, goalValue);
+  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue) => {
+    return await handleSessionStart(filePath, name, title, goalType, goalValue);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STOP, async (_, sessionId) => {
@@ -615,6 +659,15 @@ export function registerHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_EXECUTE_JAVASCRIPT, async (_, id, script) => {
     return await handleFloatingModalExecuteJavaScript(id, script);
+  });
+
+  // Dialog handlers
+  ipcMain.handle(IPC_CHANNELS.DIALOG_SHOW_OPEN_DIRECTORY, async () => {
+    return await handleDialogShowOpenDirectory();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DIALOG_GET_DEFAULT_SAVE_DIRECTORY, async () => {
+    return await handleDialogGetDefaultSaveDirectory();
   });
 
   // Window focus handlers

@@ -214,6 +214,14 @@ export function SessionSummary(): React.JSX.Element {
                 </div>
             </div>
 
+            {/* File Information */}
+            {session.filePath && (
+                <div className={styles['file-info']}>
+                    <h3>Saved Location</h3>
+                    <p className={styles['file-path']}>{session.filePath}</p>
+                </div>
+            )}
+
             {/* Action Buttons */}
             <div className={styles['actions']}>
                 <button

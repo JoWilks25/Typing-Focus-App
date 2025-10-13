@@ -3,6 +3,7 @@ import { isValidGoal } from '../utils/validation';
 import { calculateSessionStats } from '../utils/calculateSessionStats';
 import { type GoalType } from '../../shared/types/validation';
 import type { Session } from '../types/session';
+import { FileManager } from './fileManager';
 
 /**
  * SessionManager provides simplified session management with basic activity tracking.
@@ -12,12 +13,21 @@ export class SessionManager {
   private sessions: Map<string, Session> = new Map();
   private activeSessionId: string | null = null;
   private autosaveInterval: NodeJS.Timeout | null = null;
-  private readonly AUTOSAVE_INTERVAL = 30000; // 30 seconds
+  private readonly AUTOSAVE_INTERVAL = 2000; // 2 seconds for file-based sessions
+  private fileManager: FileManager | null = null;
+
+  /**
+   * Set the file manager instance
+   */
+  setFileManager(fileManager: FileManager): void {
+    this.fileManager = fileManager;
+  }
 
   /**
    * Start a new session
    */
   async startSession(
+    filePath: string,
     name?: string, 
     title?: string, 
     goalType: GoalType = 'word', 
@@ -40,6 +50,7 @@ export class SessionManager {
       name: name || `Session ${new Date().toLocaleString()}`,
       title,
       content: '',
+      filePath,
       goalType,
       goalValue,
       startTime: Date.now(),
@@ -50,6 +61,11 @@ export class SessionManager {
       timeElapsed: 0,
       progressPercentage: 0
     };
+
+    // Create initial empty file
+    if (this.fileManager) {
+      await this.fileManager.writeFileExternal(filePath, '');
+    }
 
     this.sessions.set(sessionId, session);
     this.activeSessionId = sessionId;
@@ -107,6 +123,12 @@ export class SessionManager {
     const endTime = Date.now();
     const timeElapsed = endTime - session.startTime;
 
+    // Final save to file
+    const plainText = this.htmlToPlainText(finalContent);
+    if (this.fileManager) {
+      await this.fileManager.writeFileExternal(session.filePath, plainText);
+    }
+
     // Update session with final data
     const updatedSession: Session = {
       ...session,
@@ -114,6 +136,7 @@ export class SessionManager {
       currentWords: finalWordCount,
       timeElapsed,
       endTime,
+      lastSavedToFile: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
@@ -157,6 +180,18 @@ export class SessionManager {
   }
 
   /**
+   * Convert HTML content to plain text
+   */
+  private htmlToPlainText(html: string): string {
+    // Strip HTML tags, convert to plain text
+    return html
+      .replace(/<\/p>/g, '\n')
+      .replace(/<br\s*\/?>/g, '\n')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  }
+
+  /**
    * Update session content and progress
    */
   async updateSessionContent(sessionId: string, content: string): Promise<Session> {
@@ -165,9 +200,15 @@ export class SessionManager {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
-    // Calculate word count
-    const wordCount = this.calculateWordCount(content);
+    // Calculate word count from plain text
+    const plainText = this.htmlToPlainText(content);
+    const wordCount = this.calculateWordCount(plainText);
     const timeElapsed = Date.now() - session.startTime;
+    
+    // Save to file
+    if (this.fileManager) {
+      await this.fileManager.writeFileExternal(session.filePath, plainText);
+    }
     
     const updatedSession: Session = {
       ...session,
@@ -175,6 +216,7 @@ export class SessionManager {
       currentWords: wordCount,
       timeElapsed,
       progressPercentage: 0, // temporary; will be updated below
+      lastSavedToFile: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
@@ -348,12 +390,17 @@ export class SessionManager {
   private startAutosave(): void {
     this.stopAutosave(); // Clear any existing interval
     
-    this.autosaveInterval = setInterval(() => {
+    this.autosaveInterval = setInterval(async () => {
       if (this.activeSessionId) {
         const session = this.sessions.get(this.activeSessionId);
-        if (session && session.status === 'active') {
-          // Autosave logic would go here - for now just log
-          console.log(`Autosaving session ${this.activeSessionId}`);
+        if (session && session.status === 'active' && session.content && this.fileManager) {
+          try {
+            const plainText = this.htmlToPlainText(session.content);
+            await this.fileManager.writeFileExternal(session.filePath, plainText);
+            console.log(`Autosaved session ${this.activeSessionId} to ${session.filePath}`);
+          } catch (error) {
+            console.error('Autosave failed:', error);
+          }
         }
       }
     }, this.AUTOSAVE_INTERVAL);
