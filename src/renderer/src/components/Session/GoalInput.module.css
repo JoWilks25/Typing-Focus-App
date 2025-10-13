@@ -22,6 +22,7 @@
   background-color: white;
   color: #111827; /* text-gray-900 */
   transition: all 0.2s ease;
+  box-sizing: border-box; /* Add this to include border in width calculation */
 }
 
 .input-field:focus {
