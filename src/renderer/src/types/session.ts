@@ -10,6 +10,8 @@ export interface Session {
   name: string;
   title?: string;
   content?: string;
+  filePath: string;           // Required - path to .txt file
+  lastSavedToFile?: string;   // ISO timestamp of last file save
   goalType: GoalType;
   goalValue: number;
   startTime: number;

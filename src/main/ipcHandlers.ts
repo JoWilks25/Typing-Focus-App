@@ -59,7 +59,12 @@ export const IPC_CHANNELS = {
   
   // Distraction warning operations
   DISTRACTION_WARNING_RETURN: 'distraction-warning:return',
-  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session'
+  DISTRACTION_WARNING_END_SESSION: 'distraction-warning:end-session',
+  
+  // Dialog operations
+  DIALOG_SHOW_OPEN_DIRECTORY: 'dialog:show-open-directory',
+  DIALOG_GET_DEFAULT_SAVE_DIRECTORY: 'dialog:get-default-save-directory',
+  DIALOG_OPEN_FOLDER: 'dialog:open-folder'
 } as const;
 
 let sessionManager: SessionManager;
@@ -77,6 +82,9 @@ export function initializeServices(appDataPath: string): void {
   sessionManager = new SessionManager();
   fileManager = new FileManager(appDataPath);
   
+  // Set file manager reference in session manager
+  sessionManager.setFileManager(fileManager);
+  
   // Set session manager reference in focus monitor service
   focusMonitorService.setSessionManager(sessionManager);
 }
@@ -86,16 +94,21 @@ export function initializeServices(appDataPath: string): void {
  */
 
 async function handleSessionStart(
+  filePath: string,
   name?: string,
   title?: string,
   goalType: GoalType = 'word',
   goalValue: number = 500
 ): Promise<Session> {
+  if (!filePath || filePath.trim() === '') {
+    throw new Error('File path is required');
+  }
+  
   if (!isValidGoal(goalType, goalValue)) {
     throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
   }
 
-  const session = await sessionManager.startSession(name, title, goalType, goalValue);
+  const session = await sessionManager.startSession(filePath, name, title, goalType, goalValue);
   
   // Start tracking services for the new session
   inactivityService.startTracking();
@@ -434,6 +447,58 @@ async function handleFloatingModalExecuteJavaScript(id: string, script: string):
 }
 
 /**
+ * Dialog Handlers
+ */
+
+async function handleDialogShowOpenDirectory(): Promise<{ directoryPath?: string; canceled: boolean }> {
+  const { dialog } = require('electron');
+  const result = await dialog.showOpenDialog({
+    title: 'Choose Save Directory',
+    properties: ['openDirectory', 'createDirectory'],
+    defaultPath: await handleDialogGetDefaultSaveDirectory()
+  });
+  return { 
+    directoryPath: result.filePaths[0], 
+    canceled: result.canceled 
+  };
+}
+
+async function handleDialogGetDefaultSaveDirectory(): Promise<string> {
+  const { app } = require('electron');
+  const path = require('path');
+  
+  // Default to ~/Documents/Writing
+  const documentsPath = app.getPath('documents');
+  const defaultPath = path.join(documentsPath, 'Writing');
+  
+  // Ensure directory exists
+  const fs = require('fs').promises;
+  await fs.mkdir(defaultPath, { recursive: true });
+  
+  return defaultPath;
+}
+
+async function handleDialogOpenFolder(filePath: string): Promise<void> {
+  try {
+    const { shell } = require('electron');
+    const path = require('path');
+    
+    // Get the directory containing the file
+    const directoryPath = path.dirname(filePath);
+    
+    console.log('Opening folder:', directoryPath);
+    
+    // Open the folder in the system's default file manager
+    await shell.openPath(directoryPath);
+    
+    console.log('Successfully opened folder');
+  } catch (error) {
+    console.error('Error opening folder:', error);
+    throw error;
+  }
+}
+
+/**
  * Window Focus Handlers
  */
 
@@ -453,10 +518,14 @@ export function registerHandlers(): void {
   if (!sessionManager || !fileManager) {
     throw new Error('Services not initialized. Call initializeServices first.');
   }
+  
+  console.log('Registering IPC handlers...');
+  console.log('sessionManager:', !!sessionManager);
+  console.log('fileManager:', !!fileManager);
 
   // Session handlers
-  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, name, title, goalType, goalValue) => {
-    return await handleSessionStart(name, title, goalType, goalValue);
+  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue) => {
+    return await handleSessionStart(filePath, name, title, goalType, goalValue);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STOP, async (_, sessionId) => {
@@ -616,6 +685,27 @@ export function registerHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.FLOATING_MODAL_EXECUTE_JAVASCRIPT, async (_, id, script) => {
     return await handleFloatingModalExecuteJavaScript(id, script);
   });
+
+  // Dialog handlers
+  ipcMain.handle(IPC_CHANNELS.DIALOG_SHOW_OPEN_DIRECTORY, async () => {
+    return await handleDialogShowOpenDirectory();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DIALOG_GET_DEFAULT_SAVE_DIRECTORY, async () => {
+    return await handleDialogGetDefaultSaveDirectory();
+  });
+
+  try {
+    ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_FOLDER, async (_, filePath) => {
+      console.log('IPC: dialog:open-folder handler called with filePath:', filePath);
+      return await handleDialogOpenFolder(filePath);
+    });
+    console.log('Successfully registered dialog:open-folder handler');
+  } catch (error) {
+    console.error('Error registering dialog:open-folder handler:', error);
+  }
+
+  console.log('Dialog handlers registered, including dialog:open-folder');
 
   // Window focus handlers
   ipcMain.handle(IPC_CHANNELS.FOCUS_MAIN_WINDOW, async () => {

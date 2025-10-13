@@ -133,10 +133,20 @@ export const Editor = () => {
   }, []); // No dependencies to prevent editor recreation
 
   // Handle save action
-  const handleSave = useCallback(() => {
-    console.log('Save triggered');
-    // Additional save logic can be added here
-  }, []);
+  const handleSave = useCallback(async () => {
+    console.log('Manual save triggered');
+
+    if (activeSession?.filePath) {
+      try {
+        const content = contentRef.current;
+        await window.api.session.updateContent(activeSession.id, content);
+        console.log(`File saved to ${activeSession.filePath}`);
+        // TODO: Add toast notification here
+      } catch (error) {
+        console.error('Failed to save file:', error);
+      }
+    }
+  }, [activeSession]);
 
   // Handle end action
   const handleEnd = useCallback(async () => {
@@ -144,12 +154,13 @@ export const Editor = () => {
 
     if (activeSession) {
       try {
-        // End the session with final content and word count
         const finalContent = contentRef.current;
         const finalWordCount = localState.wordCount;
         await endSession(activeSession.id, finalContent, finalWordCount);
 
-        // Navigate to summary
+        console.log(`Session completed. File saved to ${activeSession.filePath}`);
+        // TODO: Add toast notification here
+
         setView('session-summary');
       } catch (error) {
         console.error('Failed to end session:', error);

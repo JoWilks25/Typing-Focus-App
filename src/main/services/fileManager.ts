@@ -34,6 +34,17 @@ export class FileManager {
   }
 
   /**
+   * Write content to an external file (outside base directory)
+   */
+  async writeFileExternal(filePath: string, content: string): Promise<void> {
+    // Ensure directory exists
+    const dir = dirname(filePath);
+    await fs.mkdir(dir, { recursive: true });
+    
+    return await fs.writeFile(filePath, content, 'utf8');
+  }
+
+  /**
    * Check if a file exists
    */
   async fileExists(filePath: string): Promise<boolean> {

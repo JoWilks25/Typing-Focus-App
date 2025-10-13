@@ -58,7 +58,7 @@ interface StorageAPI {
 
 // Session API
 interface SessionAPI {
-  start(name?: string, title?: string, goalType?: 'word' | 'time', goalValue?: number): Promise<any>;
+  start(filePath: string, name?: string, title?: string, goalType?: 'word' | 'time', goalValue?: number): Promise<any>;
   stop(sessionId: string): Promise<any>;
   end(sessionId: string, finalContent: string, finalWordCount: number): Promise<any>;
   get(sessionId: string): Promise<any>;
@@ -85,6 +85,13 @@ interface ActivityAPI {
   record(request: ActivityRecordRequest): Promise<Result<ActivityRecordResponse, StructuredError>>;
   stats(request: ActivityStatsRequest): Promise<Result<ActivityStatsResponse, StructuredError>>;
   reset(request: ActivityResetRequest): Promise<Result<ActivityResetResponse, StructuredError>>;
+}
+
+// Dialog API
+interface DialogAPI {
+  showOpenDirectory(): Promise<{ directoryPath?: string; canceled: boolean }>;
+  getDefaultSaveDirectory(): Promise<string>;
+  openFolder(filePath: string): Promise<void>;
 }
 
 // Floating Modal API
@@ -131,6 +138,7 @@ interface FloatingModalAPI {
 
 // Main API interface
 interface ElectronAPI {
+  dialog: DialogAPI;
   file: FileAPI;
   storage: StorageAPI;
   session: SessionAPI;

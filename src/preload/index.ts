@@ -2,10 +2,23 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { Session } from '../main/types/session';
 import type { GoalType } from '../shared/types/validation';
 
+// Dialog API - simplified function-style interface
+const dialogAPI = {
+  showOpenDirectory: (): Promise<{ directoryPath?: string; canceled: boolean }> => {
+    return ipcRenderer.invoke('dialog:show-open-directory');
+  },
+  getDefaultSaveDirectory: (): Promise<string> => {
+    return ipcRenderer.invoke('dialog:get-default-save-directory');
+  },
+  openFolder: (filePath: string): Promise<void> => {
+    return ipcRenderer.invoke('dialog:open-folder', filePath);
+  }
+};
+
 // Session API - simplified function-style interface
 const sessionAPI = {
-  start: (name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500): Promise<Session> => {
-    return ipcRenderer.invoke('session:start', name, title, goalType, goalValue);
+  start: (filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500): Promise<Session> => {
+    return ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue);
   },
   stop: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:stop', sessionId);
@@ -150,6 +163,7 @@ const windowFocusAPI = {
 // Main API object - simplified
 const electronAPI = {
   // Simplified APIs
+  dialog: dialogAPI,
   session: sessionAPI,
   file: fileAPI,
   storage: storageAPI,
