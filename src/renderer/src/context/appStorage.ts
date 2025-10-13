@@ -8,14 +8,14 @@ const STORAGE_KEY = 'tfa:appState:v1';
 export function loadAppState(): AppState {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { currentView: 'dashboard', theme: 'dark' };
+        if (!raw) return { currentView: 'session-setup', theme: 'dark' };
         const parsed = JSON.parse(raw);
         return {
-            currentView: parsed?.currentView === 'editor' ? 'editor' : 'dashboard',
+            currentView: parsed?.currentView === 'editor' ? 'editor' : 'session-setup',
             theme: parsed?.theme === 'light' || parsed?.theme === 'system' ? parsed.theme : 'dark'
         };
     } catch {
-        return { currentView: 'dashboard', theme: 'dark' };
+        return { currentView: 'session-setup', theme: 'dark' };
     }
 }
 
