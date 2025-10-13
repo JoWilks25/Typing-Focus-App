@@ -33,6 +33,7 @@
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
+  position: relative;
 }
 
 .goal-button:focus {
@@ -54,7 +55,57 @@
   background-color: #d1d5db; /* hover:bg-gray-300 */
 }
 
+.goal-button-disabled {
+  background-color: #f3f4f6; /* bg-gray-100 */
+  color: #9ca3af; /* text-gray-400 */
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.goal-button-disabled:hover {
+  background-color: #f3f4f6; /* Keep same background on hover */
+}
+
+.goal-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.coming-soon {
+  font-size: 0.625rem; /* text-xs */
+  font-weight: 600;
+  color: #f59e0b; /* text-amber-500 */
+  background-color: #fef3c7; /* bg-amber-100 */
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 0.25rem;
+}
+
 .goal-icon {
   width: 1rem;
   height: 1rem;
+}
+
+.future-feature-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #fef3c7; /* bg-amber-100 */
+  border: 1px solid #f59e0b; /* border-amber-500 */
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: #92400e; /* text-amber-800 */
+}
+
+.notice-icon {
+  font-size: 0.875rem;
+}
+
+.notice-text {
+  font-weight: 500;
 }

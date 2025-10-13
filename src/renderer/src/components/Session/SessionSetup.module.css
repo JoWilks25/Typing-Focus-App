@@ -75,6 +75,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  box-sizing: border-box; /* Add this for consistency */
 }
 
 .submit-button-enabled {

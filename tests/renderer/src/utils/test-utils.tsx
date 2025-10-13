@@ -106,7 +106,7 @@ export const createMockSession = (overrides: Partial<any> = {}) => ({
 
 // Helper function to create mock app state
 export const createMockAppState = (overrides: Partial<any> = {}) => ({
-    currentView: 'dashboard' as const,
+    currentView: 'session-setup' as const,
     theme: 'dark' as const,
     ...overrides,
 });

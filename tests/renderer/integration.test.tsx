@@ -20,7 +20,7 @@ const mockApi = {
             updatedAt: new Date().toISOString(),
             currentWords: 0,
             timeElapsed: 0,
-            progressThresholds: { 33: false, 67: false, 100: false }
+            progressPercentage: 0
         })
     },
     file: {

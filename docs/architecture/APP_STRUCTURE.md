@@ -1,10 +1,10 @@
-# Focus Writer - App Structure
+# Draft Tree - App Structure
 
 ## 🎨 Current Implementation
 
 ### Main App (src/renderer/src/App.tsx)
 
-- **Header**: "Focus Writer" with gradient text
+- **Header**: "Draft Tree" with gradient text
 - **Navigation**: Two view toggle buttons
   - Dashboard View (shows session overview)
   - Editor View (shows writing editor)
@@ -22,7 +22,7 @@
 
 ```
 App
-├── Header (Focus Writer title)
+├── Header (Draft Tree title)
 ├── Navigation (Dashboard/Editor buttons)
 ├── Main Content
 │   ├── Dashboard (when selected)
@@ -76,7 +76,7 @@ npm run dev
 ### What You'll See
 
 1. **Electron window opens (1200x800)**
-2. **Header** with "Focus Writer" in gradient text
+2. **Header** with "Draft Tree" in gradient text
 3. **Two buttons** to switch views:
    - Dashboard View (default)
    - Editor View

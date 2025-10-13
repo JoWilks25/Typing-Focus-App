@@ -1,6 +1,6 @@
 # ✅ Documentation Checklist
 
-All essential documentation has been created for the Focus Writer project.
+All essential documentation has been created for the Draft Tree project.
 
 ## Required Files
 
@@ -60,7 +60,7 @@ All essential documentation has been created for the Focus Writer project.
 
 ✅ MIT License
 - Standard MIT license text
-- Copyright 2025 Focus Writer
+- Copyright 2025 Draft Tree
 - Full permissions granted
 
 ## 🎯 Developer Quick Start

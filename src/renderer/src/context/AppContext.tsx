@@ -186,12 +186,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Debounced progress update for IPC persistence (30s)
     const debouncedPersistProgress = useDebounce(
         useCallback(async (...args: unknown[]) => {
-            const [sessionId, currentWords, timeElapsed, progressThresholds] = args as [string, number, number, { 33: boolean; 67: boolean; 100: boolean }];
+            const [sessionId, currentWords, timeElapsed, progressPercentage] = args as [string, number, number, number];
             try {
                 if (window.api?.session?.updateProgress) {
-                    await window.api.session.updateProgress(sessionId, currentWords, timeElapsed, progressThresholds);
+                    await window.api.session.updateProgress(sessionId, currentWords, timeElapsed, progressPercentage);
                 } else {
-                    console.log('Progress update:', { sessionId, currentWords, timeElapsed, progressThresholds });
+                    console.log('Progress update:', { sessionId, currentWords, timeElapsed, progressPercentage });
                 }
             } catch (error) {
                 console.warn('Failed to persist progress:', error);
@@ -201,7 +201,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Update progress with debounced persistence
-    const updateProgress = useCallback((currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => {
+    const updateProgress = useCallback((currentWords: number, timeElapsed: number, progressPercentage: number) => {
         if (!activeSessionId) return;
 
         // Update local state immediately
@@ -211,14 +211,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     ...session,
                     currentWords,
                     timeElapsed,
-                    progressThresholds,
+                    progressPercentage,
                     updatedAt: new Date().toISOString()
                 }
                 : session
         ));
 
         // Debounced persistence to backend
-        debouncedPersistProgress(activeSessionId, currentWords, timeElapsed, progressThresholds);
+        debouncedPersistProgress(activeSessionId, currentWords, timeElapsed, progressPercentage);
     }, [activeSessionId, debouncedPersistProgress]);
 
     // Computed values

@@ -163,43 +163,8 @@ export function SessionSummary(): React.JSX.Element {
                     }
                 </p>
             </div>
-
-            {/* Statistics */}
-            <div className={styles['stats-grid']}>
-                <div className={styles['stat-card']}>
-                    <div className={styles['stat-label']}>Words Written</div>
-                    <div className={styles['stat-value']}>{session.currentWords}</div>
-                </div>
-                <div className={styles['stat-card']}>
-                    <div className={styles['stat-label']}>Goal Progress</div>
-                    <div className={styles['stat-value']}>{stats.progressPercentage}%</div>
-                </div>
-                <div className={styles['stat-card']}>
-                    <div className={styles['stat-label']}>Time Elapsed</div>
-                    <div className={styles['stat-value']}>
-                        {stats.timeElapsedMinutes}:{stats.timeElapsedSeconds.toString().padStart(2, '0')}
-                    </div>
-                </div>
-                <div className={styles['stat-card']}>
-                    <div className={styles['stat-label']}>Words/Min</div>
-                    <div className={styles['stat-value']}>{stats.wordsPerMinute}</div>
-                </div>
-            </div>
-
-            {/* Tree Animation */}
-            <div className={styles['tree-section']}>
-                <div className={styles['tree-container']}>
-                    <TreeAnimation
-                        progress={stats.progressPercentage}
-                        isActive={true} // Always show animation in session summary
-                        playFullAnimation={stats.isCompleted} // Play full animation when goal is completed
-                        showWiltedTree={!stats.isCompleted} // Show wilted tree emoji when goal is not completed
-                    />
-                </div>
-            </div>
-
             {/* Progress Bar */}
-            <div className={styles['progress-section']}>
+            {/* <div className={styles['progress-section']}>
                 <div className={styles['progress-title']}>Progress</div>
                 <div className={styles['progress-bar']}>
                     <div
@@ -208,6 +173,45 @@ export function SessionSummary(): React.JSX.Element {
                     />
                 </div>
                 <div className={styles['progress-text']}>{stats.progressPercentage}%</div>
+            </div> */}
+
+            {/* Content Layout - Tree Animation and Stats */}
+            <div className={styles['content-layout']}>
+                {/* Tree Animation */}
+                <div className={styles['tree-section']}>
+                    <div className={styles['tree-container']}>
+                        <TreeAnimation
+                            progress={stats.progressPercentage}
+                            isActive={true} // Always show animation in session summary
+                            playFullAnimation={stats.isCompleted} // Play full animation when goal is completed
+                            showWiltedTree={!stats.isCompleted} // Show wilted tree emoji when goal is not completed
+                        />
+                    </div>
+                </div>
+
+                {/* Statistics */}
+                <div className={styles['stats-section']}>
+                    <div className={styles['stats-grid']}>
+                        <div className={styles['stat-card']}>
+                            <div className={styles['stat-label']}>Goal Progress</div>
+                            <div className={styles['stat-value']}>{stats.progressPercentage}%</div>
+                        </div>
+                        <div className={styles['stat-card']}>
+                            <div className={styles['stat-label']}>Words Written</div>
+                            <div className={styles['stat-value']}>{session.currentWords}</div>
+                        </div>
+                        <div className={styles['stat-card']}>
+                            <div className={styles['stat-label']}>Time Elapsed</div>
+                            <div className={styles['stat-value']}>
+                                {stats.timeElapsedMinutes}:{stats.timeElapsedSeconds.toString().padStart(2, '0')}
+                            </div>
+                        </div>
+                        <div className={styles['stat-card']}>
+                            <div className={styles['stat-label']}>Words/Min</div>
+                            <div className={styles['stat-value']}>{stats.wordsPerMinute}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Action Buttons */}
@@ -218,12 +222,12 @@ export function SessionSummary(): React.JSX.Element {
                 >
                     Start New Session
                 </button>
-                <button
+                {/* <button
                     onClick={handleViewDashboard}
                     className={`${styles['action-button']} ${styles['action-button-secondary']}`}
                 >
                     View Dashboard
-                </button>
+                </button> */}
             </div>
         </div>
     );

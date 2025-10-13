@@ -123,7 +123,7 @@ import MyComponent from '../../../../src/renderer/src/components/MyComponent';
 describe('MyComponent', () => {
   it('should render with providers', () => {
     customRender(<MyComponent />, {
-      initialAppState: { currentView: 'dashboard' },
+      initialAppState: { currentView: 'session-setup' },
       initialSessionState: { sessions: [] }
     });
     

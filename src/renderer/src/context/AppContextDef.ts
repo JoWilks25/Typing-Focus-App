@@ -21,7 +21,7 @@ export interface AppContextValue extends AppState {
     updateSession: (session: Session) => void;
     removeSession: (id: string) => void;
     resetSessions: () => void;
-    updateProgress: (currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => void;
+    updateProgress: (currentWords: number, timeElapsed: number, progressPercentage: number) => void;
     incrementDistraction: (sessionId: string) => Promise<void>;
     endSession: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
     abandonSession: (sessionId: string) => Promise<Session>;

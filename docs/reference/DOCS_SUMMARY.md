@@ -1,6 +1,6 @@
 # 📚 Documentation Complete
 
-All minimal documentation has been created for the Focus Writer project.
+All minimal documentation has been created for the Draft Tree project.
 
 ## ✅ Files Created/Updated
 
@@ -30,7 +30,7 @@ All minimal documentation has been created for the Focus Writer project.
 ### 3. LICENSE
 **Created** - MIT License:
 - Standard MIT license text
-- Copyright 2025 Focus Writer
+- Copyright 2025 Draft Tree
 - Full permissions granted
 
 ## 📁 Documentation Structure

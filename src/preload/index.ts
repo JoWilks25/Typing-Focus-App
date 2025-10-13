@@ -28,8 +28,8 @@ const sessionAPI = {
   updateContent: (sessionId: string, content: string): Promise<Session> => {
     return ipcRenderer.invoke('session:update-content', sessionId, content);
   },
-  updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }): Promise<Session> => {
-    return ipcRenderer.invoke('session:update-progress', sessionId, currentWords, timeElapsed, progressThresholds);
+  updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressPercentage: number): Promise<Session> => {
+    return ipcRenderer.invoke('session:update-progress', sessionId, currentWords, timeElapsed, progressPercentage);
   },
   getStats: (sessionId: string) => {
     return ipcRenderer.invoke('session:stats', sessionId);

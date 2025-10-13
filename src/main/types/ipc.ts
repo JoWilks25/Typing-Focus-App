@@ -143,11 +143,7 @@ export interface SessionListResponse {
     updatedAt: string;
     currentWords?: number;
     timeElapsed?: number;
-    progressThresholds?: {
-      33: boolean;
-      67: boolean;
-      100: boolean;
-    };
+  progressPercentage?: number;
   }>;
 }
 
@@ -155,11 +151,7 @@ export interface SessionUpdateProgressRequest {
   sessionId: string;
   currentWords: number;
   timeElapsed: number;
-  progressThresholds: {
-    33: boolean;
-    67: boolean;
-    100: boolean;
-  };
+  progressPercentage: number;
 }
 
 export interface SessionUpdateProgressResponse {

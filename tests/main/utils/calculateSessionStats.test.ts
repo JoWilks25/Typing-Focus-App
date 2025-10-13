@@ -16,7 +16,7 @@ describe('calculateSessionStats', () => {
     updatedAt: new Date().toISOString(),
     currentWords: 0,
     timeElapsed: 1000000, // 1000 seconds
-    progressThresholds: { 33: false, 67: false, 100: false },
+    progressPercentage: 0,
     distractionCount: 0
   };
 
