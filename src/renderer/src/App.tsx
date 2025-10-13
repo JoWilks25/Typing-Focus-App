@@ -22,57 +22,43 @@ function AppContent(): React.JSX.Element {
 
   return (
     <div className={styles['app-container']}>
-      {/* Header */}
-      <header className={styles['header']}>
-        <div className={styles['header-content']}>
+      {/* Navigation with integrated title */}
+      <nav className={styles['navigation']}>
+        <div className={styles['nav-content']}>
+          {/* Title on the left */}
           <h1 className={styles['app-title']}>
             Focus Writer
           </h1>
-        </div>
-      </header>
 
-      {/* Navigation */}
-      <nav className={styles['navigation']}>
-        <div className={styles['nav-content']}>
-          {/* <button
-            onClick={() => !isInActiveEditorSession && handleViewChange('dashboard')}
-            disabled={isInActiveEditorSession}
-            className={`${styles['nav-button']} ${isInActiveEditorSession
-              ? styles['nav-button-disabled']
-              : currentView === 'dashboard'
-                ? styles['nav-button-active']
-                : styles['nav-button-inactive']
-              }`}
-            title={isInActiveEditorSession ? 'Finish your session to access dashboard' : 'Dashboard View'}
-          >
-            Dashboard View
-          </button> */}
-          <button
-            onClick={() => !isInActiveEditorSession && handleViewChange('session-setup')}
-            disabled={isInActiveEditorSession}
-            className={`${styles['nav-button']} ${isInActiveEditorSession
-              ? styles['nav-button-disabled']
-              : currentView === 'session-setup'
-                ? styles['nav-button-active']
-                : styles['nav-button-inactive']
-              }`}
-            title={isInActiveEditorSession ? 'Finish your session to start a new one' : 'New Session'}
-          >
-            New Session
-          </button>
-          <button
-            onClick={() => activeSession && handleViewChange('editor')}
-            disabled={!activeSession}
-            className={`${styles['nav-button']} ${!activeSession
-              ? styles['nav-button-disabled']
-              : currentView === 'editor'
-                ? styles['nav-button-active']
-                : styles['nav-button-inactive']
-              }`}
-            title={!activeSession ? 'Start a session to access the editor' : 'Editor View'}
-          >
-            Editor View
-          </button>
+          {/* Navigation buttons on the right */}
+          <div className={styles['nav-buttons']}>
+            <button
+              onClick={() => !isInActiveEditorSession && handleViewChange('session-setup')}
+              disabled={isInActiveEditorSession}
+              className={`${styles['nav-button']} ${isInActiveEditorSession
+                ? styles['nav-button-disabled']
+                : currentView === 'session-setup'
+                  ? styles['nav-button-active']
+                  : styles['nav-button-inactive']
+                }`}
+              title={isInActiveEditorSession ? 'Finish your session to start a new one' : 'New Session'}
+            >
+              New Session
+            </button>
+            <button
+              onClick={() => activeSession && handleViewChange('editor')}
+              disabled={!activeSession}
+              className={`${styles['nav-button']} ${!activeSession
+                ? styles['nav-button-disabled']
+                : currentView === 'editor'
+                  ? styles['nav-button-active']
+                  : styles['nav-button-inactive']
+                }`}
+              title={!activeSession ? 'Start a session to access the editor' : 'Editor View'}
+            >
+              Editor View
+            </button>
+          </div>
         </div>
       </nav>
 

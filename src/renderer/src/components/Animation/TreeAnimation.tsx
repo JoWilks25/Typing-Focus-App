@@ -111,8 +111,8 @@ export const TreeAnimation = ({ progress, isActive, playFullAnimation = false, s
                             loop={false} // Never loop - we control playback manually
                             autoplay={playFullAnimation} // Autoplay only for full animation mode
                             style={{
-                                width: '300px',
-                                height: '300px',
+                                width: '150px',
+                                height: '150px',
                                 minWidth: '250px',
                                 minHeight: '250px'
                             }}

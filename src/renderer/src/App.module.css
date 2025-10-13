@@ -7,27 +7,6 @@
   color: #f3f4f6; /* gray-100 */
 }
 
-.header {
-  background-color: #1f2937; /* gray-800 */
-  border-bottom: 1px solid #374151; /* gray-700 */
-  padding: 1rem 1.5rem;
-}
-
-.header-content {
-  max-width: 80rem; /* max-w-7xl */
-  margin: 0 auto;
-}
-
-.app-title {
-  font-size: 1.875rem; /* text-3xl */
-  font-weight: 700; /* font-bold */
-  text-align: center;
-  background: linear-gradient(to right, #60a5fa, #a855f7); /* from-blue-400 to-purple-500 */
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
 .navigation {
   background-color: #1f2937; /* gray-800 */
   border-bottom: 1px solid #374151; /* gray-700 */
@@ -38,7 +17,24 @@
   max-width: 80rem; /* max-w-7xl */
   margin: 0 auto;
   display: flex;
-  justify-content: center;
+  justify-content: space-between; /* Changed from center to space-between */
+  align-items: center; /* Add vertical centering */
+  gap: 1rem;
+}
+
+.app-title {
+  font-size: 1.5rem; /* Reduced from 1.875rem to fit better in nav */
+  font-weight: 700; /* font-bold */
+  text-align: left; /* Changed from center to left */
+  background: linear-gradient(to right, #60a5fa, #a855f7); /* from-blue-400 to-purple-500 */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin: 0; /* Remove default margin */
+}
+
+.nav-buttons {
+  display: flex;
   gap: 1rem;
 }
 
@@ -79,7 +75,7 @@
 .main-content {
   max-width: 80rem; /* max-w-7xl */
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1rem;
 }
 
 .footer {
