@@ -27,15 +27,12 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
     const { endSession } = useSession();
 
     // Calculate progress and timer state
-    const { formattedTime, isTimerRunning, progress, hasReached33, hasReached67, hasReached100, goalType, goalValue } = useMemo(() => {
+    const { formattedTime, isTimerRunning, progress, goalType, goalValue } = useMemo(() => {
         if (!activeSession) {
             return {
                 formattedTime: '00:00',
                 isTimerRunning: false,
                 progress: 0,
-                hasReached33: false,
-                hasReached67: false,
-                hasReached100: false,
                 goalType: 'word' as const,
                 goalValue: 500
             };
@@ -52,17 +49,10 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
             ? Math.min((localState.wordCount / activeSession.goalValue) * 100, 100)
             : Math.min((timeElapsed / (activeSession.goalValue * 60 * 1000)) * 100, 100);
 
-        const hasReached33 = progress >= 33;
-        const hasReached67 = progress >= 67;
-        const hasReached100 = progress >= 100;
-
         return {
             formattedTime,
             isTimerRunning,
             progress,
-            hasReached33,
-            hasReached67,
-            hasReached100,
             goalType: activeSession.goalType,
             goalValue: activeSession.goalValue
         };
@@ -113,10 +103,7 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
                         </div>
                         <div className={styles['progress-bar-container']}>
                             <div
-                                className={`${styles['progress-bar']} ${hasReached100 ? styles['progress-bar-green'] :
-                                    hasReached67 ? styles['progress-bar-yellow'] :
-                                        hasReached33 ? styles['progress-bar-blue'] : styles['progress-bar-gray']
-                                    }`}
+                                className={`${styles['progress-bar']} ${styles['progress-bar-green']}`}
                                 style={{ width: `${goalProgress}%` }}
                             />
                         </div>

@@ -34,7 +34,7 @@ function AppContent(): React.JSX.Element {
       {/* Navigation */}
       <nav className={styles['navigation']}>
         <div className={styles['nav-content']}>
-          <button
+          {/* <button
             onClick={() => !isInActiveEditorSession && handleViewChange('dashboard')}
             disabled={isInActiveEditorSession}
             className={`${styles['nav-button']} ${isInActiveEditorSession
@@ -46,7 +46,7 @@ function AppContent(): React.JSX.Element {
             title={isInActiveEditorSession ? 'Finish your session to access dashboard' : 'Dashboard View'}
           >
             Dashboard View
-          </button>
+          </button> */}
           <button
             onClick={() => !isInActiveEditorSession && handleViewChange('session-setup')}
             disabled={isInActiveEditorSession}
@@ -78,7 +78,7 @@ function AppContent(): React.JSX.Element {
 
       {/* Main Content */}
       <main className={styles['main-content']}>
-        {currentView === 'dashboard' && <Dashboard />}
+        {/* {currentView === 'dashboard' && <Dashboard />} */}
         {currentView === 'session-setup' && <SessionSetup />}
         {currentView === 'editor' && <Editor />}
         {currentView === 'session-summary' && <SessionSummary />}

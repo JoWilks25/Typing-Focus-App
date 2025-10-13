@@ -58,7 +58,7 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 </button>
 
                 {/* Time Goal Button */}
-                <button
+                {/* <button
                     type="button"
                     data-testid="time-goal-button"
                     className={`${styles['goal-button']} ${goalType === 'time' ? styles['goal-button-active'] : styles['goal-button-inactive']}`}
@@ -66,8 +66,8 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                     onKeyDown={(e) => handleKeyDown(e, 'time')}
                     aria-pressed={goalType === 'time'}
                     tabIndex={0}
+                    disabled
                 >
-                    {/* Clock Icon */}
                     <svg
                         className={styles['goal-icon']}
                         fill="none"
@@ -83,7 +83,7 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                         />
                     </svg>
                     Time Goal
-                </button>
+                </button> */}
             </div>
         </div>
     );
