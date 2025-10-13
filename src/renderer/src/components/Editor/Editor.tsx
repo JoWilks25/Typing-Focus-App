@@ -348,49 +348,55 @@ export const Editor = () => {
     return undefined;
   }, [setView, abandonSession]); // Include setView and abandonSession
 
+  const updateProgressInBackground = useCallback(() => {
+    if (!activeSession) return;
+    const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
+    // Calculate time elapsed for progress tracking
+    const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
 
-  // Separate progress update interval (45 seconds) - independent of timer display
+    // Calculate current progress to check for threshold crossings
+    const goalValue = activeSession.goalValue || 500;
+    const goalType = activeSession.goalType || 'word';
+    const currentProgress = goalType === 'word'
+      ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
+      : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
+
+    // Update thresholds if progress has crossed them
+    const newThresholds = { ...progressThresholds };
+    console.log('currentProgress', currentProgress, 'newThresholds', newThresholds)
+    if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
+    if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
+    if (currentProgress >= 100 && !newThresholds[100]) {
+      newThresholds[100] = true;
+      // Show completion modal when reaching 100% (only if not already shown)
+      if (!hasShownCompletionModal) {
+        setShowCompletionModal(true);
+        setHasShownCompletionModal(true);
+      }
+    }
+
+    // Use context's updateProgress function to update both React state and backend
+    updateProgress(localState.wordCount, timeElapsed, newThresholds);
+
+    console.log('Progress update via interval (React state + backend):', {
+      wordCount: localState.wordCount,
+      timeElapsed,
+      currentProgress,
+      newThresholds
+    });
+  }, [activeSession, hasShownCompletionModal, localState.wordCount, updateProgress])
+
+  // Separate progress update interval (5 seconds) - independent of timer display
   useEffect(() => {
     if (!activeSession) return;
     const progressInterval = globalThis.setInterval(() => {
-      const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
-      // Calculate time elapsed for progress tracking
-      const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
-
-      // Calculate current progress to check for threshold crossings
-      const goalValue = activeSession.goalValue || 500;
-      const goalType = activeSession.goalType || 'word';
-      const currentProgress = goalType === 'word'
-        ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
-        : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
-
-      // Update thresholds if progress has crossed them
-      const newThresholds = { ...progressThresholds };
-      console.log('currentProgress', currentProgress, 'newThresholds', newThresholds)
-      if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
-      if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
-      if (currentProgress >= 100 && !newThresholds[100]) {
-        newThresholds[100] = true;
-        // Show completion modal when reaching 100% (only if not already shown)
-        if (!hasShownCompletionModal) {
-          setShowCompletionModal(true);
-          setHasShownCompletionModal(true);
-        }
-      }
-
-      // Use context's updateProgress function to update both React state and backend
-      updateProgress(localState.wordCount, timeElapsed, newThresholds);
-
-      console.log('Progress update via interval (React state + backend):', {
-        wordCount: localState.wordCount,
-        timeElapsed,
-        currentProgress,
-        newThresholds
-      });
-    }, 15000); // 15 seconds
+      // Don't update state if inactivity modal currently shown
+      if (showInactivityModal) return;
+      updateProgressInBackground()
+    }, 5000); // 5 seconds
 
     return () => globalThis.clearInterval(progressInterval);
-  }, [activeSession, localState.wordCount, updateProgress, hasShownCompletionModal]);
+  }, [activeSession, updateProgressInBackground, showInactivityModal]);
 
   // Calculate progress for tree animation
   const treeProgress = useMemo(() => {
