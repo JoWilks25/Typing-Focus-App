@@ -180,7 +180,7 @@ async function handleSessionUpdateProgress(
   sessionId: string,
   currentWords: number,
   timeElapsed: number,
-  progressThresholds: { 33: boolean; 67: boolean; 100: boolean }
+  progressPercentage: number
 ): Promise<Session> {
   if (!sessionId || sessionId.trim() === '') {
     throw new Error('Session ID is required');
@@ -194,7 +194,7 @@ async function handleSessionUpdateProgress(
     throw new Error('Time elapsed must be a non-negative number');
   }
 
-  return await sessionManager.updateProgress(sessionId, currentWords, timeElapsed, progressThresholds);
+  return await sessionManager.updateProgress(sessionId, currentWords, timeElapsed, progressPercentage);
 }
 
 async function handleSessionStats(sessionId: string) {
@@ -487,8 +487,8 @@ export function registerHandlers(): void {
     return await handleSessionUpdateContent(sessionId, content);
   });
 
-  ipcMain.handle(IPC_CHANNELS.SESSION_UPDATE_PROGRESS, async (_, sessionId, currentWords, timeElapsed, progressThresholds) => {
-    return await handleSessionUpdateProgress(sessionId, currentWords, timeElapsed, progressThresholds);
+  ipcMain.handle(IPC_CHANNELS.SESSION_UPDATE_PROGRESS, async (_, sessionId, currentWords, timeElapsed, progressPercentage) => {
+    return await handleSessionUpdateProgress(sessionId, currentWords, timeElapsed, progressPercentage);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STATS, async (_, sessionId) => {

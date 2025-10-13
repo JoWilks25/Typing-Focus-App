@@ -147,63 +147,59 @@ const debouncedUpdateSession = useDebounce(
 **Strategy**: Regular intervals with threshold calculation and backend persistence
 **Interval**: 45 seconds
 **Trigger**: Time-based
-**Data**: Word count, time elapsed, progress thresholds
-**Implementation**: Editor component with direct Session API calls
+**Data**: Word count, time elapsed, progress percentage
+**Implementation**: Editor component with context-based progress updates
 
 ```typescript
 // Editor.tsx - Progress update pattern
+const updateProgressInBackground = useCallback(() => {
+  if (!activeSession) return;
+  // Calculate time elapsed for progress tracking
+  const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
+
+  // Calculate current progress percentage
+  const goalValue = activeSession.goalValue || 500;
+  const goalType = activeSession.goalType || 'word';
+  const currentProgress = goalType === 'word'
+    ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
+    : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
+
+  // Show completion modal when reaching 100% (only if not already shown)
+  if (currentProgress >= 100 && !hasShownCompletionModal) {
+    setShowCompletionModal(true);
+    setHasShownCompletionModal(true);
+  }
+
+  // Use context's updateProgress function to update both React state and backend
+  updateProgress(localState.wordCount, timeElapsed, currentProgress);
+}, [activeSession, hasShownCompletionModal, localState.wordCount, updateProgress]);
+
 useEffect(() => {
   if (!activeSession) return;
-
   const progressInterval = globalThis.setInterval(() => {
     if (localState.wordCount > 0) {
-      const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
-      const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
-      
-      // Calculate current progress and update thresholds
-      const goalValue = activeSession.goalValue || 500;
-      const goalType = activeSession.goalType || 'word';
-      const currentProgress = goalType === 'word'
-        ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
-        : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
-
-      const newThresholds = { ...progressThresholds };
-      if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
-      if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
-      if (currentProgress >= 100 && !newThresholds[100]) newThresholds[100] = true;
-
-      // Direct backend update via Session API - NO React state changes
-      const api = getElectronAPI();
-      (api.session as any).updateProgress({
-        sessionId: activeSession.id,
-        currentWords: localState.wordCount,
-        timeElapsed,
-        progressThresholds: newThresholds
-      }).catch((error) => {
-        console.warn('Failed to update progress:', error);
-      });
+      updateProgressInBackground();
     }
-  }, 45000); // 45 seconds
+  }, 5000); // 5 seconds
 
   return () => globalThis.clearInterval(progressInterval);
-}, [activeSession, localState.wordCount]);
+}, [activeSession, updateProgressInBackground, localState.wordCount]);
 ```
 
 **Key Design Decisions**:
-- **Direct API Calls**: Bypasses React state to prevent editor interference
-- **Threshold Calculation**: Updates progress thresholds based on current progress
-- **Independent of UI**: Progress updates don't trigger React re-renders
+- **Context-based Updates**: Uses AppContext for both local state and backend persistence
+- **Simplified Progress**: Single percentage value instead of threshold tracking
+- **Modal Triggers**: Direct percentage-based completion modal logic
 
 **Pros**:
-- Predictable updates
-- Data safety
-- No editor interference
-- Comprehensive progress tracking
+- Simpler data model
+- Cleaner logic
+- Better performance
+- More flexible milestone handling
 
 **Cons**:
-- Unnecessary updates when no changes
-- Resource usage
-- Complex threshold logic
+- Requires context coordination
+- Modal state managed separately
 
 ### Timer Display (Real-time)
 

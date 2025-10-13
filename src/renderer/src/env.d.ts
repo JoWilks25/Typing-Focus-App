@@ -18,7 +18,7 @@ declare global {
         getLastEnded: () => Promise<Session | null>;
         list: () => Promise<Session[]>;
         updateContent: (sessionId: string, content: string) => Promise<Session>;
-        updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }) => Promise<Session>;
+        updateProgress: (sessionId: string, currentWords: number, timeElapsed: number, progressPercentage: number) => Promise<Session>;
         getStats: (sessionId: string) => Promise<{
           sessionId: string;
           isCompleted: boolean;

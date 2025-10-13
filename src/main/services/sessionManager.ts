@@ -48,7 +48,7 @@ export class SessionManager {
       updatedAt: now,
       currentWords: 0,
       timeElapsed: 0,
-      progressThresholds: { 33: false, 67: false, 100: false }
+      progressPercentage: 0
     };
 
     this.sessions.set(sessionId, session);
@@ -169,17 +169,17 @@ export class SessionManager {
     const wordCount = this.calculateWordCount(content);
     const timeElapsed = Date.now() - session.startTime;
     
-    // Calculate progress thresholds
-    const progressThresholds = this.calculateProgressThresholds(session.goalType, session.goalValue, wordCount, timeElapsed);
-
     const updatedSession: Session = {
       ...session,
       content,
       currentWords: wordCount,
       timeElapsed,
-      progressThresholds,
+      progressPercentage: 0, // temporary; will be updated below
       updatedAt: new Date().toISOString()
     };
+
+    // Calculate progress percentage after updating counts
+    updatedSession.progressPercentage = this.calculateProgressPercentage(updatedSession);
 
     this.sessions.set(sessionId, updatedSession);
     return updatedSession;
@@ -192,7 +192,7 @@ export class SessionManager {
     sessionId: string,
     currentWords: number,
     timeElapsed: number,
-    progressThresholds: { 33: boolean; 67: boolean; 100: boolean }
+    progressPercentage: number
   ): Promise<Session> {
     const session = this.sessions.get(sessionId);
     if (!session) {
@@ -203,7 +203,7 @@ export class SessionManager {
       ...session,
       currentWords,
       timeElapsed,
-      progressThresholds,
+      progressPercentage,
       updatedAt: new Date().toISOString()
     };
 
@@ -327,27 +327,7 @@ export class SessionManager {
   /**
    * Calculate progress thresholds based on goal type and current progress
    */
-  private calculateProgressThresholds(
-    goalType: GoalType, 
-    goalValue: number, 
-    currentWords: number, 
-    timeElapsed: number
-  ): { 33: boolean; 67: boolean; 100: boolean } {
-    let progressPercentage = 0;
-    
-    if (goalType === 'word') {
-      progressPercentage = (currentWords / goalValue) * 100;
-    } else if (goalType === 'time') {
-      const goalTimeMs = goalValue * 60 * 1000; // Convert minutes to milliseconds
-      progressPercentage = (timeElapsed / goalTimeMs) * 100;
-    }
-
-    return {
-      33: progressPercentage >= 33,
-      67: progressPercentage >= 67,
-      100: progressPercentage >= 100
-    };
-  }
+  
 
   /**
    * Calculate progress percentage

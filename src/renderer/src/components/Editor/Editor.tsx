@@ -350,39 +350,29 @@ export const Editor = () => {
 
   const updateProgressInBackground = useCallback(() => {
     if (!activeSession) return;
-    const progressThresholds = activeSession.progressThresholds || { 33: false, 67: false, 100: false };
     // Calculate time elapsed for progress tracking
     const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
 
-    // Calculate current progress to check for threshold crossings
+    // Calculate current progress percentage
     const goalValue = activeSession.goalValue || 500;
     const goalType = activeSession.goalType || 'word';
     const currentProgress = goalType === 'word'
       ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
       : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
 
-    // Update thresholds if progress has crossed them
-    const newThresholds = { ...progressThresholds };
-    console.log('currentProgress', currentProgress, 'newThresholds', newThresholds)
-    if (currentProgress >= 33 && !newThresholds[33]) newThresholds[33] = true;
-    if (currentProgress >= 67 && !newThresholds[67]) newThresholds[67] = true;
-    if (currentProgress >= 100 && !newThresholds[100]) {
-      newThresholds[100] = true;
-      // Show completion modal when reaching 100% (only if not already shown)
-      if (!hasShownCompletionModal) {
-        setShowCompletionModal(true);
-        setHasShownCompletionModal(true);
-      }
+    // Show completion modal when reaching 100% (only if not already shown)
+    if (currentProgress >= 100 && !hasShownCompletionModal) {
+      setShowCompletionModal(true);
+      setHasShownCompletionModal(true);
     }
 
     // Use context's updateProgress function to update both React state and backend
-    updateProgress(localState.wordCount, timeElapsed, newThresholds);
+    updateProgress(localState.wordCount, timeElapsed, currentProgress);
 
     console.log('Progress update via interval (React state + backend):', {
       wordCount: localState.wordCount,
       timeElapsed,
-      currentProgress,
-      newThresholds
+      currentProgress
     });
   }, [activeSession, hasShownCompletionModal, localState.wordCount, updateProgress])
 

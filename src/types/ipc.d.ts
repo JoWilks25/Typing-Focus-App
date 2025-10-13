@@ -66,7 +66,7 @@ interface SessionAPI {
   getLastEnded(): Promise<any>;
   list(): Promise<any[]>;
   updateContent(sessionId: string, content: string): Promise<any>;
-  updateProgress(sessionId: string, currentWords: number, timeElapsed: number, progressThresholds: { 33: boolean; 67: boolean; 100: boolean }): Promise<any>;
+  updateProgress(sessionId: string, currentWords: number, timeElapsed: number, progressPercentage: number): Promise<any>;
   getStats(sessionId: string): Promise<any>;
   incrementDistraction(sessionId: string): Promise<any>;
   abandon(sessionId: string): Promise<any>;
