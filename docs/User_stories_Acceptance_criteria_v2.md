@@ -1,6 +1,6 @@
 # v2
 
-# User Stories & Acceptance Criteria - Focus Writer V1
+# User Stories & Acceptance Criteria - Draft Tree V1
 
 ## 1. Writing Session & Goal Setting
 
@@ -314,7 +314,7 @@ As a writer, I want to import existing text files to continue working on them an
     - Menu: File → Export
     - "Save Draft" button in session end summary
 - Export triggers native system file picker dialog
-- Default filename: "Focus Writer - [Date].txt" (e.g., "Focus Writer - Oct 7 2025.txt")
+- Default filename: "Draft Tree - [Date].txt" (e.g., "Draft Tree - Oct 7 2025.txt")
 - User can choose:
     - Custom filename
     - Save location

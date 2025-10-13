@@ -1,4 +1,4 @@
-// import { Dashboard } from './components/Dashboard/Dashboard';
+c// import { Dashboard } from './components/Dashboard/Dashboard';
 import { Editor } from './components/Editor/Editor';
 import { SessionSetup } from './components/Session/SessionSetup';
 import { SessionSummary } from './components/Session/SessionSummary';
@@ -26,9 +26,12 @@ function AppContent(): React.JSX.Element {
       <nav className={styles['navigation']}>
         <div className={styles['nav-content']}>
           {/* Title on the left */}
-          <h1 className={styles['app-title']}>
-            Focus Writer
-          </h1>
+          <div className={styles['app-title-container']}>
+            <h1 className={styles['app-title']}>
+              Draft Tree
+            </h1>
+            <span className={styles['mvp-badge']}>MVP</span>
+          </div>
 
           {/* Navigation buttons on the right */}
           <div className={styles['nav-buttons']}>

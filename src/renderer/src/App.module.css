@@ -22,6 +22,12 @@
   gap: 1rem;
 }
 
+.app-title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .app-title {
   font-size: 1.5rem; /* Reduced from 1.875rem to fit better in nav */
   font-weight: 700; /* font-bold */
@@ -31,6 +37,20 @@
   -webkit-background-clip: text;
   color: transparent;
   margin: 0; /* Remove default margin */
+}
+
+.mvp-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706); /* amber-500 to amber-600 */
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px; /* pill shape */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .nav-buttons {

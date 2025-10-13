@@ -1,6 +1,6 @@
 # 🚀 Startup Verification Checklist
 
-Follow these steps to verify your Focus Writer setup is working correctly.
+Follow these steps to verify your Draft Tree setup is working correctly.
 
 ## Prerequisites
 
@@ -59,14 +59,14 @@ npm run dev
 ## Step 4: React Content is Visible
 
 ### Expected Result:
-- ✅ Window displays "Focus Writer" header (gradient text)
+- ✅ Window displays "Draft Tree" header (gradient text)
 - ✅ Two navigation buttons visible: "Dashboard View" and "Editor View"
 - ✅ Main content area shows "Dashboard - Coming Soon"
 - ✅ Footer shows version info (Electron, Chromium, Node versions)
 - ✅ Dark theme is applied (gray background)
 
 **Visual Checklist:**
-- [ ] Header with gradient "Focus Writer" text
+- [ ] Header with gradient "Draft Tree" text
 - [ ] Navigation buttons (Dashboard View, Editor View)
 - [ ] Content area with placeholder text
 - [ ] Footer with version numbers
@@ -142,7 +142,7 @@ Your setup is working correctly if:
 1. ✅ `npm install` completes without errors
 2. ✅ `npm run dev` starts the app
 3. ✅ Electron window opens (1200x800)
-4. ✅ React content is visible (Focus Writer UI)
+4. ✅ React content is visible (Draft Tree UI)
 5. ✅ Console shows no errors
 6. ✅ Navigation works (Dashboard ↔ Editor)
 7. ✅ Can close app gracefully

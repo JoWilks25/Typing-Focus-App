@@ -115,7 +115,7 @@ export function SessionSetup(): React.JSX.Element {
                 >
                     <div>
                         Start Writing
-                        <span className={styles['submit-hint']}>Press Enter ↵</span>
+                        <span className={styles['submit-hint']}> Press Enter ↵</span>
                     </div>
                 </button>
             </form>

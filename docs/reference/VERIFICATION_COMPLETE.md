@@ -21,7 +21,7 @@ A comprehensive verification checklist has been created to help developers verif
 - Visibility check
 
 #### 4. ✅ React content is visible
-- Header with "Focus Writer" (gradient)
+- Header with "Draft Tree" (gradient)
 - Navigation buttons visible
 - Dashboard/Editor content displayed
 - Footer with version info

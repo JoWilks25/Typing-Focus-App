@@ -3,7 +3,7 @@
 ```markdown
 ## Overview
 
-Focus Writer V1 is a Mac desktop application built with Electron that enables focused writing sessions with goal-tracking, distraction detection, inactivity management, autosave/recovery, and gamified tree animations. Designed as a local-only, single-user application, the architecture is modular to support future extensions for cloud sync, mobile platforms, and multi-user features.
+Draft Tree V1 is a Mac desktop application built with Electron that enables focused writing sessions with goal-tracking, distraction detection, inactivity management, autosave/recovery, and gamified tree animations. Designed as a local-only, single-user application, the architecture is modular to support future extensions for cloud sync, mobile platforms, and multi-user features.
 
 ---
 
@@ -660,7 +660,7 @@ test('marks session as abandoned after countdown expires', async () => {
 // electron-builder configuration
 {
 "appId": "com.focuswriter.app",
-"productName": "Focus Writer",
+"productName": "Draft Tree",
 "directories": {
 "output": "dist"
 },
@@ -671,7 +671,7 @@ test('marks session as abandoned after countdown expires', async () => {
 "icon": "build/icon.icns"
 },
 "dmg": {
-"title": "Focus Writer Installer",
+"title": "Draft Tree Installer",
 "icon": "build/icon.icns"
 }
 }

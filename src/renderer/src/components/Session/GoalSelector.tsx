@@ -58,15 +58,16 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 </button>
 
                 {/* Time Goal Button */}
-                {/* <button
+                <button
                     type="button"
                     data-testid="time-goal-button"
-                    className={`${styles['goal-button']} ${goalType === 'time' ? styles['goal-button-active'] : styles['goal-button-inactive']}`}
+                    className={`${styles['goal-button']} ${styles['goal-button-disabled']}`}
                     onClick={() => onGoalTypeChange('time')}
                     onKeyDown={(e) => handleKeyDown(e, 'time')}
-                    aria-pressed={goalType === 'time'}
-                    tabIndex={0}
+                    aria-pressed={false}
+                    tabIndex={-1}
                     disabled
+                    title="Time-based goals coming soon!"
                 >
                     <svg
                         className={styles['goal-icon']}
@@ -82,8 +83,15 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                     </svg>
-                    Time Goal
-                </button> */}
+                    <span className={styles['goal-text']}>Time Goal</span>
+                    <span className={styles['coming-soon']}>Coming Soon</span>
+                </button>
+            </div>
+
+            {/* Future feature notice */}
+            <div className={styles['future-feature-notice']}>
+                <span className={styles['notice-icon']}>🚀</span>
+                <span className={styles['notice-text']}>Time-based goals coming in a future update!</span>
             </div>
         </div>
     );
