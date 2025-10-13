@@ -63,7 +63,8 @@ export const IPC_CHANNELS = {
   
   // Dialog operations
   DIALOG_SHOW_OPEN_DIRECTORY: 'dialog:show-open-directory',
-  DIALOG_GET_DEFAULT_SAVE_DIRECTORY: 'dialog:get-default-save-directory'
+  DIALOG_GET_DEFAULT_SAVE_DIRECTORY: 'dialog:get-default-save-directory',
+  DIALOG_OPEN_FOLDER: 'dialog:open-folder'
 } as const;
 
 let sessionManager: SessionManager;
@@ -477,6 +478,26 @@ async function handleDialogGetDefaultSaveDirectory(): Promise<string> {
   return defaultPath;
 }
 
+async function handleDialogOpenFolder(filePath: string): Promise<void> {
+  try {
+    const { shell } = require('electron');
+    const path = require('path');
+    
+    // Get the directory containing the file
+    const directoryPath = path.dirname(filePath);
+    
+    console.log('Opening folder:', directoryPath);
+    
+    // Open the folder in the system's default file manager
+    await shell.openPath(directoryPath);
+    
+    console.log('Successfully opened folder');
+  } catch (error) {
+    console.error('Error opening folder:', error);
+    throw error;
+  }
+}
+
 /**
  * Window Focus Handlers
  */
@@ -497,6 +518,10 @@ export function registerHandlers(): void {
   if (!sessionManager || !fileManager) {
     throw new Error('Services not initialized. Call initializeServices first.');
   }
+  
+  console.log('Registering IPC handlers...');
+  console.log('sessionManager:', !!sessionManager);
+  console.log('fileManager:', !!fileManager);
 
   // Session handlers
   ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue) => {
@@ -669,6 +694,18 @@ export function registerHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.DIALOG_GET_DEFAULT_SAVE_DIRECTORY, async () => {
     return await handleDialogGetDefaultSaveDirectory();
   });
+
+  try {
+    ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_FOLDER, async (_, filePath) => {
+      console.log('IPC: dialog:open-folder handler called with filePath:', filePath);
+      return await handleDialogOpenFolder(filePath);
+    });
+    console.log('Successfully registered dialog:open-folder handler');
+  } catch (error) {
+    console.error('Error registering dialog:open-folder handler:', error);
+  }
+
+  console.log('Dialog handlers registered, including dialog:open-folder');
 
   // Window focus handlers
   ipcMain.handle(IPC_CHANNELS.FOCUS_MAIN_WINDOW, async () => {

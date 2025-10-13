@@ -9,6 +9,9 @@ const dialogAPI = {
   },
   getDefaultSaveDirectory: (): Promise<string> => {
     return ipcRenderer.invoke('dialog:get-default-save-directory');
+  },
+  openFolder: (filePath: string): Promise<void> => {
+    return ipcRenderer.invoke('dialog:open-folder', filePath);
   }
 };
 

@@ -109,6 +109,19 @@ export function SessionSummary(): React.JSX.Element {
         setView('dashboard');
     }, [setView]);
 
+    const handleOpenFolder = useCallback(async () => {
+        if (session?.filePath) {
+            try {
+                // Open the folder containing the saved file
+                console.log('Opening folder for file:', session.filePath);
+                await window.api.dialog.openFolder(session.filePath);
+                console.log('Folder opened successfully');
+            } catch (error) {
+                console.error('Failed to open folder:', error);
+            }
+        }
+    }, [session?.filePath]);
+
     // Note: handleResetSessions removed as it was unused
 
     // Show loading state while fetching
@@ -230,6 +243,14 @@ export function SessionSummary(): React.JSX.Element {
                 >
                     Start New Session
                 </button>
+                {session?.filePath && (
+                    <button
+                        onClick={handleOpenFolder}
+                        className={`${styles['action-button']} ${styles['action-button-secondary']}`}
+                    >
+                        Open Folder
+                    </button>
+                )}
                 {/* <button
                     onClick={handleViewDashboard}
                     className={`${styles['action-button']} ${styles['action-button-secondary']}`}

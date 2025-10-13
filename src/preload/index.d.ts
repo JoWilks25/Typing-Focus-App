@@ -12,6 +12,7 @@ export interface ElectronAPI {
   dialog: {
     showOpenDirectory: () => Promise<{ directoryPath?: string; canceled: boolean }>;
     getDefaultSaveDirectory: () => Promise<string>;
+    openFolder: (filePath: string) => Promise<void>;
   };
 
   // Session API

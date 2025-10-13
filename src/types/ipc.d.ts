@@ -91,6 +91,7 @@ interface ActivityAPI {
 interface DialogAPI {
   showOpenDirectory(): Promise<{ directoryPath?: string; canceled: boolean }>;
   getDefaultSaveDirectory(): Promise<string>;
+  openFolder(filePath: string): Promise<void>;
 }
 
 // Floating Modal API
