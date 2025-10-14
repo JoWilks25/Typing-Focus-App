@@ -27,14 +27,16 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
     const { endSession } = useSession();
 
     // Calculate progress and timer state
-    const { formattedTime, isTimerRunning, progress, goalType, goalValue } = useMemo(() => {
+    const { formattedTime, isTimerRunning, progress, goalType, goalValue, newWords } = useMemo(() => {
         if (!activeSession) {
             return {
                 formattedTime: '00:00',
                 isTimerRunning: false,
                 progress: 0,
                 goalType: 'word' as const,
-                goalValue: 500
+                goalValue: 500,
+                newWords: 0,
+                totalWords: 0
             };
         }
 
@@ -45,8 +47,13 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
 
         const isTimerRunning = activeSession.status === 'active' && isFocused;
 
+        // Calculate new words vs total words
+        const initialWordCount = activeSession.initialWordCount || 0;
+        const totalWords = localState.wordCount;
+        const newWords = initialWordCount > 0 ? Math.max(0, totalWords - initialWordCount) : totalWords;
+
         const progress = activeSession.goalType === 'word'
-            ? Math.min((localState.wordCount / activeSession.goalValue) * 100, 100)
+            ? Math.min((newWords / activeSession.goalValue) * 100, 100)
             : Math.min((timeElapsed / (activeSession.goalValue * 60 * 1000)) * 100, 100);
 
         return {
@@ -54,7 +61,8 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
             isTimerRunning,
             progress,
             goalType: activeSession.goalType,
-            goalValue: activeSession.goalValue
+            goalValue: activeSession.goalValue,
+            newWords
         };
     }, [activeSession, localState.wordCount, isFocused]);
 
@@ -82,7 +90,19 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
             <div className={styles['stats-left']}>
                 {/* Word Count - Using local state for immediate updates */}
                 <div className={styles['word-count']}>
-                    {localState.wordCount} {localState.wordCount === 1 ? 'word' : 'words'}
+                    {activeSession?.initialWordCount && activeSession.initialWordCount > 0 ? (
+                        <>
+                            {newWords} new {newWords === 1 ? 'word' : 'words'}
+                            {' '}
+                            <span className={styles['word-count-secondary']}>
+                                (+{activeSession.initialWordCount} existing)
+                            </span>
+                        </>
+                    ) : (
+                        <>
+                            {localState.wordCount} {localState.wordCount === 1 ? 'word' : 'words'}
+                        </>
+                    )}
                 </div>
 
                 {/* Live Timer */}

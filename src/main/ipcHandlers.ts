@@ -1,4 +1,6 @@
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain, BrowserWindow, dialog, app, shell } from 'electron';
+import path from 'path';
+import fs from 'fs/promises';
 import { SessionManager } from './services/sessionManager';
 import { FileManager } from './services/fileManager';
 import { inactivityService } from './services/InactivityService';
@@ -25,6 +27,7 @@ export const IPC_CHANNELS = {
   
   // File operations
   FILE_READ: 'file:read',
+  FILE_READ_EXTERNAL: 'file:read-external',
   FILE_WRITE: 'file:write',
   FILE_EXISTS: 'file:exists',
   FILE_AUTOSAVE: 'file:autosave',
@@ -64,7 +67,8 @@ export const IPC_CHANNELS = {
   // Dialog operations
   DIALOG_SHOW_OPEN_DIRECTORY: 'dialog:show-open-directory',
   DIALOG_GET_DEFAULT_SAVE_DIRECTORY: 'dialog:get-default-save-directory',
-  DIALOG_OPEN_FOLDER: 'dialog:open-folder'
+  DIALOG_OPEN_FOLDER: 'dialog:open-folder',
+  DIALOG_SHOW_OPEN_FILE: 'dialog:show-open-file'
 } as const;
 
 let sessionManager: SessionManager;
@@ -98,7 +102,8 @@ async function handleSessionStart(
   name?: string,
   title?: string,
   goalType: GoalType = 'word',
-  goalValue: number = 500
+  goalValue: number = 500,
+  initialContent?: string
 ): Promise<Session> {
   if (!filePath || filePath.trim() === '') {
     throw new Error('File path is required');
@@ -108,7 +113,7 @@ async function handleSessionStart(
     throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
   }
 
-  const session = await sessionManager.startSession(filePath, name, title, goalType, goalValue);
+  const session = await sessionManager.startSession(filePath, name, title, goalType, goalValue, initialContent);
   
   // Start tracking services for the new session
   inactivityService.startTracking();
@@ -228,6 +233,14 @@ async function handleFileRead(path: string): Promise<string> {
   }
 
   return await fileManager.readFile(path);
+}
+
+async function handleFileReadExternal(path: string): Promise<string> {
+  if (!path || path.trim() === '') {
+    throw new Error('Path is required');
+  }
+
+  return await fileManager.readFileExternal(path);
 }
 
 async function handleFileWrite(path: string, content: string): Promise<void> {
@@ -451,7 +464,6 @@ async function handleFloatingModalExecuteJavaScript(id: string, script: string):
  */
 
 async function handleDialogShowOpenDirectory(): Promise<{ directoryPath?: string; canceled: boolean }> {
-  const { dialog } = require('electron');
   const result = await dialog.showOpenDialog({
     title: 'Choose Save Directory',
     properties: ['openDirectory', 'createDirectory'],
@@ -464,15 +476,11 @@ async function handleDialogShowOpenDirectory(): Promise<{ directoryPath?: string
 }
 
 async function handleDialogGetDefaultSaveDirectory(): Promise<string> {
-  const { app } = require('electron');
-  const path = require('path');
-  
   // Default to ~/Documents/Writing
   const documentsPath = app.getPath('documents');
   const defaultPath = path.join(documentsPath, 'Writing');
   
   // Ensure directory exists
-  const fs = require('fs').promises;
   await fs.mkdir(defaultPath, { recursive: true });
   
   return defaultPath;
@@ -480,9 +488,6 @@ async function handleDialogGetDefaultSaveDirectory(): Promise<string> {
 
 async function handleDialogOpenFolder(filePath: string): Promise<void> {
   try {
-    const { shell } = require('electron');
-    const path = require('path');
-    
     // Get the directory containing the file
     const directoryPath = path.dirname(filePath);
     
@@ -496,6 +501,22 @@ async function handleDialogOpenFolder(filePath: string): Promise<void> {
     console.error('Error opening folder:', error);
     throw error;
   }
+}
+
+async function handleDialogShowOpenFile(): Promise<{ filePath?: string; canceled: boolean }> {
+  const result = await dialog.showOpenDialog({
+    title: 'Open Existing File',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ],
+    defaultPath: await handleDialogGetDefaultSaveDirectory()
+  });
+  return { 
+    filePath: result.filePaths[0], 
+    canceled: result.canceled 
+  };
 }
 
 /**
@@ -524,8 +545,8 @@ export function registerHandlers(): void {
   console.log('fileManager:', !!fileManager);
 
   // Session handlers
-  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue) => {
-    return await handleSessionStart(filePath, name, title, goalType, goalValue);
+  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue, initialContent) => {
+    return await handleSessionStart(filePath, name, title, goalType, goalValue, initialContent);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STOP, async (_, sessionId) => {
@@ -567,6 +588,10 @@ export function registerHandlers(): void {
   // File handlers
   ipcMain.handle(IPC_CHANNELS.FILE_READ, async (_, path) => {
     return await handleFileRead(path);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FILE_READ_EXTERNAL, async (_, path) => {
+    return await handleFileReadExternal(path);
   });
 
   ipcMain.handle(IPC_CHANNELS.FILE_WRITE, async (_, path, content) => {
@@ -704,6 +729,10 @@ export function registerHandlers(): void {
   } catch (error) {
     console.error('Error registering dialog:open-folder handler:', error);
   }
+
+  ipcMain.handle(IPC_CHANNELS.DIALOG_SHOW_OPEN_FILE, async () => {
+    return await handleDialogShowOpenFile();
+  });
 
   console.log('Dialog handlers registered, including dialog:open-folder');
 

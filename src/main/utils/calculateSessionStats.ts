@@ -24,25 +24,29 @@ export function calculateSessionStats(session: Session): SessionStats {
   const timeElapsed = session.timeElapsed || 0;
   const distractionCount = session.distractionCount || 0;
 
-  // Calculate if goal was met
+  // Calculate new words (excluding initial content)
+  const initialWordCount = session.initialWordCount || 0;
+  const newWords = initialWordCount > 0 ? Math.max(0, currentWords - initialWordCount) : currentWords;
+
+  // Calculate if goal was met (using new words only for word-based goals)
   let isCompleted = false;
   if (session.goalType === 'word') {
-    isCompleted = currentWords >= session.goalValue;
+    isCompleted = newWords >= session.goalValue;
   } else if (session.goalType === 'time') {
     const goalTimeMs = session.goalValue * 60 * 1000; // Convert minutes to milliseconds
     isCompleted = timeElapsed >= goalTimeMs;
   }
 
-  // Calculate progress percentage
+  // Calculate progress percentage (using new words only for word-based goals)
   let progressPercentage = 0;
   if (session.goalType === 'word') {
-    progressPercentage = Math.min((currentWords / session.goalValue) * 100, 100);
+    progressPercentage = Math.min((newWords / session.goalValue) * 100, 100);
   } else if (session.goalType === 'time') {
     const goalTimeMs = session.goalValue * 60 * 1000;
     progressPercentage = Math.min((timeElapsed / goalTimeMs) * 100, 100);
   }
 
-  // Calculate words per minute
+  // Calculate words per minute (use total words for WPM, not just new words)
   const durationMinutes = timeElapsed / (1000 * 60);
   const wordsPerMinute = durationMinutes > 0 ? Math.round(currentWords / durationMinutes) : 0;
 

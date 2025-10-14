@@ -20,6 +20,12 @@
   color: #9ca3af; /* text-gray-400 */
 }
 
+.word-count-secondary {
+  font-size: 0.75rem;
+  color: #6b7280; /* text-gray-500 */
+  font-style: italic;
+}
+
 .timer-container {
   display: flex;
   align-items: center;

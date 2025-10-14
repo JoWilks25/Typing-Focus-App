@@ -88,11 +88,6 @@ export function GoalSelector({ goalType, onGoalTypeChange }: GoalSelectorProps):
                 </button>
             </div>
 
-            {/* Future feature notice */}
-            <div className={styles['future-feature-notice']}>
-                <span className={styles['notice-icon']}>🚀</span>
-                <span className={styles['notice-text']}>Time-based goals coming in a future update!</span>
-            </div>
         </div>
     );
 }

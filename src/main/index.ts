@@ -34,7 +34,7 @@ function createWindow(): void {
   });
 
   // Handle user closing the window (X button)
-  mainWindow.on('close', async (event) => {
+  mainWindow.on('close', async (_event) => {
     console.log('User is closing the window - ending active session gracefully');
     
     const sessionManager = getSessionManager();
@@ -102,7 +102,7 @@ app.on('window-all-closed', () => {
 });
 
 // Handle graceful shutdown - end active session when user quits app
-app.on('before-quit', async (event) => {
+app.on('before-quit', async (_event) => {
   console.log('App is about to quit - ending active session gracefully');
   
   const sessionManager = getSessionManager();
@@ -123,7 +123,7 @@ app.on('before-quit', async (event) => {
 });
 
 // Handle renderer process crashes
-app.on('render-process-gone', async (event, webContents, details) => {
+app.on('render-process-gone', async (_event, _webContents, details) => {
   if (details.reason === 'crashed') {
     console.log('Renderer process crashed - marking session as abandoned');
     
@@ -166,7 +166,7 @@ process.on('uncaughtException', async (error) => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', async (reason, promise) => {
+process.on('unhandledRejection', async (reason, _promise) => {
   console.log('Unhandled promise rejection:', reason);
   
   const sessionManager = getSessionManager();

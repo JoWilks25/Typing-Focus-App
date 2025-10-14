@@ -16,10 +16,11 @@ export interface EditorConfigOptions {
   onEnd?: () => void;
   onFocus?: () => void;
   onBlur?: (event: FocusEvent) => void;
+  editable?: boolean;
 }
 
 export const createEditorConfig = (options: EditorConfigOptions = {}) => {
-  const { placeholder = 'Start writing...', content = '', onUpdate, onSave, onEnd, onFocus, onBlur } = options;
+  const { placeholder = 'Start writing...', content = '', onUpdate, onSave, onEnd, onFocus, onBlur, editable = true } = options;
 
   return {
     extensions: [
@@ -29,6 +30,7 @@ export const createEditorConfig = (options: EditorConfigOptions = {}) => {
       HardBreak,
     ],
     content,
+    editable,
     editorProps: {
       attributes: {
         class: 'prose prose-invert max-w-none',

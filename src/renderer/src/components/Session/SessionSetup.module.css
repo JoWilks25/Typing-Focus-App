@@ -2,8 +2,9 @@
 /* Purpose: Session setup form styling */
 
 .setup-container {
-  max-width: 28rem; /* max-w-md */
+  max-width: clamp(28rem, 90vw, 64rem);
   margin: 0 auto;
+  padding: 0 1rem; /* modest side padding so 90vw doesn't touch edges */
 }
 
 .header {
@@ -24,7 +25,7 @@
 
 .file-section {
   margin-bottom: 2rem;
-  padding: 1.5rem;
+  padding: 1.25rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
 }
@@ -33,6 +34,84 @@
   font-size: 1.25rem;
   margin-bottom: 1rem;
   color: var(--text-primary);
+}
+
+/* File mode toggle - segmented control */
+.file-mode-toggle {
+  display: flex;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.file-mode-button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.file-mode-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.file-mode-button-active {
+  background: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.file-mode-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.load-file-button,
+.new-file-button {
+  padding: 0.75rem 1.5rem;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+  color: #60a5fa;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  height: 3rem;
+}
+
+.load-file-button:hover,
+.new-file-button:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.new-file-button {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.new-file-button:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.initial-word-info {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 4px;
+  color: #86efac;
+  font-size: 0.875rem;
 }
 
 .filename-input {
@@ -46,13 +125,19 @@
 }
 
 .filename-input input {
-  width: 100%;
+  width: 90%;
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: var(--text-primary);
   font-size: 1rem;
+}
+
+.filename-input input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .input-error {
@@ -80,10 +165,12 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0; /* allow the path to shrink and ellipsis correctly */
 }
 
 .path-display {
   flex: 1;
+  min-width: 0; /* critical for ellipsis in flex containers */
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -208,4 +295,216 @@
 .submit-hint {
   font-size: 0.75rem;
   opacity: 0.75;
+}
+
+/* Responsive form grid for Goal Selector + Goal Input */
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+/* File grid for filename + location in new file mode */
+.file-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .file-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+  }
+}
+
+/* Auto-generated filename display (disabled state) */
+.filename-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filename-display input {
+  flex: 1;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  cursor: not-allowed;
+}
+
+/* Customize filename link */
+.edit-icon-button {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #60a5fa;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem; /* Ensure consistent button size */
+}
+
+.edit-icon-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #93c5fd;
+}
+
+.edit-icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Reuse the same base as .edit-icon-button for consistency */
+.confirm-icon-button,
+.cancel-icon-button {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #60a5fa;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-icon-button:hover,
+.cancel-icon-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #93c5fd;
+}
+
+.confirm-icon-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.load-file-row {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Recent files list */
+.recent-files-list {
+  margin-bottom: 1rem;
+}
+
+.recent-files-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #d1d5db;
+  margin-bottom: 0.75rem;
+}
+
+.recent-file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recent-file-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.recent-file-icon {
+  font-size: 1rem;
+  color: #60a5fa;
+}
+
+.recent-file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-file-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-file-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.recent-file-path {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* Divider for "or" text */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.divider-text {
+  padding: 0 1rem;
+}
+
+/* Loaded file summary */
+.loaded-file-summary {
+  padding: 1rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.loaded-file-title {
+  font-weight: 500;
+  color: #86efac;
+  margin-bottom: 0.5rem;
+}
+
+.loaded-file-path {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #bbf7d0;
+  margin-bottom: 0.25rem;
+}
+
+.loaded-file-stats {
+  font-size: 0.875rem;
+  color: #86efac;
 }

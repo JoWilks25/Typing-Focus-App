@@ -42,6 +42,7 @@
   min-height: 400px;
   outline: none;
   flex: 1;
+  position: relative; /* For read-only overlay positioning */
 }
 
 .editor-content:empty:before {
@@ -49,6 +50,70 @@
   color: #9ca3af; /* text-gray-400 */
   font-style: italic;
   pointer-events: none;
+}
+
+/* Read-only mode overlay */
+.readonly-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 0.5rem;
+}
+
+.readonly-message {
+  text-align: center;
+  max-width: 500px;
+  padding: 2rem;
+  background: rgba(31, 41, 55, 0.95);
+  border-radius: 0.75rem;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.readonly-message h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f3f4f6;
+  margin-bottom: 1rem;
+}
+
+.readonly-message p {
+  color: #d1d5db;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.start-writing-button {
+  margin-top: 1.5rem;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.start-writing-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+}
+
+.start-writing-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 /* Tiptap/ProseMirror specific styles */
