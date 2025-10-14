@@ -3,6 +3,7 @@
 
 .selector-container {
   margin-bottom: 1.5rem;
+  min-width: 0; /* Allow proper flex/grid behavior */
 }
 
 .selector-label {
