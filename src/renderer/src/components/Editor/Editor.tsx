@@ -26,7 +26,7 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, endSession, abandonSession, updateProgress } = useSession();
+  const { activeSession, endSession, abandonSession, updateProgress, pauseSession, resumeSession } = useSession();
   const { setView } = useAppState();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
@@ -169,15 +169,21 @@ export const Editor = () => {
   }, [activeSession, localState.wordCount, endSession, setView]);
 
   // Handle inactivity modal actions
-  const handleResumeSession = useCallback(() => {
+  const handleResumeSession = useCallback(async () => {
     setShowInactivityModal(false);
+
+    // Resume the session to stop accumulating pause time
+    if (activeSession) {
+      await resumeSession(activeSession.id);
+    }
+
     // Reset inactivity timer when resuming
     if (window.api?.activity?.recordTyping) {
       window.api.activity.recordTyping().catch((error) => {
         console.warn('Failed to record typing activity on resume:', error);
       });
     }
-  }, []);
+  }, [activeSession, resumeSession]);
 
   const handleEndSession = useCallback(() => {
     setShowInactivityModal(false);
@@ -399,6 +405,15 @@ export const Editor = () => {
     return () => globalThis.clearInterval(progressInterval);
   }, [activeSession, updateProgressInBackground, showInactivityModal]);
 
+  // Pause session when inactivity modal shows
+  useEffect(() => {
+    if (showInactivityModal && activeSession) {
+      pauseSession(activeSession.id).catch(err =>
+        console.warn('Failed to pause session:', err)
+      );
+    }
+  }, [showInactivityModal, activeSession, pauseSession]);
+
   // Calculate progress for tree animation
   const treeProgress = useMemo(() => {
     if (!activeSession) {
@@ -442,6 +457,7 @@ export const Editor = () => {
         isFocused={!!editor?.isFocused}
         activeSession={activeSession}
         currentContent={contentRef.current}
+        showInactivityModal={showInactivityModal}
       />
 
       <div className={styles['editor-main']}>

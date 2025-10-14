@@ -129,6 +129,15 @@ export class SessionManager {
 
     const endTime = Date.now();
     const timeElapsed = endTime - session.startTime;
+    const finalActiveTime = timeElapsed - (session.totalPauseTime || 0);
+
+    console.log('[SessionManager] Ending session:', {
+      sessionId,
+      totalDuration: Math.round(timeElapsed / 1000) + 's',
+      totalPauseTime: Math.round((session.totalPauseTime || 0) / 1000) + 's',
+      finalActiveTime: Math.round(finalActiveTime / 1000) + 's',
+      finalWordCount
+    });
 
     // Final save to file
     const plainText = this.htmlToPlainText(finalContent);
@@ -256,6 +265,68 @@ export class SessionManager {
       updatedAt: new Date().toISOString()
     };
 
+    this.sessions.set(sessionId, updatedSession);
+    return updatedSession;
+  }
+
+  /**
+   * Pause a session (start tracking pause time)
+   */
+  async pauseSession(sessionId: string): Promise<Session> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+    
+    const pauseStartTime = Date.now();
+    const currentActiveTime = (pauseStartTime - session.startTime) - (session.totalPauseTime || 0);
+    
+    console.log('[SessionManager] Pausing session:', {
+      sessionId,
+      pauseStartTime,
+      currentActiveTime: Math.round(currentActiveTime / 1000) + 's',
+      totalPauseTime: Math.round((session.totalPauseTime || 0) / 1000) + 's'
+    });
+    
+    const updatedSession: Session = {
+      ...session,
+      isPaused: true,
+      pauseStartTime,
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.sessions.set(sessionId, updatedSession);
+    return updatedSession;
+  }
+
+  /**
+   * Resume a session (stop tracking pause time and accumulate it)
+   */
+  async resumeSession(sessionId: string): Promise<Session> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+    
+    const resumeTime = Date.now();
+    const pauseDuration = session.pauseStartTime ? resumeTime - session.pauseStartTime : 0;
+    const totalPauseTime = (session.totalPauseTime || 0) + pauseDuration;
+    
+    console.log('[SessionManager] Resuming session:', {
+      sessionId,
+      pauseDuration: Math.round(pauseDuration / 1000) + 's',
+      totalPauseTime: Math.round(totalPauseTime / 1000) + 's',
+      currentActiveTime: Math.round(((resumeTime - session.startTime) - totalPauseTime) / 1000) + 's'
+    });
+    
+    const updatedSession: Session = {
+      ...session,
+      isPaused: false,
+      pauseStartTime: undefined,
+      totalPauseTime,
+      updatedAt: new Date().toISOString()
+    };
+    
     this.sessions.set(sessionId, updatedSession);
     return updatedSession;
   }

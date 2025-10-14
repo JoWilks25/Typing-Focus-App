@@ -3,7 +3,7 @@
 
 import { useAppState } from '../../hooks/useAppState';
 import { useSession } from '../../hooks/useSession';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import type { Session } from '../../types/session';
 import styles from './SessionStats.module.css';
 
@@ -20,32 +20,54 @@ interface SessionStatsProps {
     isFocused: boolean; // Whether the editor is focused for timer accuracy
     activeSession: Session | null; // Active session for goal tracking
     currentContent?: string; // Current content from contentRef for end session
+    showInactivityModal?: boolean; // Whether inactivity modal is visible
 }
 
-export const SessionStats = ({ localState, isFocused, activeSession, currentContent }: SessionStatsProps) => {
+export const SessionStats = ({ localState, isFocused, activeSession, currentContent, showInactivityModal = false }: SessionStatsProps) => {
     const { setView } = useAppState();
     const { endSession } = useSession();
 
+    // Drive the live timer display with 1-second updates
+    const [now, setNow] = useState(Date.now());
+
+    useEffect(() => {
+        if (activeSession?.status === 'active') {
+            const id = globalThis.setInterval(() => setNow(Date.now()), 1000);
+            return () => globalThis.clearInterval(id);
+        }
+        return undefined;
+    }, [activeSession?.status]);
+
     // Calculate progress and timer state
-    const { formattedTime, isTimerRunning, progress, goalType, goalValue, newWords } = useMemo(() => {
+    const { formattedTotalTime, isTimerRunning, showIndicator, progress, goalType, goalValue, newWords } = useMemo(() => {
         if (!activeSession) {
             return {
-                formattedTime: '00:00',
+                formattedTotalTime: '00:00',
                 isTimerRunning: false,
+                showIndicator: false,
                 progress: 0,
                 goalType: 'word' as const,
                 goalValue: 500,
                 newWords: 0,
-                totalWords: 0
             };
         }
 
-        const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
-        const minutes = Math.floor(timeElapsed / 60000);
-        const seconds = Math.floor((timeElapsed % 60000) / 1000);
-        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        // Total session time (since session start, includes pauses)
+        const totalTime = activeSession.startTime ? now - activeSession.startTime : 0;
 
-        const isTimerRunning = activeSession.status === 'active' && isFocused;
+        // Format times
+        const formatTime = (timeMs: number) => {
+            const minutes = Math.floor(timeMs / 60000);
+            const seconds = Math.floor((timeMs % 60000) / 1000);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        };
+
+        const formattedTotalTime = formatTime(totalTime);
+
+        // Timer runs while session is active (but pauses when inactivity modal is shown)
+        const isTimerRunning = activeSession.status === 'active' && !showInactivityModal;
+        // Indicator shows only when timer is running AND editor is focused
+        const showIndicator = isTimerRunning && isFocused;
 
         // Calculate new words vs total words
         const initialWordCount = activeSession.initialWordCount || 0;
@@ -54,17 +76,18 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
 
         const progress = activeSession.goalType === 'word'
             ? Math.min((newWords / activeSession.goalValue) * 100, 100)
-            : Math.min((timeElapsed / (activeSession.goalValue * 60 * 1000)) * 100, 100);
+            : Math.min((totalTime / (activeSession.goalValue * 60 * 1000)) * 100, 100);
 
         return {
-            formattedTime,
+            formattedTotalTime,
             isTimerRunning,
+            showIndicator,
             progress,
             goalType: activeSession.goalType,
             goalValue: activeSession.goalValue,
             newWords
         };
-    }, [activeSession, localState.wordCount, isFocused]);
+    }, [activeSession, localState.wordCount, isFocused, showInactivityModal, now]);
 
     const handleEndSession = async () => {
         if (!activeSession) return;
@@ -105,15 +128,17 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
                     )}
                 </div>
 
-                {/* Live Timer */}
+                {/* Total Duration */}
                 <div className={styles['timer-container']}>
+                    <div className={styles['timer-label']}>Total Duration</div>
                     <div className={`${styles['timer']} ${isTimerRunning ? styles['timer-running'] : styles['timer-paused']}`}>
-                        {formattedTime}
+                        {formattedTotalTime}
                     </div>
-                    {isTimerRunning && (
+                    {showIndicator && (
                         <div className={styles['timer-indicator']} />
                     )}
                 </div>
+
 
                 {/* Goal Progress */}
                 {goalProgress !== null && (

@@ -55,6 +55,12 @@ const sessionAPI = {
   },
   abandon: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:abandon', sessionId);
+  },
+  pause: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:pause', sessionId);
+  },
+  resume: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:resume', sessionId);
   }
 };
 

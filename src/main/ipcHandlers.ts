@@ -44,6 +44,10 @@ export const IPC_CHANNELS = {
   SESSION_INCREMENT_DISTRACTION: 'session:increment-distraction',
   SESSION_ABANDON: 'session:abandon',
   
+  // Session pause operations
+  SESSION_PAUSE: 'session:pause',
+  SESSION_RESUME: 'session:resume',
+  
   // Floating modal operations
   FLOATING_MODAL_CREATE: 'floating-modal:create',
   FLOATING_MODAL_CLOSE: 'floating-modal:close',
@@ -221,6 +225,20 @@ async function handleSessionStats(sessionId: string) {
   }
 
   return sessionManager.getSessionStats(sessionId);
+}
+
+async function handleSessionPause(sessionId: string): Promise<Session> {
+  if (!sessionId || sessionId.trim() === '') {
+    throw new Error('Session ID is required');
+  }
+  return await sessionManager.pauseSession(sessionId);
+}
+
+async function handleSessionResume(sessionId: string): Promise<Session> {
+  if (!sessionId || sessionId.trim() === '') {
+    throw new Error('Session ID is required');
+  }
+  return await sessionManager.resumeSession(sessionId);
 }
 
 /**
@@ -631,6 +649,15 @@ export function registerHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.SESSION_ABANDON, async (_, sessionId) => {
     return await handleSessionAbandon(sessionId);
+  });
+
+  // Session pause handlers
+  ipcMain.handle(IPC_CHANNELS.SESSION_PAUSE, async (_, sessionId) => {
+    return await handleSessionPause(sessionId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SESSION_RESUME, async (_, sessionId) => {
+    return await handleSessionResume(sessionId);
   });
 
   // Floating modal handlers

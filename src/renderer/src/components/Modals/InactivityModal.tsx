@@ -33,22 +33,8 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
         return undefined;
     }, [isVisible, handleKeyDown]);
 
-    // Calculate current stats
-    const getCurrentStats = () => {
-        if (!activeSession) {
-            return { wordCount: 0, timeElapsed: '00:00' };
-        }
-
-        const wordCount = activeSession.currentWords || 0;
-        const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
-        const minutes = Math.floor(timeElapsed / 60000);
-        const seconds = Math.floor((timeElapsed % 60000) / 1000);
-        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-        return { wordCount, timeElapsed: formattedTime };
-    };
-
-    const { wordCount, timeElapsed } = getCurrentStats();
+    // Get current word count
+    const wordCount = activeSession?.currentWords || 0;
 
     if (!isVisible) {
         return null;
@@ -75,15 +61,11 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
                     Your progress is safe—no penalties applied.
                 </p>
 
-                {/* Current Stats */}
+                {/* Current Word Count */}
                 <div className={styles['stats-container']}>
                     <div className={styles['stat-item']}>
                         <span className={styles['stat-label']}>Words:</span>
                         <span className={styles['stat-value']}>{wordCount}</span>
-                    </div>
-                    <div className={styles['stat-item']}>
-                        <span className={styles['stat-label']}>Time:</span>
-                        <span className={styles['stat-value']}>{timeElapsed}</span>
                     </div>
                 </div>
 
