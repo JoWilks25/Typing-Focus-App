@@ -31,7 +31,8 @@ export class SessionManager {
     name?: string, 
     title?: string, 
     goalType: GoalType = 'word', 
-    goalValue: number = 500
+    goalValue: number = 500,
+    initialContent?: string
   ): Promise<Session> {
     // Validate goal
     if (!isValidGoal(goalType, goalValue)) {
@@ -45,11 +46,16 @@ export class SessionManager {
 
     const sessionId = generateId();
     const now = new Date().toISOString();
+    
+    // Calculate initial word count if content is provided
+    const initialWordCount = initialContent ? this.calculateWordCount(initialContent) : undefined;
+    const content = initialContent || '';
+    
     const session: Session = {
       id: sessionId,
       name: name || `Session ${new Date().toLocaleString()}`,
       title,
-      content: '',
+      content,
       filePath,
       goalType,
       goalValue,
@@ -57,14 +63,15 @@ export class SessionManager {
       status: 'active',
       createdAt: now,
       updatedAt: now,
-      currentWords: 0,
+      currentWords: initialWordCount || 0,
       timeElapsed: 0,
-      progressPercentage: 0
+      progressPercentage: 0,
+      initialWordCount
     };
 
-    // Create initial empty file
+    // Create initial file with content (or empty)
     if (this.fileManager) {
-      await this.fileManager.writeFileExternal(filePath, '');
+      await this.fileManager.writeFileExternal(filePath, content);
     }
 
     this.sessions.set(sessionId, session);

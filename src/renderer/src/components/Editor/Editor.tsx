@@ -407,8 +407,13 @@ export const Editor = () => {
     }
 
     const timeElapsed = activeSession.startTime ? Date.now() - activeSession.startTime : 0;
+
+    // Calculate new words for progress (excluding initial content)
+    const initialWordCount = activeSession.initialWordCount || 0;
+    const newWords = initialWordCount > 0 ? Math.max(0, localState.wordCount - initialWordCount) : localState.wordCount;
+
     const progress = activeSession.goalType === 'word'
-      ? Math.min((localState.wordCount / activeSession.goalValue) * 100, 100)
+      ? Math.min((newWords / activeSession.goalValue) * 100, 100)
       : Math.min((timeElapsed / (activeSession.goalValue * 60 * 1000)) * 100, 100);
 
     console.debug('TreeAnimation: Progress calculated:', progress, 'Active session:', !!activeSession);

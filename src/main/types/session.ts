@@ -27,4 +27,5 @@ export interface Session {
   totalPauseTime?: number; // accumulated pause time in ms
   distractionCount?: number;
   isAbandoned?: boolean;
+  initialWordCount?: number; // Word count of loaded file (baseline)
 }

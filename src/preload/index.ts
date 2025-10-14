@@ -12,13 +12,16 @@ const dialogAPI = {
   },
   openFolder: (filePath: string): Promise<void> => {
     return ipcRenderer.invoke('dialog:open-folder', filePath);
+  },
+  showOpenFile: (): Promise<{ filePath?: string; canceled: boolean }> => {
+    return ipcRenderer.invoke('dialog:show-open-file');
   }
 };
 
 // Session API - simplified function-style interface
 const sessionAPI = {
-  start: (filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500): Promise<Session> => {
-    return ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue);
+  start: (filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500, initialContent?: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue, initialContent);
   },
   stop: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:stop', sessionId);
@@ -59,6 +62,9 @@ const sessionAPI = {
 const fileAPI = {
   read: (path: string): Promise<string> => {
     return ipcRenderer.invoke('file:read', path);
+  },
+  readExternal: (path: string): Promise<string> => {
+    return ipcRenderer.invoke('file:read-external', path);
   },
   write: (path: string, content: string): Promise<void> => {
     return ipcRenderer.invoke('file:write', path, content);

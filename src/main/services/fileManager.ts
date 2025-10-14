@@ -34,6 +34,14 @@ export class FileManager {
   }
 
   /**
+   * Read a file from an external location (outside base directory)
+   * Used for loading user-selected files
+   */
+  async readFileExternal(filePath: string): Promise<string> {
+    return await fs.readFile(filePath, 'utf8');
+  }
+
+  /**
    * Write content to an external file (outside base directory)
    */
   async writeFileExternal(filePath: string, content: string): Promise<void> {

@@ -13,11 +13,12 @@ export interface ElectronAPI {
     showOpenDirectory: () => Promise<{ directoryPath?: string; canceled: boolean }>;
     getDefaultSaveDirectory: () => Promise<string>;
     openFolder: (filePath: string) => Promise<void>;
+    showOpenFile: () => Promise<{ filePath?: string; canceled: boolean }>;
   };
 
   // Session API
   session: {
-    start: (filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number) => Promise<Session>;
+    start: (filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number, initialContent?: string) => Promise<Session>;
     stop: (sessionId: string) => Promise<Session>;
     end: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
     get: (sessionId: string) => Promise<Session>;
@@ -42,6 +43,7 @@ export interface ElectronAPI {
   // File API
   file: {
     read: (path: string) => Promise<string>;
+    readExternal: (path: string) => Promise<string>;
     write: (path: string, content: string) => Promise<void>;
     exists: (path: string) => Promise<boolean>;
     autosave: (path: string, content: string) => Promise<void>;
