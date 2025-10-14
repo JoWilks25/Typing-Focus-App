@@ -23,6 +23,8 @@ export function useSession() {
     updateProgress: ctx.updateProgress,
     incrementDistraction: ctx.incrementDistraction,
     endSession: ctx.endSession,
-    abandonSession: ctx.abandonSession
+    abandonSession: ctx.abandonSession,
+    pauseSession: ctx.pauseSession,
+    resumeSession: ctx.resumeSession
   };
 }

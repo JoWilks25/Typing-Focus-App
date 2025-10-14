@@ -7,7 +7,7 @@ import type { BrowserWindow } from 'electron';
 export class InactivityService extends EventEmitter {
   private lastTypingTimestamp: number = 0;
   private inactivityTimer: NodeJS.Timeout | null = null;
-  private readonly INACTIVITY_THRESHOLD = 180000; // 3 minutes (180 seconds)
+  private readonly INACTIVITY_THRESHOLD = 60000; // 1 minute (60 seconds)
   private mainWindow: BrowserWindow | null = null;
   private isTracking: boolean = false;
 
@@ -58,7 +58,7 @@ export class InactivityService extends EventEmitter {
       this.handleInactivityDetected();
     }, this.INACTIVITY_THRESHOLD);
 
-    console.log('Inactivity timer reset - next check in 3 minutes');
+    console.log('Inactivity timer reset - next check in 1 minute');
   }
 
   /**

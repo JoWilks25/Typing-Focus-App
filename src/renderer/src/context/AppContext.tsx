@@ -183,6 +183,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    const pauseSession = useCallback(async (sessionId: string): Promise<Session> => {
+        try {
+            if (window.api?.session?.pause) {
+                const updatedSession = await window.api.session.pause(sessionId);
+                setSessions(prev => prev.map(s => s.id === sessionId ? updatedSession : s));
+                return updatedSession;
+            }
+            throw new Error('Pause session API not available');
+        } catch (error) {
+            console.warn('Failed to pause session:', error);
+            throw error;
+        }
+    }, []);
+
+    const resumeSession = useCallback(async (sessionId: string): Promise<Session> => {
+        try {
+            if (window.api?.session?.resume) {
+                const updatedSession = await window.api.session.resume(sessionId);
+                setSessions(prev => prev.map(s => s.id === sessionId ? updatedSession : s));
+                return updatedSession;
+            }
+            throw new Error('Resume session API not available');
+        } catch (error) {
+            console.warn('Failed to resume session:', error);
+            throw error;
+        }
+    }, []);
+
     // Debounced progress update for IPC persistence (30s)
     const debouncedPersistProgress = useDebounce(
         useCallback(async (...args: unknown[]) => {
@@ -246,7 +274,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateProgress,
             incrementDistraction,
             endSession,
-            abandonSession
+            abandonSession,
+            pauseSession,
+            resumeSession
         }),
         [
             appState.currentView,
@@ -264,7 +294,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateProgress,
             incrementDistraction,
             endSession,
-            abandonSession
+            abandonSession,
+            pauseSession,
+            resumeSession
         ]
     );
 
