@@ -137,6 +137,7 @@ export default [
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...reactRefresh.configs.vite.rules,
+      'no-undef': 'off',
       'react/react-in-jsx-scope': 'off', // Not needed with React 17+ JSX transform
       'react-refresh/only-export-components': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',

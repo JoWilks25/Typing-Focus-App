@@ -24,7 +24,6 @@ export function SessionSetup(): React.JSX.Element {
 
     const [goalType, setGoalType] = useState<GoalType>('word');
     const [goalValue, setGoalValue] = useState<number>(getDefaultValue('word'));
-    const [showAdvanced, setShowAdvanced] = useState(false);
 
     // File mode and customization state
     const [fileMode, setFileMode] = useState<'new' | 'existing'>('new');
@@ -141,15 +140,6 @@ export function SessionSetup(): React.JSX.Element {
         }
     }, []);
 
-    const handleCreateNewFile = useCallback(() => {
-        // Reset to new file mode
-        setFileMode('new');
-        setIsLoadingExisting(false);
-        setLoadedFilePath('');
-        setInitialContent('');
-        setInitialWordCount(0);
-        setCustomizeFilename(false);
-    }, []);
 
     const handleFileModeChange = useCallback((mode: 'new' | 'existing') => {
         setFileMode(mode);
