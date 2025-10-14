@@ -176,7 +176,7 @@ describe('calculateSessionStats', () => {
       expect(stats.wordsPerMinute).toBe(30); // 300 words / 10 minutes
     });
 
-    it('should return 0 words per minute when time is 0', () => {
+    it('should return null words per minute when time is 0', () => {
       const session: Session = {
         ...baseSession,
         goalType: 'word',
@@ -188,7 +188,22 @@ describe('calculateSessionStats', () => {
 
       const stats = calculateSessionStats(session);
 
-      expect(stats.wordsPerMinute).toBe(0);
+      expect(stats.wordsPerMinute).toBeNull();
+    });
+
+    it('should return null words per minute when session is under 1 minute', () => {
+      const session: Session = {
+        ...baseSession,
+        goalType: 'word',
+        goalValue: 500,
+        currentWords: 50,
+        timeElapsed: 30 * 1000, // 30 seconds
+        status: 'stopped'
+      };
+
+      const stats = calculateSessionStats(session);
+
+      expect(stats.wordsPerMinute).toBeNull();
     });
 
     it('should round words per minute to nearest integer', () => {

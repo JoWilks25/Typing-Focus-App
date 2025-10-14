@@ -7,7 +7,7 @@ export interface SessionStats {
   isCompleted: boolean;
   progressPercentage: number;
   duration: number; // Total time elapsed in ms
-  wordsPerMinute: number;
+  wordsPerMinute: number | null; // null when session is under 1 minute
   finalStatus: 'completed' | 'incomplete' | 'abandoned';
   goalType: 'word' | 'time';
   goalValue: number;
@@ -47,8 +47,9 @@ export function calculateSessionStats(session: Session): SessionStats {
   }
 
   // Calculate words per minute (use total words for WPM, not just new words)
+  // Return null if session is under 1 minute as the measurement isn't meaningful
   const durationMinutes = timeElapsed / (1000 * 60);
-  const wordsPerMinute = durationMinutes > 0 ? Math.round(currentWords / durationMinutes) : 0;
+  const wordsPerMinute = durationMinutes >= 1 ? Math.round(currentWords / durationMinutes) : null;
 
   // Determine final status
   let finalStatus: 'completed' | 'incomplete' | 'abandoned';
