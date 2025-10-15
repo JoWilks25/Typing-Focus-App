@@ -2,8 +2,6 @@
 // Purpose: Modal shown when user reaches 100% progress goal
 
 import React, { useCallback } from 'react';
-import { useSession } from '@renderer/hooks/useSession';
-import { useAppState } from '@renderer/hooks/useAppState';
 import type { Session } from '@renderer/types/session';
 import styles from './CompletionModal.module.css';
 
@@ -16,23 +14,9 @@ interface CompletionModalProps {
 }
 
 export function CompletionModal({ session, currentContent, currentWordCount, onKeepWriting, onEndSession }: CompletionModalProps): React.JSX.Element {
-    const { endSession } = useSession();
-    const { setView } = useAppState();
-
-    const handleEndSession = useCallback(async () => {
-        try {
-            // Use current content and word count from props (from contentRef and local state)
-            const finalContent = currentContent;
-            const finalWordCount = currentWordCount;
-
-            await endSession(session.id, finalContent, finalWordCount);
-            setView('session-summary');
-        } catch (error) {
-            console.error('Failed to end session:', error);
-            // Fallback to parent handler
-            onEndSession();
-        }
-    }, [session, currentContent, currentWordCount, endSession, setView, onEndSession]);
+    const handleEndSession = useCallback(() => {
+        onEndSession();
+    }, [onEndSession]);
 
     const handleKeepWriting = useCallback(() => {
         onKeepWriting();

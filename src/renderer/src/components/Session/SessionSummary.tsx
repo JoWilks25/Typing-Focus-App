@@ -40,7 +40,7 @@ export function SessionSummary(): React.JSX.Element {
                 progressPercentage: 0,
                 timeElapsedMinutes: 0,
                 timeElapsedSeconds: 0,
-                wordsPerMinute: 0
+                wordsPerMinute: null
             };
         }
 
@@ -63,7 +63,7 @@ export function SessionSummary(): React.JSX.Element {
             progressPercentage: Math.round(progressPercentage),
             timeElapsedMinutes,
             timeElapsedSeconds,
-            wordsPerMinute: timeElapsedMinutes > 0 ? Math.round(currentWords / timeElapsedMinutes) : 0
+            wordsPerMinute: timeElapsedMinutes >= 1 ? Math.round(currentWords / timeElapsedMinutes) : null
         };
     }, [session]);
 
@@ -221,7 +221,9 @@ export function SessionSummary(): React.JSX.Element {
                         </div>
                         <div className={styles['stat-card']}>
                             <div className={styles['stat-label']}>Words/Min</div>
-                            <div className={styles['stat-value']}>{stats.wordsPerMinute}</div>
+                            <div className={styles['stat-value']}>
+                                {stats.wordsPerMinute !== null ? stats.wordsPerMinute : 'N/A'}
+                            </div>
                         </div>
                     </div>
                 </div>

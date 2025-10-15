@@ -55,7 +55,7 @@ export const Editor = () => {
 
   // State for completion modal
   const [showCompletionModal, setShowCompletionModal] = useState(false);
-  const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
+  const [hasTriggeredCompletion, setHasTriggeredCompletion] = useState(false);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -377,11 +377,6 @@ export const Editor = () => {
       ? Math.min(100, Math.floor((localState.wordCount / goalValue) * 100))
       : Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
 
-    // Show completion modal when reaching 100% (only if not already shown)
-    if (currentProgress >= 100 && !hasShownCompletionModal) {
-      setShowCompletionModal(true);
-      setHasShownCompletionModal(true);
-    }
 
     // Use context's updateProgress function to update both React state and backend
     updateProgress(localState.wordCount, timeElapsed, currentProgress);
@@ -391,7 +386,7 @@ export const Editor = () => {
       timeElapsed,
       currentProgress
     });
-  }, [activeSession, hasShownCompletionModal, localState.wordCount, updateProgress])
+  }, [activeSession, localState.wordCount, updateProgress])
 
   // Separate progress update interval (5 seconds) - independent of timer display
   useEffect(() => {
@@ -434,6 +429,30 @@ export const Editor = () => {
     console.debug('TreeAnimation: Progress calculated:', progress, 'Active session:', !!activeSession);
     return progress;
   }, [activeSession, localState.wordCount]);
+
+  // Show completion modal immediately when word goal is reached
+  useEffect(() => {
+    if (!activeSession || hasTriggeredCompletion) return;
+
+    const goalValue = activeSession.goalValue || 500;
+
+    // Calculate new words written (excluding initial content from loaded files)
+    const initialWordCount = activeSession.initialWordCount || 0;
+    const newWords = initialWordCount > 0
+      ? Math.max(0, localState.wordCount - initialWordCount)
+      : localState.wordCount;
+
+    if (newWords >= goalValue) {
+      setShowCompletionModal(true);
+      setHasTriggeredCompletion(true);
+    }
+  }, [activeSession, localState.wordCount, hasTriggeredCompletion]);
+
+  // Reset completion modal trigger when session changes
+  useEffect(() => {
+    setHasTriggeredCompletion(false);
+    setShowCompletionModal(false);
+  }, [activeSession?.id]);
 
   // Don't render editor if no active session
   if (!activeSession) {
