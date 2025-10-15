@@ -165,24 +165,24 @@ export class FocusMonitorService extends EventEmitter {
   }
 
   /**
-   * Handle when countdown expires - session is abandoned
+   * Handle when countdown expires - session is marked as incomplete
    */
   private handleCountdownExpired(): void {
     if (!this.isMonitoring) {
       return;
     }
 
-    console.log('Distraction countdown expired - session abandoned');
+    console.log('Distraction countdown expired - session marked as incomplete');
     
     this.clearCountdown();
     
-    // Send event to renderer that session is abandoned
+    // Send event to renderer that session is incomplete
     if (this.mainWindow) {
-      this.mainWindow.webContents.send('session-abandoned');
+      this.mainWindow.webContents.send('session-incomplete');
     }
     
     // Emit event for other services to listen
-    this.emit('session-abandoned');
+    this.emit('session-incomplete');
   }
 
   /**

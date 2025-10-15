@@ -5,7 +5,7 @@ export type GoalType = 'word' | 'time';
 
 // Validation ranges - shared across main and renderer processes
 export const VALIDATION_RANGES = {
-  WORD_COUNT_MIN: 10,
+  WORD_COUNT_MIN: 100,
   WORD_COUNT_MAX: 10000,
   TIME_DURATION_MIN: 5, // minutes
   TIME_DURATION_MAX: 480, // 8 hours

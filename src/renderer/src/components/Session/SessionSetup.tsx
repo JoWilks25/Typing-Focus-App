@@ -6,6 +6,7 @@ import { GoalSelector } from './GoalSelector';
 import { GoalInput } from './GoalInput';
 import { useSession } from '@renderer/hooks/useSession';
 import { useAppState } from '@renderer/hooks/useAppState';
+import { useToast } from '@renderer/context/ToastContext';
 import { isValidGoal, getDefaultValue } from '@renderer/utils/validation';
 import { calculateWordCount } from '@renderer/utils/wordCount';
 import { getRecentFiles, addRecentFile, type RecentFile } from '@renderer/context/appStorage';
@@ -21,6 +22,7 @@ const path = {
 export function SessionSetup(): React.JSX.Element {
     const { addSession } = useSession();
     const { setView } = useAppState();
+    const { showSuccess } = useToast();
 
     const [goalType, setGoalType] = useState<GoalType>('word');
     const [goalValue, setGoalValue] = useState<number>(getDefaultValue('word'));
@@ -220,13 +222,22 @@ export function SessionSetup(): React.JSX.Element {
 
             // Add session to local state and navigate to editor
             addSession(newSession);
+
+            // Show success notification
+            if (isLoadingExisting) {
+                const wordCount = initialWordCount;
+                showSuccess(`Session started! Loaded ${wordCount} words from ${path.basename(fullPath)}`);
+            } else {
+                showSuccess(`Session started! Goal: ${goalValue} ${goalType === 'word' ? 'words' : 'minutes'}`);
+            }
+
             setView('editor');
         } catch (error) {
             console.error('Failed to create session:', error);
             // Handle validation errors from main process
             // You could show a toast notification here
         }
-    }, [isValid, isValidFileName, fullPath, fileName, goalType, goalValue, isLoadingExisting, initialContent, loadedFilePath, addSession, setView]);
+    }, [isValid, isValidFileName, fullPath, fileName, goalType, goalValue, isLoadingExisting, initialContent, loadedFilePath, initialWordCount, addSession, setView, showSuccess]);
 
     return (
         <div className={styles['setup-container']}>

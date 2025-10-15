@@ -43,6 +43,7 @@ export const IPC_CHANNELS = {
   // Distraction operations
   SESSION_INCREMENT_DISTRACTION: 'session:increment-distraction',
   SESSION_ABANDON: 'session:abandon',
+  SESSION_MARK_INCOMPLETE: 'session:mark-incomplete',
   
   // Session pause operations
   SESSION_PAUSE: 'session:pause',
@@ -354,6 +355,22 @@ async function handleSessionAbandon(sessionId: string): Promise<Session> {
   return session;
 }
 
+async function handleSessionMarkIncomplete(sessionId: string): Promise<Session> {
+  if (!sessionId || sessionId.trim() === '') {
+    throw new Error('Session ID is required');
+  }
+
+  const session = sessionManager.markSessionIncomplete(sessionId);
+  
+  // Write incomplete session to history file
+  await fileManager.appendSessionHistory(session);
+  
+  // Clear active session from storage
+  await fileManager.remove('active-session');
+  
+  return session;
+}
+
 /**
  * Floating Modal Handlers
  */
@@ -649,6 +666,10 @@ export function registerHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.SESSION_ABANDON, async (_, sessionId) => {
     return await handleSessionAbandon(sessionId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SESSION_MARK_INCOMPLETE, async (_, sessionId) => {
+    return await handleSessionMarkIncomplete(sessionId);
   });
 
   // Session pause handlers

@@ -37,6 +37,8 @@ declare global {
         }>;
         incrementDistraction: (sessionId: string) => Promise<Session>;
         abandon: (sessionId: string) => Promise<Session>;
+        pause: (sessionId: string) => Promise<Session>;
+        resume: (sessionId: string) => Promise<Session>;
       };
       // File API
       file: {

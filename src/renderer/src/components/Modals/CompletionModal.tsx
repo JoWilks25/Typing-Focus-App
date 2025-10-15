@@ -7,13 +7,12 @@ import styles from './CompletionModal.module.css';
 
 interface CompletionModalProps {
     session: Session;
-    currentContent: string; // Current content from contentRef
     currentWordCount: number; // Current word count from local state
     onKeepWriting: () => void;
     onEndSession: () => void;
 }
 
-export function CompletionModal({ session, currentContent, currentWordCount, onKeepWriting, onEndSession }: CompletionModalProps): React.JSX.Element {
+export function CompletionModal({ session, currentWordCount, onKeepWriting, onEndSession }: CompletionModalProps): React.JSX.Element {
     const handleEndSession = useCallback(() => {
         onEndSession();
     }, [onEndSession]);

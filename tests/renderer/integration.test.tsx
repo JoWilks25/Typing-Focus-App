@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AppProvider } from '../../src/renderer/src/context/AppContext';
+import { ToastProvider } from '../../src/renderer/src/context/ToastContext';
 import { SessionSetup } from '../../src/renderer/src/components/Session/SessionSetup';
 
 // Mock the window.api object
@@ -22,6 +23,11 @@ const mockApi = {
             timeElapsed: 0,
             progressPercentage: 0
         })
+    },
+    dialog: {
+        getDefaultSaveDirectory: vi.fn().mockResolvedValue('/test/directory'),
+        showOpenDirectory: vi.fn(),
+        showOpenFile: vi.fn()
     },
     file: {
         read: vi.fn(),
@@ -49,18 +55,22 @@ describe('Session Flow Integration', () => {
     it('should render session setup component', () => {
         render(
             <AppProvider>
-                <SessionSetup />
+                <ToastProvider>
+                    <SessionSetup />
+                </ToastProvider>
             </AppProvider>
         );
 
-        expect(screen.getByText('Ready to Write?')).toBeInTheDocument();
+        expect(screen.getByText('Setup New Writing Session')).toBeInTheDocument();
         expect(screen.getByText('Start Writing')).toBeInTheDocument();
     });
 
     it('should have goal type selection buttons', () => {
         render(
             <AppProvider>
-                <SessionSetup />
+                <ToastProvider>
+                    <SessionSetup />
+                </ToastProvider>
             </AppProvider>
         );
 
@@ -71,7 +81,9 @@ describe('Session Flow Integration', () => {
     it('should have goal input field', () => {
         render(
             <AppProvider>
-                <SessionSetup />
+                <ToastProvider>
+                    <SessionSetup />
+                </ToastProvider>
             </AppProvider>
         );
 
@@ -81,7 +93,9 @@ describe('Session Flow Integration', () => {
     it('should show start writing button', () => {
         render(
             <AppProvider>
-                <SessionSetup />
+                <ToastProvider>
+                    <SessionSetup />
+                </ToastProvider>
             </AppProvider>
         );
 

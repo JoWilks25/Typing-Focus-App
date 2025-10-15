@@ -70,6 +70,9 @@ interface SessionAPI {
   getStats(sessionId: string): Promise<any>;
   incrementDistraction(sessionId: string): Promise<any>;
   abandon(sessionId: string): Promise<any>;
+  markIncomplete(sessionId: string): Promise<any>;
+  pause(sessionId: string): Promise<any>;
+  resume(sessionId: string): Promise<any>;
 }
 
 // Focus API

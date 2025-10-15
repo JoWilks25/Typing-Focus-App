@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
+import { useToast } from '../../context/ToastContext';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
@@ -28,6 +29,7 @@ interface LocalEditorState {
 export const Editor = () => {
   const { activeSession, endSession, abandonSession, updateProgress, pauseSession, resumeSession } = useSession();
   const { setView } = useAppState();
+  const { showSuccess } = useToast();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
   const activeSessionRef = useRef(activeSession);
@@ -141,12 +143,12 @@ export const Editor = () => {
         const content = contentRef.current;
         await window.api.session.updateContent(activeSession.id, content);
         console.log(`File saved to ${activeSession.filePath}`);
-        // TODO: Add toast notification here
+        showSuccess(`File saved to ${activeSession.filePath}`);
       } catch (error) {
         console.error('Failed to save file:', error);
       }
     }
-  }, [activeSession]);
+  }, [activeSession, showSuccess]);
 
   // Handle end action
   const handleEnd = useCallback(async () => {
@@ -319,18 +321,18 @@ export const Editor = () => {
         setCountdownSeconds(seconds);
       };
 
-      const handleSessionAbandoned = async () => {
+      const handleSessionIncomplete = async () => {
         setShowDistractionWarning(false);
-        // Abandon session and navigate to summary when countdown expires
+        // Mark session as incomplete and navigate to summary when countdown expires
         const currentSession = activeSessionRef.current;
         if (currentSession) {
           try {
-            await abandonSession(currentSession.id);
-            // Navigate to summary after abandoning
+            await window.api.session.markIncomplete(currentSession.id);
+            // Navigate to summary after marking incomplete
             setView('session-summary');
           } catch (error) {
-            console.warn('Failed to abandon session:', error);
-            // Still navigate to summary even if abandon fails
+            console.warn('Failed to mark session as incomplete:', error);
+            // Still navigate to summary even if mark incomplete fails
             setView('session-summary');
           }
         }
@@ -349,7 +351,7 @@ export const Editor = () => {
       window.api.on('distraction-warning:return', handleReturn);
       window.api.on('distraction-warning:end-session', handleEndAnyway);
       window.api.on('update-countdown', handleUpdateCountdown);
-      window.api.on('session-abandoned', handleSessionAbandoned);
+      window.api.on('session-incomplete', handleSessionIncomplete);
 
       return () => {
         if (window.api?.removeListener) {
@@ -358,7 +360,7 @@ export const Editor = () => {
           window.api.removeListener('distraction-warning:return', handleReturn);
           window.api.removeListener('distraction-warning:end-session', handleEndAnyway);
           window.api.removeListener('update-countdown', handleUpdateCountdown);
-          window.api.removeListener('session-abandoned', handleSessionAbandoned);
+          window.api.removeListener('session-incomplete', handleSessionIncomplete);
         }
       };
     }
@@ -509,7 +511,6 @@ export const Editor = () => {
       {activeSession && showCompletionModal && (
         <CompletionModal
           session={activeSession}
-          currentContent={contentRef.current}
           currentWordCount={localState.wordCount}
           onKeepWriting={handleKeepWriting}
           onEndSession={handleCompleteSession}

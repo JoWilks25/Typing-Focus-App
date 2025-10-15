@@ -56,6 +56,9 @@ const sessionAPI = {
   abandon: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:abandon', sessionId);
   },
+  markIncomplete: (sessionId: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:mark-incomplete', sessionId);
+  },
   pause: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:pause', sessionId);
   },

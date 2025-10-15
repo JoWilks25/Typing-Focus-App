@@ -435,6 +435,37 @@ export class SessionManager {
   }
 
   /**
+   * Mark a session as incomplete (distraction countdown expiry)
+   */
+  markSessionIncomplete(sessionId: string): Session {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    if (session.status === 'stopped') {
+      throw new Error(`Session is already stopped: ${sessionId}`);
+    }
+
+    const updatedSession: Session = {
+      ...session,
+      status: 'incomplete',
+      endTime: Date.now(),
+      updatedAt: new Date().toISOString()
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    
+    // Clear active session if this was it
+    if (this.activeSessionId === sessionId) {
+      this.activeSessionId = null;
+      this.stopAutosave();
+    }
+    
+    return updatedSession;
+  }
+
+  /**
    * Calculate word count from content
    */
   private calculateWordCount(content: string): number {

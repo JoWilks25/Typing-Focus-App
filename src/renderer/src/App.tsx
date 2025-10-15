@@ -4,6 +4,7 @@ import { SessionSetup } from './components/Session/SessionSetup';
 import { SessionSummary } from './components/Session/SessionSummary';
 import Versions from './components/Versions';
 import { AppProvider, ErrorBoundary } from './context/AppContext';
+import { ToastProvider } from './context/ToastContext';
 import { useAppState } from './hooks/useAppState';
 import { useSession } from './hooks/useSession';
 import styles from './App.module.css';
@@ -85,7 +86,9 @@ function App(): React.JSX.Element {
   return (
     <AppProvider>
       <ErrorBoundary>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </ErrorBoundary>
     </AppProvider>
   );

@@ -10,8 +10,8 @@ import {
 describe('Main Process Validation Utilities', () => {
   describe('validateWordGoal', () => {
     it('should validate word count within acceptable range', () => {
-      expect(validateWordGoal(10)).toBe(true);
       expect(validateWordGoal(100)).toBe(true);
+      expect(validateWordGoal(500)).toBe(true);
       expect(validateWordGoal(1000)).toBe(true);
       expect(validateWordGoal(10000)).toBe(true);
     });
@@ -19,7 +19,8 @@ describe('Main Process Validation Utilities', () => {
     it('should reject word count below minimum', () => {
       expect(validateWordGoal(0)).toBe(false);
       expect(validateWordGoal(5)).toBe(false);
-      expect(validateWordGoal(9)).toBe(false);
+      expect(validateWordGoal(50)).toBe(false);
+      expect(validateWordGoal(99)).toBe(false);
     });
 
     it('should reject word count above maximum', () => {
@@ -70,9 +71,9 @@ describe('Main Process Validation Utilities', () => {
   describe('isValidGoal', () => {
     it('should validate word goals correctly', () => {
       expect(isValidGoal('word', 500)).toBe(true);
-      expect(isValidGoal('word', 10)).toBe(true);
+      expect(isValidGoal('word', 100)).toBe(true);
       expect(isValidGoal('word', 10000)).toBe(true);
-      expect(isValidGoal('word', 5)).toBe(false);
+      expect(isValidGoal('word', 50)).toBe(false);
       expect(isValidGoal('word', 15000)).toBe(false);
     });
 
@@ -100,7 +101,7 @@ describe('Main Process Validation Utilities', () => {
 
   describe('VALIDATION_CONSTANTS', () => {
     it('should export correct validation constants', () => {
-      expect(VALIDATION_CONSTANTS.WORD_COUNT_MIN).toBe(10);
+      expect(VALIDATION_CONSTANTS.WORD_COUNT_MIN).toBe(100);
       expect(VALIDATION_CONSTANTS.WORD_COUNT_MAX).toBe(10000);
       expect(VALIDATION_CONSTANTS.TIME_DURATION_MIN).toBe(5);
       expect(VALIDATION_CONSTANTS.TIME_DURATION_MAX).toBe(480);
