@@ -51,7 +51,7 @@ export const FloatingDistractionWarning: React.FC<FloatingDistractionWarningProp
 
       const id = await window.api.floatingModal.create({
         width: 480,
-        height: 600,
+        height: 700,
         title: 'Focus Warning',
         content,
         alwaysOnTop: true,

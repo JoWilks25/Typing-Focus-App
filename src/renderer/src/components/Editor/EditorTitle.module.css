@@ -1,0 +1,29 @@
+/* src/renderer/src/components/Editor/EditorTitle.module.css */
+/* Purpose: Styling for the prominent file title display */
+
+.editor-title {
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.editor-title-text {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #f3f4f6; /* text-gray-100 */
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editor-title-text {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-title-text {
+    font-size: 1.25rem;
+  }
+}

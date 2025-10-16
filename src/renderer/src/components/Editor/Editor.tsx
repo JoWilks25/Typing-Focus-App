@@ -8,6 +8,7 @@ import { useAppState } from '../../hooks/useAppState';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
+import { EditorTitle } from './EditorTitle';
 import { InactivityModal } from '../Modals/InactivityModal';
 import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
 import { TreeAnimation } from '../Animation/TreeAnimation';
@@ -462,6 +463,11 @@ export const Editor = () => {
 
   return (
     <div className={styles['editor-container']}>
+      <EditorTitle
+        title={activeSession.title}
+        name={activeSession.name}
+      />
+
       <SessionStats
         localState={localState}
         isFocused={!!editor?.isFocused}
