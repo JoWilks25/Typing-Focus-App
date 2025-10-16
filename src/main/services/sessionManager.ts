@@ -13,7 +13,7 @@ export class SessionManager {
   private sessions: Map<string, Session> = new Map();
   private activeSessionId: string | null = null;
   private autosaveInterval: NodeJS.Timeout | null = null;
-  private readonly AUTOSAVE_INTERVAL = 2000; // 2 seconds for file-based sessions
+  private readonly AUTOSAVE_INTERVAL = 10000; // 10 seconds for file-based sessions
   private fileManager: FileManager | null = null;
 
   /**
@@ -419,6 +419,37 @@ export class SessionManager {
       ...session,
       status: 'abandoned',
       isAbandoned: true,
+      endTime: Date.now(),
+      updatedAt: new Date().toISOString()
+    };
+
+    this.sessions.set(sessionId, updatedSession);
+    
+    // Clear active session if this was it
+    if (this.activeSessionId === sessionId) {
+      this.activeSessionId = null;
+      this.stopAutosave();
+    }
+    
+    return updatedSession;
+  }
+
+  /**
+   * Mark a session as incomplete (distraction countdown expiry)
+   */
+  markSessionIncomplete(sessionId: string): Session {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    if (session.status === 'stopped') {
+      throw new Error(`Session is already stopped: ${sessionId}`);
+    }
+
+    const updatedSession: Session = {
+      ...session,
+      status: 'incomplete',
       endTime: Date.now(),
       updatedAt: new Date().toISOString()
     };

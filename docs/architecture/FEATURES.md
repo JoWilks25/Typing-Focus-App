@@ -7,7 +7,7 @@ This document describes the core features and validation rules for the Typing Fo
 The app supports two types of writing goals:
 
 ### 1. Word Count Goals
-- **Minimum**: 10 words
+- **Minimum**: 100 words
 - **Maximum**: 10,000 words
 - **Recommended**: 250-500 words for focused sessions
 - **Default**: 500 words

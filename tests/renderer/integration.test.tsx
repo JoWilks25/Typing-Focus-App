@@ -23,6 +23,11 @@ const mockApi = {
             progressPercentage: 0
         })
     },
+    dialog: {
+        getDefaultSaveDirectory: vi.fn().mockResolvedValue('/test/directory'),
+        showOpenDirectory: vi.fn(),
+        showOpenFile: vi.fn()
+    },
     file: {
         read: vi.fn(),
         write: vi.fn(),
@@ -53,7 +58,7 @@ describe('Session Flow Integration', () => {
             </AppProvider>
         );
 
-        expect(screen.getByText('Ready to Write?')).toBeInTheDocument();
+        expect(screen.getByText('Setup New Writing Session')).toBeInTheDocument();
         expect(screen.getByText('Start Writing')).toBeInTheDocument();
     });
 

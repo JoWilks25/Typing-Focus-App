@@ -8,6 +8,7 @@ import { useAppState } from '../../hooks/useAppState';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
+import { EditorTitle } from './EditorTitle';
 import { InactivityModal } from '../Modals/InactivityModal';
 import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
 import { TreeAnimation } from '../Animation/TreeAnimation';
@@ -87,7 +88,7 @@ export const Editor = () => {
       }
       // Note: No automatic session creation - users must set up sessions via the SessionSetup modal
     }, []), // No dependencies to prevent editor recreation
-    2000 // 2 second delay - only update backend after user stops typing
+    2000 // 2 second delay - only update backend after user stops typing (file saves every 10s)
   );
 
   // Store debounced function reference
@@ -132,21 +133,6 @@ export const Editor = () => {
     debouncedUpdateSessionRef.current?.();
   }, []); // No dependencies to prevent editor recreation
 
-  // Handle save action
-  const handleSave = useCallback(async () => {
-    console.log('Manual save triggered');
-
-    if (activeSession?.filePath) {
-      try {
-        const content = contentRef.current;
-        await window.api.session.updateContent(activeSession.id, content);
-        console.log(`File saved to ${activeSession.filePath}`);
-        // TODO: Add toast notification here
-      } catch (error) {
-        console.error('Failed to save file:', error);
-      }
-    }
-  }, [activeSession]);
 
   // Handle end action
   const handleEnd = useCallback(async () => {
@@ -251,7 +237,6 @@ export const Editor = () => {
       placeholder: 'Start writing your thoughts...',
       content: currentContent,
       onUpdate: handleUpdate,
-      onSave: handleSave,
       onEnd: handleEnd,
       onBlur: handleEditorBlur,
     }),
@@ -304,6 +289,11 @@ export const Editor = () => {
     if (window.api?.on) {
       const handleShowDistractionWarning = () => {
         console.debug('Editor: Showing distraction warning modal');
+        // Don't show distraction warning if completion modal is already visible
+        if (showCompletionModal) {
+          console.debug('Editor: Skipping distraction warning - completion modal is visible');
+          return;
+        }
         setShowDistractionWarning(true);
         setCountdownSeconds(10);
       };
@@ -319,18 +309,18 @@ export const Editor = () => {
         setCountdownSeconds(seconds);
       };
 
-      const handleSessionAbandoned = async () => {
+      const handleSessionIncomplete = async () => {
         setShowDistractionWarning(false);
-        // Abandon session and navigate to summary when countdown expires
+        // Mark session as incomplete and navigate to summary when countdown expires
         const currentSession = activeSessionRef.current;
         if (currentSession) {
           try {
-            await abandonSession(currentSession.id);
-            // Navigate to summary after abandoning
+            await window.api.session.markIncomplete(currentSession.id);
+            // Navigate to summary after marking incomplete
             setView('session-summary');
           } catch (error) {
-            console.warn('Failed to abandon session:', error);
-            // Still navigate to summary even if abandon fails
+            console.warn('Failed to mark session as incomplete:', error);
+            // Still navigate to summary even if mark incomplete fails
             setView('session-summary');
           }
         }
@@ -349,7 +339,7 @@ export const Editor = () => {
       window.api.on('distraction-warning:return', handleReturn);
       window.api.on('distraction-warning:end-session', handleEndAnyway);
       window.api.on('update-countdown', handleUpdateCountdown);
-      window.api.on('session-abandoned', handleSessionAbandoned);
+      window.api.on('session-incomplete', handleSessionIncomplete);
 
       return () => {
         if (window.api?.removeListener) {
@@ -358,7 +348,7 @@ export const Editor = () => {
           window.api.removeListener('distraction-warning:return', handleReturn);
           window.api.removeListener('distraction-warning:end-session', handleEndAnyway);
           window.api.removeListener('update-countdown', handleUpdateCountdown);
-          window.api.removeListener('session-abandoned', handleSessionAbandoned);
+          window.api.removeListener('session-incomplete', handleSessionIncomplete);
         }
       };
     }
@@ -445,6 +435,8 @@ export const Editor = () => {
     if (newWords >= goalValue) {
       setShowCompletionModal(true);
       setHasTriggeredCompletion(true);
+      // Dismiss distraction warning if it's showing when goal is reached
+      setShowDistractionWarning(false);
     }
   }, [activeSession, localState.wordCount, hasTriggeredCompletion]);
 
@@ -471,6 +463,11 @@ export const Editor = () => {
 
   return (
     <div className={styles['editor-container']}>
+      <EditorTitle
+        title={activeSession.title}
+        name={activeSession.name}
+      />
+
       <SessionStats
         localState={localState}
         isFocused={!!editor?.isFocused}
@@ -499,7 +496,7 @@ export const Editor = () => {
       />
 
       <FloatingDistractionWarning
-        isVisible={showDistractionWarning}
+        isVisible={showDistractionWarning && !showCompletionModal}
         secondsRemaining={countdownSeconds}
         onReturn={handleReturnToSession}
         onEndSession={handleEndSessionAnyway}
@@ -509,7 +506,6 @@ export const Editor = () => {
       {activeSession && showCompletionModal && (
         <CompletionModal
           session={activeSession}
-          currentContent={contentRef.current}
           currentWordCount={localState.wordCount}
           onKeepWriting={handleKeepWriting}
           onEndSession={handleCompleteSession}

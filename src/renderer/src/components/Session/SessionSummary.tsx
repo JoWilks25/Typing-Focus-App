@@ -40,19 +40,24 @@ export function SessionSummary(): React.JSX.Element {
                 progressPercentage: 0,
                 timeElapsedMinutes: 0,
                 timeElapsedSeconds: 0,
-                wordsPerMinute: null
+                wordsPerMinute: null,
+                newWords: 0
             };
         }
 
         const currentWords = session.currentWords || 0;
         const timeElapsed = session.timeElapsed || 0;
 
+        // Calculate new words written during the session (excluding initial content)
+        const initialWordCount = session.initialWordCount || 0;
+        const newWords = initialWordCount > 0 ? Math.max(0, currentWords - initialWordCount) : currentWords;
+
         const isCompleted = session.goalType === 'word'
-            ? currentWords >= session.goalValue
+            ? newWords >= session.goalValue
             : timeElapsed >= (session.goalValue * 60 * 1000);
 
         const progressPercentage = session.goalType === 'word'
-            ? Math.min((currentWords / session.goalValue) * 100, 100)
+            ? Math.min((newWords / session.goalValue) * 100, 100)
             : Math.min((timeElapsed / (session.goalValue * 60 * 1000)) * 100, 100);
 
         const timeElapsedMinutes = Math.floor(timeElapsed / (1000 * 60));
@@ -63,7 +68,8 @@ export function SessionSummary(): React.JSX.Element {
             progressPercentage: Math.round(progressPercentage),
             timeElapsedMinutes,
             timeElapsedSeconds,
-            wordsPerMinute: timeElapsedMinutes >= 1 ? Math.round(currentWords / timeElapsedMinutes) : null
+            wordsPerMinute: timeElapsedMinutes >= 1 ? Math.round(currentWords / timeElapsedMinutes) : null,
+            newWords
         };
     }, [session]);
 
@@ -211,7 +217,7 @@ export function SessionSummary(): React.JSX.Element {
                         </div>
                         <div className={styles['stat-card']}>
                             <div className={styles['stat-label']}>Words Written</div>
-                            <div className={styles['stat-value']}>{session.currentWords}</div>
+                            <div className={styles['stat-value']}>{stats.newWords}</div>
                         </div>
                         <div className={styles['stat-card']}>
                             <div className={styles['stat-label']}>Time Elapsed</div>

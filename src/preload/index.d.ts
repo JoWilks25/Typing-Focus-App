@@ -18,7 +18,7 @@ export interface ElectronAPI {
 
   // Session API
   session: {
-    start: (filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number, initialContent?: string) => Promise<Session>;
+    start: (filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number, initialContent?: string, isLoadingExisting?: boolean) => Promise<Session>;
     stop: (sessionId: string) => Promise<Session>;
     end: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
     get: (sessionId: string) => Promise<Session>;
@@ -38,6 +38,8 @@ export interface ElectronAPI {
     }>;
     incrementDistraction: (sessionId: string) => Promise<Session>;
     abandon: (sessionId: string) => Promise<Session>;
+    pause: (sessionId: string) => Promise<Session>;
+    resume: (sessionId: string) => Promise<Session>;
   };
 
   // File API
@@ -46,6 +48,7 @@ export interface ElectronAPI {
     readExternal: (path: string) => Promise<string>;
     write: (path: string, content: string) => Promise<void>;
     exists: (path: string) => Promise<boolean>;
+    existsExternal: (path: string) => Promise<boolean>;
     autosave: (path: string, content: string) => Promise<void>;
   };
 

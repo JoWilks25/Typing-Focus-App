@@ -10,7 +10,7 @@ describe('SessionManager', () => {
 
   describe('session lifecycle', () => {
     it('should start a new session', async () => {
-      const session = await sessionManager.startSession('Test Session', 'Test Title', 'word', 500);
+      const session = await sessionManager.startSession('/test/path.txt', 'Test Session', 'Test Title', 'word', 500);
       
       expect(session).toBeDefined();
       expect(session.name).toBe('Test Session');
@@ -22,14 +22,14 @@ describe('SessionManager', () => {
     });
 
     it('should get active session', async () => {
-      const session = await sessionManager.startSession('Test Session', undefined, 'word', 500);
+      const session = await sessionManager.startSession('/test/path.txt', 'Test Session', undefined, 'word', 500);
       const activeSession = sessionManager.getActiveSession();
       
       expect(activeSession).toEqual(session);
     });
 
     it('should stop a session', async () => {
-      const session = await sessionManager.startSession('Test Session', undefined, 'word', 500);
+      const session = await sessionManager.startSession('/test/path.txt', 'Test Session', undefined, 'word', 500);
       const stoppedSession = await sessionManager.stopSession(session.id);
       
       expect(stoppedSession.status).toBe('stopped');
@@ -38,29 +38,28 @@ describe('SessionManager', () => {
     });
 
     it('should update session content', async () => {
-      const session = await sessionManager.startSession('Test Session', undefined, 'word', 500);
+      const session = await sessionManager.startSession('/test/path.txt', 'Test Session', undefined, 'word', 500);
       const updatedSession = await sessionManager.updateSessionContent(session.id, 'Hello world');
       
       expect(updatedSession.content).toBe('Hello world');
       expect(updatedSession.currentWords).toBe(2);
     });
 
-    it('should calculate progress thresholds correctly', async () => {
-      const session = await sessionManager.startSession('Test Session', undefined, 'word', 100);
+    it('should calculate progress correctly', async () => {
+      const session = await sessionManager.startSession('/test/path.txt', 'Test Session', undefined, 'word', 100);
       
       // Update with 50 words (50% progress)
       const updatedSession = await sessionManager.updateSessionContent(session.id, 'word '.repeat(50));
       
-      expect(updatedSession.progressThresholds[33]).toBe(true);
-      expect(updatedSession.progressThresholds[67]).toBe(false);
-      expect(updatedSession.progressThresholds[100]).toBe(false);
+      expect(updatedSession.currentWords).toBe(50);
+      expect(updatedSession.progressPercentage).toBe(50);
     });
 
     it('should detect goal completion', async () => {
-      const session = await sessionManager.startSession('Test Session', undefined, 'word', 10);
+      const session = await sessionManager.startSession('/test/path.txt', 'Test Session', undefined, 'word', 100);
       
-      // Update with 10 words (100% progress)
-      const updatedSession = await sessionManager.updateSessionContent(session.id, 'word '.repeat(10));
+      // Update with 100 words (100% progress)
+      const updatedSession = await sessionManager.updateSessionContent(session.id, 'word '.repeat(100));
       
       expect(sessionManager.isGoalCompleted(updatedSession)).toBe(true);
     });
