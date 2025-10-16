@@ -30,6 +30,7 @@ export const IPC_CHANNELS = {
   FILE_READ_EXTERNAL: 'file:read-external',
   FILE_WRITE: 'file:write',
   FILE_EXISTS: 'file:exists',
+  FILE_EXISTS_EXTERNAL: 'file:exists-external',
   FILE_AUTOSAVE: 'file:autosave',
   
   // Storage operations
@@ -108,7 +109,8 @@ async function handleSessionStart(
   title?: string,
   goalType: GoalType = 'word',
   goalValue: number = 500,
-  initialContent?: string
+  initialContent?: string,
+  isLoadingExisting: boolean = false
 ): Promise<Session> {
   if (!filePath || filePath.trim() === '') {
     throw new Error('File path is required');
@@ -116,6 +118,14 @@ async function handleSessionStart(
   
   if (!isValidGoal(goalType, goalValue)) {
     throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
+  }
+
+  // Check if file exists for new files (not loading existing)
+  if (!isLoadingExisting) {
+    const fileExists = await fileManager.fileExistsExternal(filePath);
+    if (fileExists) {
+      throw new Error('File already exists at this location. Please choose a different filename or location.');
+    }
   }
 
   const session = await sessionManager.startSession(filePath, name, title, goalType, goalValue, initialContent);
@@ -280,6 +290,14 @@ async function handleFileExists(path: string): Promise<boolean> {
   }
 
   return await fileManager.fileExists(path);
+}
+
+async function handleFileExistsExternal(path: string): Promise<boolean> {
+  if (!path || path.trim() === '') {
+    throw new Error('Path is required');
+  }
+
+  return await fileManager.fileExistsExternal(path);
 }
 
 async function handleFileAutosave(path: string, content: string): Promise<void> {
@@ -580,8 +598,8 @@ export function registerHandlers(): void {
   console.log('fileManager:', !!fileManager);
 
   // Session handlers
-  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue, initialContent) => {
-    return await handleSessionStart(filePath, name, title, goalType, goalValue, initialContent);
+  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (_, filePath, name, title, goalType, goalValue, initialContent, isLoadingExisting) => {
+    return await handleSessionStart(filePath, name, title, goalType, goalValue, initialContent, isLoadingExisting);
   });
 
   ipcMain.handle(IPC_CHANNELS.SESSION_STOP, async (_, sessionId) => {
@@ -635,6 +653,10 @@ export function registerHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.FILE_EXISTS, async (_, path) => {
     return await handleFileExists(path);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FILE_EXISTS_EXTERNAL, async (_, path) => {
+    return await handleFileExistsExternal(path);
   });
 
   ipcMain.handle(IPC_CHANNELS.FILE_AUTOSAVE, async (_, path, content) => {

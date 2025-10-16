@@ -25,12 +25,11 @@ export function SessionSetup(): React.JSX.Element {
     const [goalType, setGoalType] = useState<GoalType>('word');
     const [goalValue, setGoalValue] = useState<number>(getDefaultValue('word'));
 
-    // File mode and customization state
+    // File mode state
     const [fileMode, setFileMode] = useState<'new' | 'existing'>('new');
-    const [customizeFilename, setCustomizeFilename] = useState(false);
 
     // File-related state
-    const [fileName, setFileName] = useState('Writing-Session.txt');
+    const [fileName, setFileName] = useState('');
     const [saveDirectory, setSaveDirectory] = useState('');
 
     // State for loading existing files
@@ -42,8 +41,8 @@ export function SessionSetup(): React.JSX.Element {
     // Recent files state
     const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
 
-    // Add near other state
-    const [previousFileName, setPreviousFileName] = useState(fileName);
+    const [fileExistsError, setFileExistsError] = useState(false);
+
 
     const isValid = isValidGoal(goalType, goalValue);
 
@@ -63,17 +62,6 @@ export function SessionSetup(): React.JSX.Element {
         setRecentFiles(getRecentFiles());
     }, []);
 
-    // Auto-generate filename when goal changes (only for new files, not customizing)
-    useEffect(() => {
-        if (fileMode === 'new' && !customizeFilename && !isLoadingExisting) {
-            const date = new Date();
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            const goalLabel = goalType === 'word' ? `${goalValue}-words` : `${goalValue}-min`;
-            setFileName(`Writing Session — ${yyyy}-${mm}-${dd} — ${goalLabel}.txt`);
-        }
-    }, [fileMode, customizeFilename, isLoadingExisting, goalType, goalValue]);
 
     // Construct full path - use loaded file path if available, otherwise construct from directory and filename
     const fullPath = isLoadingExisting && loadedFilePath
@@ -95,16 +83,22 @@ export function SessionSetup(): React.JSX.Element {
         setGoalValue(newValue);
     }, []);
 
+    // Clear file exists error when filename or location changes
+    const clearFileExistsError = useCallback(() => {
+        setFileExistsError(false);
+    }, []);
+
     const handleBrowseDirectory = useCallback(async () => {
         try {
             const result = await window.api.dialog.showOpenDirectory();
             if (!result.canceled && result.directoryPath) {
                 setSaveDirectory(result.directoryPath);
+                clearFileExistsError();
             }
         } catch (error) {
             console.error('Failed to browse directory:', error);
         }
-    }, []);
+    }, [clearFileExistsError]);
 
     const handleLoadExistingFile = useCallback(async () => {
         try {
@@ -148,7 +142,6 @@ export function SessionSetup(): React.JSX.Element {
             setLoadedFilePath('');
             setInitialContent('');
             setInitialWordCount(0);
-            setCustomizeFilename(false);
         }
     }, []);
 
@@ -172,26 +165,6 @@ export function SessionSetup(): React.JSX.Element {
         }
     }, []);
 
-    const confirmFilenameChange = useCallback(() => {
-        if (isValidFileName) {
-            setCustomizeFilename(false);
-        }
-    }, [isValidFileName]);
-
-    const cancelFilenameChange = useCallback(() => {
-        setFileName(previousFileName);
-        setCustomizeFilename(false);
-    }, [previousFileName]);
-
-    const handleFilenameKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            confirmFilenameChange();
-        } else if (e.key === 'Escape') {
-            e.preventDefault();
-            cancelFilenameChange();
-        }
-    }, [confirmFilenameChange, cancelFilenameChange]);
 
 
     const handleSubmit = useCallback(async (event: React.FormEvent) => {
@@ -201,7 +174,19 @@ export function SessionSetup(): React.JSX.Element {
             return;
         }
 
+        // Clear any previous file exists error
+        setFileExistsError(false);
+
         try {
+            // Check if file exists for new files (not loading existing)
+            if (fileMode === 'new' && !isLoadingExisting) {
+                const fileExists = await window.api.file.existsExternal(fullPath);
+                if (fileExists) {
+                    setFileExistsError(true);
+                    return;
+                }
+            }
+
             const sessionName = fileName.replace('.txt', '') ||
                 `Writing Session - ${goalType === 'word' ? `${goalValue} words` : `${goalValue} min`}`;
             const newSession = await window.api.session.start(
@@ -210,7 +195,8 @@ export function SessionSetup(): React.JSX.Element {
                 undefined,
                 goalType,
                 goalValue,
-                isLoadingExisting ? initialContent : undefined
+                isLoadingExisting ? initialContent : undefined,
+                isLoadingExisting
             );
 
             // Add to recent files if it's an existing file
@@ -229,7 +215,7 @@ export function SessionSetup(): React.JSX.Element {
             // Handle validation errors from main process
             // You could show a toast notification here
         }
-    }, [isValid, isValidFileName, fullPath, fileName, goalType, goalValue, isLoadingExisting, initialContent, loadedFilePath, addSession, setView]);
+    }, [isValid, isValidFileName, fullPath, fileName, goalType, goalValue, fileMode, isLoadingExisting, initialContent, loadedFilePath, addSession, setView]);
 
     return (
         <div className={styles['setup-container']}>
@@ -266,74 +252,23 @@ export function SessionSetup(): React.JSX.Element {
                         <div className={styles['file-grid']}>
                             {/* Filename Input */}
                             <div className={styles['filename-input']}>
-                                <label htmlFor="filename">Filename</label>
-                                {!customizeFilename ? (
-                                    <div className={styles['filename-display']}>
-                                        <input
-                                            id="filename"
-                                            type="text"
-                                            value={fileName}
-                                            disabled
-                                            title="Auto-generated. Click edit icon to customize."
-                                        />
-                                        <button
-                                            type="button"
-                                            className={styles['edit-icon-button']}
-                                            onClick={() => { setPreviousFileName(fileName); setCustomizeFilename(true); }}
-                                            title="Edit filename"
-                                        >
-                                            <svg
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            >
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className={styles['filename-display']}>
-                                        <input
-                                            id="filename"
-                                            type="text"
-                                            value={fileName}
-                                            onChange={(e) => setFileName(e.target.value)}
-                                            onKeyDown={handleFilenameKeyDown}
-                                            placeholder="my-story.txt"
-                                            className={!isValidFileName && fileName.length > 0 ? styles['input-error'] : ''}
-                                        />
-                                        <button
-                                            type="button"
-                                            className={styles['confirm-icon-button']}
-                                            onClick={confirmFilenameChange}
-                                            title="Confirm filename"
-                                            disabled={!isValidFileName}
-                                        >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M20 6 9 17l-5-5" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={styles['cancel-icon-button']}
-                                            onClick={cancelFilenameChange}
-                                            title="Cancel"
-                                        >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M18 6 6 18M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                )}
-                                {!isValidFileName && fileName.length > 0 && customizeFilename && (
+                                <label htmlFor="filename">Filename *</label>
+                                <input
+                                    id="filename"
+                                    type="text"
+                                    value={fileName}
+                                    onChange={(e) => { setFileName(e.target.value); clearFileExistsError(); }}
+                                    placeholder="Enter filename (e.g., my-story.txt)"
+                                    className={!isValidFileName && fileName.length > 0 ? styles['input-error'] : ''}
+                                />
+                                {!isValidFileName && fileName.length > 0 && (
                                     <span className={styles['error-text']}>
                                         Filename must end with .txt and contain no invalid characters
+                                    </span>
+                                )}
+                                {fileExistsError && (
+                                    <span className={styles['error-text']}>
+                                        A file with this name already exists. Please choose a different filename or location.
                                     </span>
                                 )}
                             </div>

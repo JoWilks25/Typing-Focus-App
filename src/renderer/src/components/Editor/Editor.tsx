@@ -87,7 +87,7 @@ export const Editor = () => {
       }
       // Note: No automatic session creation - users must set up sessions via the SessionSetup modal
     }, []), // No dependencies to prevent editor recreation
-    2000 // 2 second delay - only update backend after user stops typing
+    2000 // 2 second delay - only update backend after user stops typing (file saves every 10s)
   );
 
   // Store debounced function reference
@@ -132,20 +132,6 @@ export const Editor = () => {
     debouncedUpdateSessionRef.current?.();
   }, []); // No dependencies to prevent editor recreation
 
-  // Handle save action
-  const handleSave = useCallback(async () => {
-    console.log('Manual save triggered');
-
-    if (activeSession?.filePath) {
-      try {
-        const content = contentRef.current;
-        await window.api.session.updateContent(activeSession.id, content);
-        console.log(`File saved to ${activeSession.filePath}`);
-      } catch (error) {
-        console.error('Failed to save file:', error);
-      }
-    }
-  }, [activeSession]);
 
   // Handle end action
   const handleEnd = useCallback(async () => {
@@ -250,7 +236,6 @@ export const Editor = () => {
       placeholder: 'Start writing your thoughts...',
       content: currentContent,
       onUpdate: handleUpdate,
-      onSave: handleSave,
       onEnd: handleEnd,
       onBlur: handleEditorBlur,
     }),
@@ -303,6 +288,11 @@ export const Editor = () => {
     if (window.api?.on) {
       const handleShowDistractionWarning = () => {
         console.debug('Editor: Showing distraction warning modal');
+        // Don't show distraction warning if completion modal is already visible
+        if (showCompletionModal) {
+          console.debug('Editor: Skipping distraction warning - completion modal is visible');
+          return;
+        }
         setShowDistractionWarning(true);
         setCountdownSeconds(10);
       };
@@ -444,6 +434,8 @@ export const Editor = () => {
     if (newWords >= goalValue) {
       setShowCompletionModal(true);
       setHasTriggeredCompletion(true);
+      // Dismiss distraction warning if it's showing when goal is reached
+      setShowDistractionWarning(false);
     }
   }, [activeSession, localState.wordCount, hasTriggeredCompletion]);
 
@@ -498,7 +490,7 @@ export const Editor = () => {
       />
 
       <FloatingDistractionWarning
-        isVisible={showDistractionWarning}
+        isVisible={showDistractionWarning && !showCompletionModal}
         secondsRemaining={countdownSeconds}
         onReturn={handleReturnToSession}
         onEndSession={handleEndSessionAnyway}

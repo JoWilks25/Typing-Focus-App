@@ -12,7 +12,6 @@ export interface EditorConfigOptions {
   placeholder?: string;
   content?: string;
   onUpdate?: (content: string, text: string) => void;
-  onSave?: () => void;
   onEnd?: () => void;
   onFocus?: () => void;
   onBlur?: (event: FocusEvent) => void;
@@ -20,7 +19,7 @@ export interface EditorConfigOptions {
 }
 
 export const createEditorConfig = (options: EditorConfigOptions = {}) => {
-  const { placeholder = 'Start writing...', content = '', onUpdate, onSave, onEnd, onFocus, onBlur, editable = true } = options;
+  const { placeholder = 'Start writing...', content = '', onUpdate, onEnd, onFocus, onBlur, editable = true } = options;
 
   return {
     extensions: [
@@ -50,13 +49,6 @@ export const createEditorConfig = (options: EditorConfigOptions = {}) => {
       onBlur?.(event);
     },
     onKeyDown: ({ event }) => {
-      // Cmd+S for save
-      if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-        event.preventDefault();
-        onSave?.();
-        return true;
-      }
-      
       // Cmd+Q for end
       if ((event.metaKey || event.ctrlKey) && event.key === 'q') {
         event.preventDefault();

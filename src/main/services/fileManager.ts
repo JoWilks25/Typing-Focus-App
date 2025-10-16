@@ -53,6 +53,18 @@ export class FileManager {
   }
 
   /**
+   * Check if an external file exists (outside base directory)
+   */
+  async fileExistsExternal(filePath: string): Promise<boolean> {
+    try {
+      await fs.access(filePath, fs.constants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Check if a file exists
    */
   async fileExists(filePath: string): Promise<boolean> {

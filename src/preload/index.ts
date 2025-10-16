@@ -20,8 +20,8 @@ const dialogAPI = {
 
 // Session API - simplified function-style interface
 const sessionAPI = {
-  start: (filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500, initialContent?: string): Promise<Session> => {
-    return ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue, initialContent);
+  start: (filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500, initialContent?: string, isLoadingExisting?: boolean): Promise<Session> => {
+    return ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue, initialContent, isLoadingExisting);
   },
   stop: (sessionId: string): Promise<Session> => {
     return ipcRenderer.invoke('session:stop', sessionId);
@@ -80,6 +80,9 @@ const fileAPI = {
   },
   exists: (path: string): Promise<boolean> => {
     return ipcRenderer.invoke('file:exists', path);
+  },
+  existsExternal: (path: string): Promise<boolean> => {
+    return ipcRenderer.invoke('file:exists-external', path);
   },
   autosave: (path: string, content: string): Promise<void> => {
     return ipcRenderer.invoke('file:autosave', path, content);

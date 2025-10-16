@@ -13,7 +13,7 @@ export class SessionManager {
   private sessions: Map<string, Session> = new Map();
   private activeSessionId: string | null = null;
   private autosaveInterval: NodeJS.Timeout | null = null;
-  private readonly AUTOSAVE_INTERVAL = 2000; // 2 seconds for file-based sessions
+  private readonly AUTOSAVE_INTERVAL = 10000; // 10 seconds for file-based sessions
   private fileManager: FileManager | null = null;
 
   /**
