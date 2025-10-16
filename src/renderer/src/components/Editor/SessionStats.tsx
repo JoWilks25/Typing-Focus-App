@@ -158,12 +158,6 @@ export const SessionStats = ({ localState, isFocused, activeSession, currentCont
                     </div>
                 )}
 
-                {/* Progress Indicator */}
-                {activeSession && (
-                    <div className={styles['progress-indicator']}>
-                        Progress: {Math.round(progress)}%
-                    </div>
-                )}
             </div>
 
             <div className={styles['stats-right']}>
