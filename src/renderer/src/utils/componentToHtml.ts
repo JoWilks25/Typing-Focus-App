@@ -81,9 +81,6 @@ export function generateFloatingModalHtml(
         <button id="return-button" class="return-button" onclick="handleReturn()">
           Return to Session
         </button>
-        <button id="end-button" class="end-button" onclick="handleEndSession()">
-          End Session Anyway
-        </button>
       </div>
     </div>
 
@@ -369,13 +366,18 @@ export function generateFloatingModalHtml(
           countdownTimer = null;
         }
         
-        // Get modal ID from global variable or use the one from template
         const modalId = window.currentModalId || '${modalId}';
-        console.log('Modal: Sending end session action with modalId:', modalId);
+        console.log('Modal: Attempting to end session with modalId:', modalId);
+        
+        // Try multiple approaches to send the message
         if (window.api && window.api.send) {
           window.api.send('distraction-warning:end-session', modalId);
+        } else if (window.electronAPI && window.electronAPI.send) {
+          window.electronAPI.send('distraction-warning:end-session', modalId);
         } else {
-          console.error('Modal: window.api.send not available');
+          // Direct IPC call as fallback
+          const { ipcRenderer } = require('electron');
+          ipcRenderer.send('distraction-warning:end-session', modalId);
         }
       }
       

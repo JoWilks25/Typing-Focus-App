@@ -254,9 +254,6 @@ export const useFloatingModal = () => {
           <button id="return-button" class="return-button">
             Return to Session
           </button>
-          <button id="end-button" class="end-button">
-            End Session Anyway
-          </button>
         </div>
       </div>
 
