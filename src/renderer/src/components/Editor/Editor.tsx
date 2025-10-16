@@ -5,7 +5,6 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
-import { useToast } from '../../context/ToastContext';
 import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
@@ -29,7 +28,6 @@ interface LocalEditorState {
 export const Editor = () => {
   const { activeSession, endSession, abandonSession, updateProgress, pauseSession, resumeSession } = useSession();
   const { setView } = useAppState();
-  const { showSuccess } = useToast();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
   const activeSessionRef = useRef(activeSession);
@@ -143,12 +141,11 @@ export const Editor = () => {
         const content = contentRef.current;
         await window.api.session.updateContent(activeSession.id, content);
         console.log(`File saved to ${activeSession.filePath}`);
-        showSuccess(`File saved to ${activeSession.filePath}`);
       } catch (error) {
         console.error('Failed to save file:', error);
       }
     }
-  }, [activeSession, showSuccess]);
+  }, [activeSession]);
 
   // Handle end action
   const handleEnd = useCallback(async () => {

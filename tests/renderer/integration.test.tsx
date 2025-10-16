@@ -2,7 +2,6 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AppProvider } from '../../src/renderer/src/context/AppContext';
-import { ToastProvider } from '../../src/renderer/src/context/ToastContext';
 import { SessionSetup } from '../../src/renderer/src/components/Session/SessionSetup';
 
 // Mock the window.api object
@@ -55,9 +54,7 @@ describe('Session Flow Integration', () => {
     it('should render session setup component', () => {
         render(
             <AppProvider>
-                <ToastProvider>
-                    <SessionSetup />
-                </ToastProvider>
+                <SessionSetup />
             </AppProvider>
         );
 
@@ -68,9 +65,7 @@ describe('Session Flow Integration', () => {
     it('should have goal type selection buttons', () => {
         render(
             <AppProvider>
-                <ToastProvider>
-                    <SessionSetup />
-                </ToastProvider>
+                <SessionSetup />
             </AppProvider>
         );
 
@@ -81,9 +76,7 @@ describe('Session Flow Integration', () => {
     it('should have goal input field', () => {
         render(
             <AppProvider>
-                <ToastProvider>
-                    <SessionSetup />
-                </ToastProvider>
+                <SessionSetup />
             </AppProvider>
         );
 
@@ -93,9 +86,7 @@ describe('Session Flow Integration', () => {
     it('should show start writing button', () => {
         render(
             <AppProvider>
-                <ToastProvider>
-                    <SessionSetup />
-                </ToastProvider>
+                <SessionSetup />
             </AppProvider>
         );
 
