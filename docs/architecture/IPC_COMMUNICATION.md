@@ -1,6 +1,6 @@
-# Electron API Usage Guide
+# IPC Communication
 
-This document shows how to use the placeholder Electron API in your renderer components.
+Guide to Inter-Process Communication between main and renderer processes using Electron's IPC system.
 
 ## 📁 Files Created
 

@@ -75,12 +75,13 @@ tests/              # All tests (unit, integration, and future E2E)
 
 ## Documentation
 
-📚 **[View All Documentation](./docs/README.md)** - Complete documentation index
+📚 **[View All Documentation](./docs/README.md)** - Complete documentation hub
 
 **Quick Links:**
-- 🚀 [Getting Started Guide](./docs/setup/STARTUP.md) - Verify your setup
-- 🏗️ [Project Structure](./docs/architecture/STRUCTURE.md) - Understand the codebase
-- 🔌 [API Usage Guide](./docs/architecture/PRELOAD_API_USAGE.md) - Use the Electron API
+- 🚀 [Setup Guide](./docs/getting-started/SETUP.md) - Get started with development
+- 🏗️ [Architecture Overview](./docs/architecture/OVERVIEW.md) - Understand the system design
+- 📋 [User Stories](./docs/user-stories/USER_STORIES.md) - Feature requirements and acceptance criteria
+- 🎯 [Product Goals](./docs/project/PRODUCT_GOALS.md) - Core product vision and objectives
 
 ## Contributing
 
