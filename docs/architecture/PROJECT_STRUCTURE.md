@@ -1,11 +1,11 @@
-# Typing Focus App - Project Structure
+# Project Structure
 
-This document shows the complete folder structure created based on CONTRIBUTING.md.
+Complete folder structure and file organization for the Typing Focus App.
 
 ## Directory Structure
 
 ```
-focus-writer/
+Typing-Focus-App/
 ├── src/
 │   ├── main/                      # Electron main process (Node.js)
 │   │   ├── index.ts               # [existing] Main process entry

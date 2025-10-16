@@ -1,154 +1,209 @@
 # Typing Focus App - Documentation
 
-## State Management Overview
+Welcome to the Typing Focus App documentation. This guide provides comprehensive information for developers, contributors, and users.
 
-The Typing Focus App implements a sophisticated state management system that balances real-time user experience with efficient backend persistence. This document provides a comprehensive overview of how different state elements are managed across the editor and progress tracking system.
+## 📚 Documentation Overview
 
-## Quick Reference
+The Typing Focus App is a distraction-free writing application built with Electron, React, and TypeScript. It uses gamified tree animations to encourage focused writing sessions and goal completion.
 
-### Update Frequencies
-- **Word Count**: Real-time (local state)
-- **Timer Display**: 1 second (display only)
-- **Content Persistence**: 2.5 seconds (debounced)
-- **Progress Persistence**: 45 seconds (timed intervals)
-- **Threshold Animations**: Event-driven (immediate)
+## 🚀 Quick Start
 
-### Key Components
-- **Local Editor State**: Immediate UI feedback
-- **Session Context**: Backend persistence
-- **Animation Context**: Visual feedback
-- **Timer Hook**: Display-only time tracking
+### For New Developers
+1. **[Setup Guide](./getting-started/SETUP.md)** - Get the development environment running
+2. **[Development Guide](./getting-started/DEVELOPMENT.md)** - Daily development workflow
+3. **[Architecture Overview](./architecture/OVERVIEW.md)** - Understand the system design
 
-## State Management Architecture
+### For Contributors
+1. **[User Stories](./user-stories/USER_STORIES.md)** - Feature requirements and acceptance criteria
+2. **[Testing Guide](./getting-started/TESTING.md)** - Testing setup and best practices
+3. **[Project Goals](./project/PRODUCT_GOALS.md)** - Product vision and objectives
 
-### 1. Local Editor State
-**Purpose**: Instant UI feedback without backend delays
-**Location**: `Editor.tsx`
-**Updates**: Real-time on every keystroke
+## 📖 Documentation Structure
 
-```typescript
-interface LocalEditorState {
-  content: string;        // HTML content
-  text: string;          // Plain text
-  wordCount: number;     // Current words
-  characterCount: number; // Current characters
-  lastUpdated: number;   // Timestamp
-}
+### Getting Started
+Essential guides for new developers and contributors.
+
+| Document | Description |
+|----------|-------------|
+| [Setup Guide](./getting-started/SETUP.md) | Installation, verification, and troubleshooting |
+| [Development Guide](./getting-started/DEVELOPMENT.md) | Daily workflow, patterns, and best practices |
+| [Testing Guide](./getting-started/TESTING.md) | Testing setup, strategies, and coverage requirements |
+
+### Architecture
+Technical documentation for system design and implementation.
+
+| Document | Description |
+|----------|-------------|
+| [Overview](./architecture/OVERVIEW.md) | High-level system architecture and design patterns |
+| [Project Structure](./architecture/PROJECT_STRUCTURE.md) | File organization and folder structure |
+| [State Management](./architecture/STATE_MANAGEMENT.md) | State flow, patterns, and update strategies |
+| [IPC Communication](./architecture/IPC_COMMUNICATION.md) | Inter-process communication patterns |
+| [Features](./architecture/FEATURES.md) | Feature implementation details and validation rules |
+
+### Implementation Guides
+Detailed guides for specific system components.
+
+| Document | Description |
+|----------|-------------|
+| [Animation System](./guides/ANIMATION_SYSTEM.md) | Tree growth animations and visual feedback |
+| [Session Lifecycle](./guides/SESSION_LIFECYCLE.md) | Complete session flow from creation to completion |
+| [File Management](./guides/FILE_MANAGEMENT.md) | Import, export, and autosave functionality |
+| [Floating Modal System](./guides/FLOATING_MODAL_SYSTEM.md) | Modal system architecture and implementation |
+
+### Project Management
+Product vision, requirements, and planning documents.
+
+| Document | Description |
+|----------|-------------|
+| [Product Goals](./project/PRODUCT_GOALS.md) | Core product vision and success metrics |
+| [User Stories](./user-stories/USER_STORIES.md) | Feature requirements and acceptance criteria |
+
+## 🏗️ System Architecture
+
+The Typing Focus App follows a three-process Electron architecture:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Main Process  │    │  Preload Script │    │ Renderer Process│
+│   (Node.js)     │◄──►│ (Context Bridge)│◄──►│    (React)      │
+│                 │    │                 │    │                 │
+│ • Window Mgmt   │    │ • API Exposure  │    │ • UI Components │
+│ • File System   │    │ • Type Safety   │    │ • State Mgmt    │
+│ • Session Mgmt  │    │ • Validation    │    │ • Animations    │
+│ • Focus Monitor │    │ • Security      │    │ • User Input    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-### 2. Session Context
-**Purpose**: Backend persistence and session management
-**Location**: `SessionContext.tsx`
-**Updates**: Debounced content (2.5s) + timed progress (45s)
+### Key Components
+- **Main Process**: Handles file I/O, session persistence, and system integration
+- **Preload Script**: Provides secure, type-safe API bridge
+- **Renderer Process**: Manages UI, user interactions, and visual feedback
 
-### 3. Animation Context
-**Purpose**: Visual feedback and progress animations
-**Location**: `AnimationContext.tsx`
-**Updates**: Event-driven on threshold crossings
+## 🎯 Core Features
 
-### 4. Timer Hook
-**Purpose**: Real-time time display
-**Location**: `useTimer.ts`
-**Updates**: 1-second intervals (display only)
+### Writing Sessions
+- Distraction-free editor with live word count and timer
+- Goal-based sessions (word count or time duration)
+- Real-time progress tracking and visualization
 
-## Update Strategies
+### Tree Animation System
+- Visual progress representation through growing trees
+- Three growth stages: seedling, small tree, mature tree
+- Penalty animations for incomplete sessions
 
-### Content Updates (Debounced)
-- **Delay**: 2.5 seconds after typing stops
-- **Purpose**: Persist editor content to backend
-- **Performance**: Reduces API calls by ~80%
+### Focus Management
+- Inactivity detection with session pausing
+- Distraction warnings with countdown timers
+- Focus enforcement through visual consequences
 
-### Progress Updates (Timed Intervals)
-- **Interval**: 45 seconds
-- **Purpose**: Persist progress and threshold states
-- **Performance**: Minimal backend load
+### File Management
+- Import existing text files
+- Export current work
+- Automatic saving and recovery
 
-### Timer Display (Real-time)
-- **Frequency**: 1 second
-- **Purpose**: Smooth time display
-- **Performance**: No backend impact
+## 🛠️ Development Workflow
 
-## Performance Characteristics
+### Daily Development
+```bash
+# Start development server
+npm run dev
 
-| Component | Update Frequency | Backend Calls | UI Impact | Data Safety |
-|-----------|------------------|---------------|-----------|-------------|
-| Word Count | Real-time | None | None | N/A |
-| Timer | 1s | None | None | N/A |
-| Content | 2.5s debounce | Low | Low | Medium |
-| Progress | 45s interval | Very Low | None | High |
-| Thresholds | Event-driven | None | None | High |
+# Run tests in watch mode
+npm run test:watch
 
-## Key Design Principles
-
-1. **Separation of Concerns**: Each state layer has a specific responsibility
-2. **Performance Optimization**: Balance between responsiveness and efficiency
-3. **Data Safety**: Regular persistence without user interference
-4. **User Experience**: Instant feedback with reliable persistence
-
-## Troubleshooting
-
-### Common Issues
-- **Content Clearing**: Usually from aggressive state updates
-- **Timer Interference**: Multiple update paths causing conflicts
-- **Performance Issues**: Too frequent backend updates
-
-### Solutions
-- Separate display from persistence logic
-- Single responsibility for each hook
-- Optimize debounce delays and intervals
-
-## Files Overview
-
-### Core State Management
-- `Editor.tsx` - Local state and update coordination
-- `SessionContext.tsx` - Backend persistence
-- `AnimationContext.tsx` - Visual feedback
-- `useSessionProgress.ts` - Progress tracking coordination
-
-### Supporting Hooks
-- `useTimer.ts` - Time tracking (display only)
-- `useProgress.ts` - Progress calculations
-- `useDebounce.ts` - Debouncing utility
-- `useAnimation.ts` - Animation state access
-
-### Components
-- `SessionStats.tsx` - Progress display using local state
-- `Editor.tsx` - Main editor with state management
-
-## Development Guidelines
-
-### Adding New State
-1. Determine if it needs immediate UI feedback
-2. Choose appropriate update strategy (real-time, debounced, or interval)
-3. Implement in appropriate layer (local, context, or hook)
-4. Add proper error handling and logging
-
-### Performance Considerations
-- Use local state for immediate UI feedback
-- Debounce frequent updates
-- Use intervals for background persistence
-- Avoid unnecessary re-renders
+# Check code quality
+npm run lint
+npm run typecheck
+```
 
 ### Testing Strategy
-- Unit tests for individual state updates
-- Integration tests for state synchronization
-- Performance tests for update frequencies
-- Error scenario testing
+- **Unit Tests**: Individual functions and components
+- **Integration Tests**: IPC communication and data flow
+- **Component Tests**: React components with React Testing Library
+- **Coverage**: 80%+ required for business logic
 
-## Future Enhancements
+### Code Quality
+- **TypeScript**: Strict mode for type safety
+- **ESLint**: Code style and best practices
+- **Prettier**: Consistent code formatting
+- **CSS Modules**: Component-scoped styling
 
-### Potential Optimizations
-- Adaptive debouncing based on typing speed
-- Smart intervals based on activity level
-- Batch updates for multiple state changes
-- Offline support with update queuing
+## 📋 Project Status
 
-### Scalability Considerations
-- Support for multiple concurrent sessions
-- State isolation to prevent interference
-- Modular design for easy extension
-- Performance monitoring and optimization
+### Current Implementation
+- ✅ Basic Electron app structure
+- ✅ React UI with navigation
+- ✅ Session setup and goal configuration
+- ✅ Text editor with Tiptap integration
+- ✅ Word count and timer functionality
+- ✅ Tree animation system
+- ✅ Modal system (inactivity, distraction, completion)
+- ✅ File import/export functionality
+- ✅ Autosave and recovery system
+
+### In Progress
+- 🔄 State management optimization
+- 🔄 Animation performance improvements
+- 🔄 Error handling and validation
+- 🔄 Testing coverage expansion
+
+### Planned Features
+- 📅 Dashboard and statistics
+- 📅 Session history and streaks
+- 📅 Enhanced animation system
+- 📅 Accessibility improvements
+
+## 🤝 Contributing
+
+### Getting Started
+1. Read the [Setup Guide](./getting-started/SETUP.md)
+2. Review [User Stories](./user-stories/USER_STORIES.md)
+3. Check [Development Guide](./getting-started/DEVELOPMENT.md)
+4. Follow [CONTRIBUTING.md](../CONTRIBUTING.md) guidelines
+
+### Development Standards
+- Use TypeScript for all new code
+- Follow existing patterns and architecture
+- Write tests for new features
+- Update documentation for changes
+- Use conventional commit messages
+
+### Code Review Process
+- All changes require pull request review
+- Tests must pass before merging
+- Documentation must be updated
+- Code must follow style guidelines
+
+## 📞 Support
+
+### Documentation Issues
+- Check existing documentation first
+- Search for similar issues
+- Create detailed issue reports
+- Include relevant code and error messages
+
+### Development Questions
+- Review architecture documentation
+- Check existing implementations
+- Ask specific, detailed questions
+- Provide context and examples
+
+## 🔗 External Resources
+
+### Technology Stack
+- [Electron](https://www.electronjs.org/) - Desktop app framework
+- [React](https://reactjs.org/) - UI library
+- [TypeScript](https://www.typescriptlang.org/) - Type system
+- [Tiptap](https://tiptap.dev/) - Text editor
+- [Vitest](https://vitest.dev/) - Testing framework
+
+### Development Tools
+- [VS Code](https://code.visualstudio.com/) - Recommended editor
+- [React DevTools](https://reactjs.org/blog/2019/08/15/new-react-devtools.html) - React debugging
+- [Electron DevTools](https://www.electronjs.org/docs/latest/tutorial/devtools) - Electron debugging
 
 ---
 
-For detailed technical documentation, see [STATE_MANAGEMENT.md](./STATE_MANAGEMENT.md)
+**Last Updated**: December 2024  
+**Documentation Version**: 1.0  
+**App Version**: MVP Development
