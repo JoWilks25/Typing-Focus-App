@@ -27,6 +27,7 @@ Essential guides for new developers and contributors.
 |----------|-------------|
 | [Setup Guide](./getting-started/SETUP.md) | Installation, verification, and troubleshooting |
 | [Development Guide](./getting-started/DEVELOPMENT.md) | Daily workflow, patterns, and best practices |
+| [Build Guide](./getting-started/BUILDING.md) | Building installers for Mac and Windows |
 | [Testing Guide](./getting-started/TESTING.md) | Testing setup, strategies, and coverage requirements |
 
 ### Architecture
