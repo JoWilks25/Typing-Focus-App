@@ -409,5 +409,6 @@ try {
 
 For more detailed information, see:
 - [Architecture Overview](../architecture/OVERVIEW.md)
+- [Build Guide](./BUILDING.md) - For production builds and installers
 - [Testing Guide](./TESTING.md)
 - [CONTRIBUTING.md](../../CONTRIBUTING.md)
