@@ -167,7 +167,7 @@ interface IncompleteSession {
 2. Distraction warning modal appears
 3. 10-second countdown begins
 4. If user returns: warning dismissed, session continues
-5. If countdown expires: session marked as abandoned
+5. If countdown expires: session marked as incomplete
 
 **Warning Modal Content**:
 - "Stay Focused?" heading

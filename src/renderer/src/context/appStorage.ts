@@ -17,8 +17,11 @@ export function loadAppState(): AppState {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return { currentView: 'editor', theme: 'dark' };
         const parsed = JSON.parse(raw);
+        
+        // Always default to editor view on app startup
+        // The session summary should only be shown when explicitly navigated to
         return {
-            currentView: parsed?.currentView === 'session-summary' ? 'session-summary' : 'editor',
+            currentView: 'editor',
             theme: parsed?.theme === 'light' || parsed?.theme === 'system' ? parsed.theme : 'dark'
         };
     } catch {

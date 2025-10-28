@@ -283,18 +283,36 @@ export class FileManager {
    */
   async getLastEndedSession(): Promise<Session | null> {
     try {
+      console.log('[FileManager] Reading session history from:', this.sessionHistoryPath);
       const content = await fs.readFile(this.sessionHistoryPath, 'utf8');
       const sessionHistory: Session[] = JSON.parse(content);
+      console.log('[FileManager] Session history loaded:', {
+        totalSessions: sessionHistory.length,
+        firstSessionId: sessionHistory[0]?.id,
+        firstSessionContentLength: sessionHistory[0]?.content?.length || 0,
+        firstSessionContentPreview: sessionHistory[0]?.content?.substring(0, 100) + '...' || 'No content',
+        firstSessionStatus: sessionHistory[0]?.status
+      });
       if (!Array.isArray(sessionHistory) || sessionHistory.length === 0) {
+        console.log('[FileManager] No sessions found in history');
         return null;
       }
       // Return the first session (most recent)
-      return sessionHistory[0];
+      const lastSession = sessionHistory[0];
+      console.log('[FileManager] Returning last session:', {
+        sessionId: lastSession.id,
+        contentLength: lastSession.content?.length || 0,
+        contentPreview: lastSession.content?.substring(0, 100) + '...' || 'No content',
+        status: lastSession.status
+      });
+      return lastSession;
     } catch (error) {
       // If file doesn't exist, return null
       if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+        console.log('[FileManager] Session history file does not exist');
         return null;
       }
+      console.error('[FileManager] Error reading session history:', error);
       throw new Error(`Failed to get last ended session: ${error}`);
     }
   }

@@ -31,7 +31,7 @@ interface LocalEditorState {
 }
 
 export const Editor = () => {
-  const { activeSession, endSession, abandonSession, updateProgress, pauseSession, resumeSession } = useSession();
+  const { activeSession, endSession, abandonSession, markSessionIncomplete, updateProgress, pauseSession, resumeSession, updateSession } = useSession();
   const { setView } = useAppState();
   const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
   const contentRef = useRef('');
@@ -50,6 +50,7 @@ export const Editor = () => {
   // State for distraction warning modal
   const [showDistractionWarning, setShowDistractionWarning] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState(10);
+  const [isHandlingSessionIncomplete, setIsHandlingSessionIncomplete] = useState(false);
 
   // State for completion modal
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -57,6 +58,23 @@ export const Editor = () => {
 
   // State for session setup modal
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
+
+  // Close modal when session becomes active
+  useEffect(() => {
+    if (activeSession && showSessionSetupModal) {
+      setShowSessionSetupModal(false);
+    }
+  }, [activeSession, showSessionSetupModal]);
+
+  // Listen for session setup trigger from other components
+  useEffect(() => {
+    const handleTriggerSessionSetup = () => {
+      setShowSessionSetupModal(true);
+    };
+
+    window.addEventListener('trigger-session-setup', handleTriggerSessionSetup);
+    return () => window.removeEventListener('trigger-session-setup', handleTriggerSessionSetup);
+  }, []);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -80,14 +98,34 @@ export const Editor = () => {
       const currentActiveSession = activeSessionRef.current;
       if (currentActiveSession) {
         try {
+          console.log('Debounced session update:', {
+            sessionId: currentActiveSession.id,
+            contentLength: content.length,
+            contentPreview: content.substring(0, 100) + '...',
+            currentSessionContentLength: currentActiveSession.content?.length || 0,
+            currentSessionContentPreview: currentActiveSession.content?.substring(0, 100) + '...' || 'No content'
+          });
+
           // Update session content via simplified API - backend only, no React state update
-          await window.api.session.updateContent(currentActiveSession.id, content);
+          const updatedSession = await window.api.session.updateContent(currentActiveSession.id, content);
+
+          console.log('Session updated successfully:', {
+            sessionId: updatedSession.id,
+            contentLength: updatedSession.content?.length || 0,
+            contentPreview: updatedSession.content?.substring(0, 100) + '...' || 'No content'
+          });
+
+          // Update the activeSessionRef with the updated content to keep it in sync
+          activeSessionRef.current = updatedSession;
+
+          // Update the React state so currentContent gets the updated content
+          updateSession(updatedSession);
         } catch (error) {
           console.warn('Failed to save session to backend:', error);
         }
       }
       // Note: No automatic session creation - users must set up sessions via the SessionSetup modal
-    }, []), // No dependencies to prevent editor recreation
+    }, [updateSession]), // Include updateSession dependency
     2000 // 2 second delay - only update backend after user stops typing (file saves every 10s)
   );
 
@@ -100,7 +138,6 @@ export const Editor = () => {
     // Log blur events for debugging with detailed information
     console.log('Editor blur event:', {
       relatedTarget: event.relatedTarget,
-      stack: new Error().stack, // This will show what called the blur
       timestamp: new Date().toISOString()
     });
   }, []);
@@ -109,6 +146,15 @@ export const Editor = () => {
   const handleUpdate = useCallback((content: string, text: string) => {
     const wordCount = calculateWordCount(text);
     const characterCount = text.length;
+
+    console.log('Editor content update:', {
+      contentLength: content.length,
+      contentPreview: content.substring(0, 100) + '...',
+      textLength: text.length,
+      textPreview: text.substring(0, 50) + '...',
+      wordCount,
+      characterCount
+    });
 
     // Update local state immediately for instant UI feedback
     setLocalState({
@@ -279,16 +325,119 @@ export const Editor = () => {
     editorRef.current = editor;
   }, [editor]);
 
-  // Update editor content when active session changes (only when switching sessions)
+  // Track editor content changes to detect when it gets cleared
   useEffect(() => {
-    if (editor && !editor.isFocused && activeSession?.id) {
-      // Only update content when switching to a different session
+    if (editor) {
+      const checkContent = () => {
+        const currentEditorContent = editor.getHTML();
+        const currentContentRef = contentRef.current;
+
+        // Log significant content changes
+        if (Math.abs(currentEditorContent.length - currentContentRef.length) > 10) {
+          console.log('Editor content change detected:', {
+            editorLength: currentEditorContent.length,
+            contentRefLength: currentContentRef.length,
+            editorContent: currentEditorContent.substring(0, 100) + '...',
+            contentRef: currentContentRef.substring(0, 100) + '...',
+            showDistractionWarning,
+            showInactivityModal,
+            timestamp: new Date().toISOString()
+          });
+        }
+      };
+
+      // Check content every second during distraction warning
+      let interval: NodeJS.Timeout | null = null;
+      if (showDistractionWarning) {
+        interval = setInterval(checkContent, 1000);
+      }
+
+      return () => {
+        if (interval) {
+          clearInterval(interval);
+        }
+      };
+    }
+    return undefined;
+  }, [editor, showDistractionWarning, showInactivityModal]);
+
+  // Update editor content when active session changes
+  useEffect(() => {
+    if (editor && activeSession?.id) {
+      // Update content when switching to a different session or when content changes
       const editorContent = editor.getHTML();
-      if (editorContent !== currentContent) {
+      console.log('Editor content sync check:', {
+        sessionId: activeSession.id,
+        editorContentLength: editorContent.length,
+        currentContentLength: currentContent.length,
+        editorContentPreview: editorContent.substring(0, 100) + '...',
+        currentContentPreview: currentContent.substring(0, 100) + '...',
+        showDistractionWarning,
+        showInactivityModal,
+        contentRefLength: contentRef.current.length,
+        contentRefPreview: contentRef.current.substring(0, 100) + '...',
+        stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n') // Show what called this
+      });
+
+      // Check if editor content was cleared unexpectedly
+      if (editorContent.length < contentRef.current.length - 10) {
+        console.warn('Editor content was cleared unexpectedly!', {
+          editorContent: editorContent,
+          contentRef: contentRef.current.substring(0, 100) + '...',
+          editorLength: editorContent.length,
+          contentRefLength: contentRef.current.length,
+          showDistractionWarning,
+          showInactivityModal,
+          currentContentFromSession: currentContent.substring(0, 100) + '...',
+          currentContentLength: currentContent.length,
+          activeSessionId: activeSession.id
+        });
+
+        // Check if this is caused by session content being older than contentRef
+        if (currentContent.length < contentRef.current.length) {
+          console.warn('Session content is older than contentRef - this suggests a sync issue:', {
+            sessionContent: currentContent.substring(0, 100) + '...',
+            contentRef: contentRef.current.substring(0, 100) + '...',
+            sessionLength: currentContent.length,
+            contentRefLength: contentRef.current.length
+          });
+        }
+
+        // Restore editor content from contentRef
+        console.log('Restoring editor content from contentRef due to unexpected clearing');
+        editor.commands.setContent(contentRef.current, { emitUpdate: false });
+        return;
+      }
+
+      // Only update editor content if the session content is actually different and longer
+      // This prevents overwriting editor content with shorter/older session content
+      if (editorContent !== currentContent && currentContent.length > editorContent.length) {
+        console.log('Setting editor content from session (content is longer):', {
+          from: editorContent.substring(0, 100) + '...',
+          to: currentContent.substring(0, 100) + '...'
+        });
         editor.commands.setContent(currentContent, { emitUpdate: false });
+      } else if (editorContent !== currentContent) {
+        console.log('Skipping content update - editor content is longer or same length:', {
+          editorLength: editorContent.length,
+          sessionLength: currentContent.length
+        });
+      }
+
+      // Log if editor content is unexpectedly empty
+      if (editorContent.length <= 7 && contentRef.current.length > 7) {
+        console.warn('Editor content is empty but contentRef has content - potential sync issue:', {
+          editorContent: editorContent,
+          contentRef: contentRef.current.substring(0, 100) + '...',
+          contentRefLength: contentRef.current.length
+        });
+
+        // Restore editor content from contentRef
+        console.log('Restoring editor content from contentRef');
+        editor.commands.setContent(contentRef.current, { emitUpdate: false });
       }
     }
-  }, [editor, currentContent, activeSession?.id]);
+  }, [editor, currentContent, activeSession?.id, showDistractionWarning, showInactivityModal]);
 
   // Focus editor on mount (only if no content exists)
   useEffect(() => {
@@ -325,6 +474,18 @@ export const Editor = () => {
           console.debug('Editor: Skipping distraction warning - completion modal is visible');
           return;
         }
+
+        // Log current content state when distraction warning is shown
+        const currentEditorContent = editor?.getHTML() || '';
+        const currentContentRef = contentRef.current;
+        console.log('Distraction warning shown - content state:', {
+          editorContentLength: currentEditorContent.length,
+          contentRefLength: currentContentRef.length,
+          editorContentPreview: currentEditorContent.substring(0, 100) + '...',
+          contentRefPreview: currentContentRef.substring(0, 100) + '...',
+          activeSessionId: activeSession?.id
+        });
+
         setShowDistractionWarning(true);
         setCountdownSeconds(10);
       };
@@ -341,19 +502,59 @@ export const Editor = () => {
       };
 
       const handleSessionIncomplete = async () => {
+        // Prevent multiple simultaneous calls
+        if (isHandlingSessionIncomplete) {
+          console.log('Session incomplete already being handled, skipping duplicate call');
+          return;
+        }
+
+        setIsHandlingSessionIncomplete(true);
         setShowDistractionWarning(false);
+
         // Mark session as incomplete and navigate to summary when countdown expires
         const currentSession = activeSessionRef.current;
         if (currentSession) {
           try {
-            await window.api.session.markIncomplete(currentSession.id);
+            // Save current content before marking as incomplete
+            const currentContent = contentRef.current;
+            console.log('Distraction modal: Saving content before marking incomplete:', {
+              sessionId: currentSession.id,
+              contentLength: currentContent.length,
+              contentPreview: currentContent.substring(0, 100) + '...'
+            });
+
+            // Update session with current content before marking incomplete
+            const updatedSession = await window.api.session.updateContent(currentSession.id, currentContent);
+            console.log('Distraction modal: Content updated successfully:', {
+              sessionId: updatedSession.id,
+              contentLength: updatedSession.content?.length || 0,
+              contentPreview: updatedSession.content?.substring(0, 100) + '...' || 'No content'
+            });
+
+            // Small delay to ensure content is properly saved
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Now mark as incomplete with the saved content
+            // This will clear the active session and return editor to "no active session" state
+            const incompleteSession = await markSessionIncomplete(currentSession.id);
+            console.log('Distraction modal: Session marked incomplete:', {
+              sessionId: incompleteSession.id,
+              contentLength: incompleteSession.content?.length || 0,
+              contentPreview: incompleteSession.content?.substring(0, 100) + '...' || 'No content',
+              status: incompleteSession.status
+            });
+
             // Navigate to summary after marking incomplete
             setView('session-summary');
           } catch (error) {
             console.warn('Failed to mark session as incomplete:', error);
             // Still navigate to summary even if mark incomplete fails
             setView('session-summary');
+          } finally {
+            setIsHandlingSessionIncomplete(false);
           }
+        } else {
+          setIsHandlingSessionIncomplete(false);
         }
       };
 
@@ -384,7 +585,7 @@ export const Editor = () => {
       };
     }
     return undefined;
-  }, [setView, abandonSession, showCompletionModal]); // Include setView, abandonSession, and showCompletionModal
+  }, [setView, abandonSession, markSessionIncomplete, showCompletionModal, activeSession?.id, editor, isHandlingSessionIncomplete]); // Include all dependencies
 
   const updateProgressInBackground = useCallback(() => {
     if (!activeSession) return;
@@ -415,11 +616,25 @@ export const Editor = () => {
     const progressInterval = globalThis.setInterval(() => {
       // Don't update state if inactivity modal currently shown
       if (showInactivityModal) return;
+
+      // Log content state before progress update
+      const currentEditorContent = editor?.getHTML() || '';
+      const currentContentRef = contentRef.current;
+      console.log('5-second progress update - content state:', {
+        editorContentLength: currentEditorContent.length,
+        contentRefLength: currentContentRef.length,
+        editorContentPreview: currentEditorContent.substring(0, 100) + '...',
+        contentRefPreview: currentContentRef.substring(0, 100) + '...',
+        showDistractionWarning,
+        showInactivityModal,
+        activeSessionId: activeSession.id
+      });
+
       updateProgressInBackground()
     }, 5000); // 5 seconds
 
     return () => globalThis.clearInterval(progressInterval);
-  }, [activeSession, updateProgressInBackground, showInactivityModal]);
+  }, [activeSession, updateProgressInBackground, showInactivityModal, showDistractionWarning, editor]);
 
   // Pause session when inactivity modal shows
   useEffect(() => {

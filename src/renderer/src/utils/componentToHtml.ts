@@ -302,53 +302,22 @@ export function generateFloatingModalHtml(
     <script>
       console.log('Modal: Script starting...');
       
-      let countdownTimer = null;
-      let countdownValue = ${typeof secondsRemaining === 'number' ? secondsRemaining : 10};
+      // Note: Countdown is handled by the main process via IPC updates
+      // The visual countdown display will be updated by the main process
+      // sending 'update-countdown' events to the renderer
       
-      console.log('Modal: Initial countdown value:', countdownValue);
-      console.log('Modal: Document ready state:', document.readyState);
-      
-      // Start countdown timer when page loads
-      function startCountdown() {
-        try {
-          console.log('Modal: Starting countdown timer');
+      // Listen for countdown updates from main process
+      if (window.api && window.api.on) {
+        window.api.on('update-countdown', (event, seconds) => {
+          console.log('Modal: Received countdown update:', seconds);
           const countdownElement = document.querySelector('.countdown-number');
-          console.log('Modal: Countdown element found:', !!countdownElement);
-          
-          if (!countdownElement) {
-            console.error('Modal: Countdown element not found!');
-            return;
+          if (countdownElement) {
+            countdownElement.textContent = seconds;
           }
-          
-          console.log('Modal: Setting up interval timer');
-          countdownTimer = setInterval(() => {
-            try {
-              countdownValue--;
-              console.log('Modal: Countdown tick:', countdownValue);
-              countdownElement.textContent = countdownValue;
-              
-              if (countdownValue <= 0) {
-                console.log('Modal: Countdown expired, ending session');
-                clearInterval(countdownTimer);
-                // Auto-end session when countdown reaches 0
-                handleEndSession();
-              }
-            } catch (error) {
-              console.error('Modal: Error in countdown tick:', error);
-            }
-          }, 1000);
-        } catch (error) {
-          console.error('Modal: Error in startCountdown:', error);
-        }
+        });
       }
       
       function handleReturn() {
-        // Clear countdown timer
-        if (countdownTimer) {
-          clearInterval(countdownTimer);
-          countdownTimer = null;
-        }
-        
         // Get modal ID from global variable or use the one from template
         const modalId = window.currentModalId || '${modalId}';
         console.log('Modal: Sending return action with modalId:', modalId);
@@ -360,12 +329,6 @@ export function generateFloatingModalHtml(
       }
 
       function handleEndSession() {
-        // Clear countdown timer
-        if (countdownTimer) {
-          clearInterval(countdownTimer);
-          countdownTimer = null;
-        }
-        
         const modalId = window.currentModalId || '${modalId}';
         console.log('Modal: Attempting to end session with modalId:', modalId);
         
@@ -379,29 +342,6 @@ export function generateFloatingModalHtml(
           const { ipcRenderer } = require('electron');
           ipcRenderer.send('distraction-warning:end-session', modalId);
         }
-      }
-      
-      // Start countdown when DOM is ready
-      try {
-        console.log('Modal: Document ready state:', document.readyState);
-        
-        if (document.readyState === 'loading') {
-          console.log('Modal: Document still loading, waiting for DOMContentLoaded');
-          document.addEventListener('DOMContentLoaded', startCountdown);
-        } else {
-          console.log('Modal: Document already loaded, starting countdown immediately');
-          startCountdown();
-        }
-        
-        // Also try starting after a short delay as backup
-        setTimeout(() => {
-          console.log('Modal: Backup countdown start attempt');
-          if (!countdownTimer) {
-            startCountdown();
-          }
-        }, 500);
-      } catch (error) {
-        console.error('Modal: Error in countdown initialization:', error);
       }
     </script>
   `;

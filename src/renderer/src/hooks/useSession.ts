@@ -24,6 +24,7 @@ export function useSession() {
     incrementDistraction: ctx.incrementDistraction,
     endSession: ctx.endSession,
     abandonSession: ctx.abandonSession,
+    markSessionIncomplete: ctx.markSessionIncomplete,
     pauseSession: ctx.pauseSession,
     resumeSession: ctx.resumeSession
   };
