@@ -12,7 +12,8 @@ stateDiagram-v2
     Paused --> Active: User resumes
     Paused --> Incomplete: User ends session
     Active --> Incomplete: User ends early
-    Active --> Abandoned: User switches away
+    Active --> Incomplete: Distraction countdown expires
+    Active --> Abandoned: User ends via distraction modal
     Active --> Completed: Goal reached
     Incomplete --> [*]: Wilt animation
     Abandoned --> [*]: Wilt animation
@@ -159,14 +160,14 @@ interface IncompleteSession {
 }
 ```
 
-### 6. Abandoned Phase
+### 6. Incomplete Phase (Distraction)
 **Trigger**: User switches away from app and doesn't return within 10 seconds
 
 **Distraction Warning Flow**:
 1. User switches away from app
 2. Distraction warning modal appears
 3. 10-second countdown begins
-4. If user returns: warning dismissed, session continues
+4. If user returns: warning dismissed, session continues, distraction count incremented
 5. If countdown expires: session marked as incomplete
 
 **Warning Modal Content**:
@@ -174,6 +175,38 @@ interface IncompleteSession {
 - "You are about to leave your writing session..."
 - Countdown timer display
 - "Return to Session" (primary) and "End Session Anyway" (secondary) buttons
+
+**Post-Distraction Behavior**:
+- Session content is saved before marking as incomplete
+- Active session is cleared from app state
+- Editor returns to "Ready to Start Writing?" state
+- User must explicitly start a new session to continue writing
+
+**Incomplete Session Logic**:
+```typescript
+interface IncompleteSession {
+  id: string;
+  startTime: number;
+  endTime: number;
+  goalType: 'word' | 'time';
+  goalValue: number;
+  wordsWritten: number;
+  timeElapsed: number;
+  status: 'incomplete';
+  completionRate: number; // < 100
+  treeState: 'wilted' | 'dead';
+  distractionCount: number;
+}
+```
+
+### 7. Abandoned Phase
+**Trigger**: User manually selects "End Session Anyway" from distraction warning
+
+**User Experience**:
+- Session ends immediately without countdown
+- Session marked as abandoned
+- Wilt/death animation plays
+- Statistics reflect abandoned session
 
 **Abandonment Logic**:
 ```typescript
@@ -209,6 +242,8 @@ const canTransitionTo = (currentState: SessionState, targetState: SessionState):
   return validTransitions[currentState]?.includes(targetState) ?? false;
 };
 ```
+
+**Note**: Both distraction countdown expiry and manual early session end result in 'incomplete' status. Only explicit "End Session Anyway" selection from distraction modal results in 'abandoned' status.
 
 ### Transition Handlers
 ```typescript
