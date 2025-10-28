@@ -15,14 +15,14 @@ export interface RecentFile {
 export function loadAppState(): AppState {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { currentView: 'session-setup', theme: 'dark' };
+        if (!raw) return { currentView: 'editor', theme: 'dark' };
         const parsed = JSON.parse(raw);
         return {
-            currentView: parsed?.currentView === 'editor' ? 'editor' : 'session-setup',
+            currentView: parsed?.currentView === 'session-summary' ? 'session-summary' : 'editor',
             theme: parsed?.theme === 'light' || parsed?.theme === 'system' ? parsed.theme : 'dark'
         };
     } catch {
-        return { currentView: 'session-setup', theme: 'dark' };
+        return { currentView: 'editor', theme: 'dark' };
     }
 }
 

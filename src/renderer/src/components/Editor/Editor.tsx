@@ -2,15 +2,19 @@
 // Purpose: Main text editor component with Tiptap integration
 
 import { useEditor, EditorContent } from '@tiptap/react';
+import Document from '@tiptap/extension-document';
+import Paragraph from '@tiptap/extension-paragraph';
+import Text from '@tiptap/extension-text';
+import HardBreak from '@tiptap/extension-hard-break';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '../../hooks/useSession';
 import { useAppState } from '../../hooks/useAppState';
-import { createEditorConfig } from './editorConfig';
 import { useDebounce } from '../../hooks/useDebounce';
 import { SessionStats } from './SessionStats';
 import { EditorTitle } from './EditorTitle';
 import { InactivityModal } from '../Modals/InactivityModal';
 import { FloatingDistractionWarning } from '../Modals/FloatingDistractionWarning';
+import { SessionSetupModal } from '../Modals/SessionSetupModal';
 import { TreeAnimation } from '../Animation/TreeAnimation';
 import { calculateWordCount } from '../../utils/wordCount';
 import styles from './Editor.module.css';
@@ -34,13 +38,6 @@ export const Editor = () => {
   const activeSessionRef = useRef(activeSession);
   const debouncedUpdateSessionRef = useRef<() => void>(() => { });
 
-  // Redirect to session setup if no active session
-  useEffect(() => {
-    if (!activeSession) {
-      console.log('No active session - redirecting to session setup');
-      setView('session-setup');
-    }
-  }, [activeSession, setView]);
 
   // Keep refs up to date
   useEffect(() => {
@@ -57,6 +54,9 @@ export const Editor = () => {
   // State for completion modal
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [hasTriggeredCompletion, setHasTriggeredCompletion] = useState(false);
+
+  // State for session setup modal
+  const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
 
   // Local state for immediate UI updates
   const [localState, setLocalState] = useState<LocalEditorState>({
@@ -231,16 +231,47 @@ export const Editor = () => {
     handleEnd();
   }, [handleEnd]);
 
-  // Initialize Tiptap editor
+  // Session setup modal handlers
+  const handleOpenSessionSetup = useCallback(() => {
+    setShowSessionSetupModal(true);
+  }, []);
+
+  const handleCloseSessionSetup = useCallback(() => {
+    setShowSessionSetupModal(false);
+  }, []);
+
+  // Initialize Tiptap editor with basic extensions (always required for schema)
   const editor = useEditor(
-    createEditorConfig({
-      placeholder: 'Start writing your thoughts...',
-      content: currentContent,
-      onUpdate: handleUpdate,
-      onEnd: handleEnd,
-      onBlur: handleEditorBlur,
-    }),
-    [currentContent]
+    {
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        HardBreak,
+      ],
+      content: activeSession ? currentContent : '',
+      editable: !!activeSession,
+      editorProps: {
+        attributes: {
+          class: 'prose prose-invert max-w-none',
+          'data-placeholder': 'Start writing your thoughts...',
+          style: 'outline: none !important; box-shadow: none !important; border: none !important;',
+        },
+      },
+      onUpdate: activeSession ? ({ editor }) => {
+        const html = editor.getHTML();
+        const text = editor.getText();
+        handleUpdate(html, text);
+      } : undefined,
+      onBlur: activeSession ? ({ event }) => {
+        handleEditorBlur(event as unknown as React.FocusEvent);
+      } : undefined,
+      parseOptions: {
+        preserveWhitespace: 'full' as const,
+      },
+      autofocus: false,
+    },
+    [activeSession, currentContent]
   );
 
   // Store editor reference for blur handler
@@ -353,7 +384,7 @@ export const Editor = () => {
       };
     }
     return undefined;
-  }, [setView, abandonSession]); // Include setView and abandonSession
+  }, [setView, abandonSession, showCompletionModal]); // Include setView, abandonSession, and showCompletionModal
 
   const updateProgressInBackground = useCallback(() => {
     if (!activeSession) return;
@@ -446,9 +477,66 @@ export const Editor = () => {
     setShowCompletionModal(false);
   }, [activeSession?.id]);
 
-  // Don't render editor if no active session
+  // Close session setup modal when a session is successfully created
+  useEffect(() => {
+    if (activeSession && showSessionSetupModal) {
+      setShowSessionSetupModal(false);
+    }
+  }, [activeSession, showSessionSetupModal]);
+
+  // Show disabled editor state when no active session
   if (!activeSession) {
-    return null;
+    return (
+      <div className={styles['editor-container']}>
+        <EditorTitle
+          title="No Active Session"
+          name=""
+        />
+
+        <SessionStats
+          localState={{
+            content: '',
+            text: '',
+            wordCount: 0,
+            characterCount: 0,
+            lastUpdated: Date.now()
+          }}
+          isFocused={false}
+          activeSession={null}
+          currentContent=""
+          showInactivityModal={false}
+        />
+
+        <div className={styles['editor-main']}>
+          <div className={`${styles['editor-content']} ${styles['editor-padding']} ${styles['editor-disabled']}`}>
+            <div className={styles['disabled-editor-content']}>
+              <div className={styles['disabled-message']}>
+                <h2>Ready to Start Writing?</h2>
+                <p>Begin your writing journey by starting a new session.</p>
+              </div>
+              <button
+                className={styles['start-session-button']}
+                onClick={handleOpenSessionSetup}
+              >
+                Start New Writing Session
+              </button>
+            </div>
+          </div>
+
+          <div className={styles['animation-sidebar']}>
+            <TreeAnimation
+              progress={0}
+              isActive={false}
+            />
+          </div>
+        </div>
+
+        <SessionSetupModal
+          isVisible={showSessionSetupModal}
+          onClose={handleCloseSessionSetup}
+        />
+      </div>
+    );
   }
 
   if (!editor) {
@@ -511,6 +599,11 @@ export const Editor = () => {
           onEndSession={handleCompleteSession}
         />
       )}
+
+      <SessionSetupModal
+        isVisible={showSessionSetupModal}
+        onClose={handleCloseSessionSetup}
+      />
     </div>
   );
 };
