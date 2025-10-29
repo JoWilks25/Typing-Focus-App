@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import type { BrowserWindow } from 'electron';
 import type { SessionManager } from './sessionManager';
 import { TEST_CONFIG } from '../config/testConfig';
+import { floatingModalService } from './FloatingModalService';
 
 export class FocusMonitorService extends EventEmitter {
   private mainWindow: BrowserWindow | null = null;
@@ -123,18 +124,15 @@ export class FocusMonitorService extends EventEmitter {
     
     this.currentCountdown = this.COUNTDOWN_DURATION;
     
-    // Send initial countdown value
-    if (this.mainWindow) {
-      this.mainWindow.webContents.send('update-countdown', this.currentCountdown);
-    }
+    // Send initial countdown value to all windows
+    this.sendCountdownUpdate(this.currentCountdown);
     
     // Set up countdown interval (update every second)
     this.countdownInterval = setInterval(() => {
       this.currentCountdown--;
       
-      if (this.mainWindow) {
-        this.mainWindow.webContents.send('update-countdown', this.currentCountdown);
-      }
+      // Send countdown update to all windows
+      this.sendCountdownUpdate(this.currentCountdown);
       
       if (this.currentCountdown <= 0) {
         this.handleCountdownExpired();
@@ -197,6 +195,24 @@ export class FocusMonitorService extends EventEmitter {
    */
   getCurrentCountdown(): number {
     return this.currentCountdown;
+  }
+
+  /**
+   * Send countdown update to all windows (main window + floating modals)
+   */
+  private sendCountdownUpdate(seconds: number): void {
+    // Send to main window
+    if (this.mainWindow) {
+      this.mainWindow.webContents.send('update-countdown', seconds);
+    }
+
+    // Send to all floating modal windows
+    const allModals = floatingModalService.getAllModals();
+    allModals.forEach(modal => {
+      if (!modal.window.isDestroyed()) {
+        modal.window.webContents.send('update-countdown', seconds);
+      }
+    });
   }
 }
 

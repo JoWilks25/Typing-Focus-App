@@ -8,7 +8,7 @@ import type { Session } from '../../types/session';
 import styles from './SessionSummary.module.css';
 
 export function SessionSummary(): React.JSX.Element {
-    const { setView } = useAppState();
+    const { setView, triggerSessionSetup } = useAppState();
 
     // Session state - fetched from backend
     const [session, setSession] = useState<Session | null>(null);
@@ -21,7 +21,15 @@ export function SessionSummary(): React.JSX.Element {
     useEffect(() => {
         const fetchLastSession = async () => {
             try {
+                console.log('SessionSummary: Fetching last ended session...');
                 const lastSession = await window.api.session.getLastEnded();
+                console.log('SessionSummary: Received session:', {
+                    hasSession: !!lastSession,
+                    sessionId: lastSession?.id,
+                    contentLength: lastSession?.content?.length || 0,
+                    contentPreview: lastSession?.content?.substring(0, 100) + '...' || 'No content',
+                    status: lastSession?.status
+                });
                 setSession(lastSession);
             } catch (error) {
                 console.error('Failed to fetch last ended session:', error);
@@ -107,8 +115,10 @@ export function SessionSummary(): React.JSX.Element {
         }
     }, [treeAnimationState, animationComplete]);
 
-    const handleStartNewSession = useCallback(() => {
-        setView('session-setup');
+    const handleReturnToEditor = useCallback(() => {
+        // Ensure we're returning to a clean editor state with no active session
+        // The session should already be ended, but we'll navigate to editor
+        setView('editor');
     }, [setView]);
 
     const handleViewDashboard = useCallback(() => {
@@ -152,10 +162,10 @@ export function SessionSummary(): React.JSX.Element {
                 </div>
                 <div className={styles['actions']}>
                     <button
-                        onClick={handleStartNewSession}
+                        onClick={handleReturnToEditor}
                         className={`${styles['action-button']} ${styles['action-button-primary']}`}
                     >
-                        Start New Session
+                        Return to Editor
                     </button>
                     <button
                         onClick={handleViewDashboard}
@@ -246,10 +256,10 @@ export function SessionSummary(): React.JSX.Element {
             {/* Action Buttons */}
             <div className={styles['actions']}>
                 <button
-                    onClick={handleStartNewSession}
+                    onClick={handleReturnToEditor}
                     className={`${styles['action-button']} ${styles['action-button-primary']}`}
                 >
-                    Start New Session
+                    Return to Editor
                 </button>
                 {session?.filePath && (
                     <button

@@ -10,6 +10,9 @@ export interface AppContextValue extends AppState {
     setView: (view: View) => void;
     setTheme: (theme: AppState['theme']) => void;
     
+    // Modal triggers
+    triggerSessionSetup: () => void;
+    
     // Session state
     sessions: Session[];
     activeSessionId: string | null;
@@ -25,6 +28,7 @@ export interface AppContextValue extends AppState {
     incrementDistraction: (sessionId: string) => Promise<void>;
     endSession: (sessionId: string, finalContent: string, finalWordCount: number) => Promise<Session>;
     abandonSession: (sessionId: string) => Promise<Session>;
+    markSessionIncomplete: (sessionId: string) => Promise<Session>;
     pauseSession: (sessionId: string) => Promise<Session>;
     resumeSession: (sessionId: string) => Promise<Session>;
 }

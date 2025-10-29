@@ -1,0 +1,49 @@
+/* src/renderer/src/components/Modals/SessionSetupModal.module.css */
+/* Purpose: Styles for SessionSetupModal component */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-container {
+  background-color: #1f2937; /* gray-800 */
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  border: 1px solid #374151; /* gray-700 */
+}
+
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Ensure the SessionSetup component fits well in the modal */
+.modal-content .setup-container {
+  margin: 0;
+  padding: 2rem;
+  max-width: none;
+  background-color: transparent;
+}
+
+/* Adjust header spacing in modal */
+.modal-content .setup-container .header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-content .setup-container .title {
+  font-size: 1.5rem;
+  margin-bottom: 0;
+}

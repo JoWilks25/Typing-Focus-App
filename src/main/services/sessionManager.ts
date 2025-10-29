@@ -447,12 +447,31 @@ export class SessionManager {
       throw new Error(`Session is already stopped: ${sessionId}`);
     }
 
+    console.log('[SessionManager] Marking session incomplete:', {
+      sessionId,
+      currentContentLength: session.content?.length || 0,
+      currentContentPreview: session.content?.substring(0, 100) + '...' || 'No content',
+      currentWords: session.currentWords
+    });
+
+    const endTime = Date.now();
+    const timeElapsed = endTime - session.startTime;
+
     const updatedSession: Session = {
       ...session,
       status: 'incomplete',
-      endTime: Date.now(),
+      endTime,
+      timeElapsed,
       updatedAt: new Date().toISOString()
     };
+
+    console.log('[SessionManager] Session marked incomplete with content:', {
+      sessionId: updatedSession.id,
+      contentLength: updatedSession.content?.length || 0,
+      contentPreview: updatedSession.content?.substring(0, 100) + '...' || 'No content',
+      currentWords: updatedSession.currentWords,
+      status: updatedSession.status
+    });
 
     this.sessions.set(sessionId, updatedSession);
     

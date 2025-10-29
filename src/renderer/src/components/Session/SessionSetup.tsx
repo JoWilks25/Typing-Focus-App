@@ -5,7 +5,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { GoalSelector } from './GoalSelector';
 import { GoalInput } from './GoalInput';
 import { useSession } from '@renderer/hooks/useSession';
-import { useAppState } from '@renderer/hooks/useAppState';
 import { isValidGoal, getDefaultValue } from '@renderer/utils/validation';
 import { calculateWordCount } from '@renderer/utils/wordCount';
 import { getRecentFiles, addRecentFile, type RecentFile } from '@renderer/context/appStorage';
@@ -20,7 +19,6 @@ const path = {
 
 export function SessionSetup(): React.JSX.Element {
     const { addSession } = useSession();
-    const { setView } = useAppState();
 
     const [goalType, setGoalType] = useState<GoalType>('word');
     const [goalValue, setGoalValue] = useState<number>(getDefaultValue('word'));
@@ -42,6 +40,10 @@ export function SessionSetup(): React.JSX.Element {
     const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
 
     const [fileExistsError, setFileExistsError] = useState(false);
+
+    // Transition state for session creation success
+    const [isCreatingSession, setIsCreatingSession] = useState(false);
+    const [sessionCreated, setSessionCreated] = useState(false);
 
 
     const isValid = isValidGoal(goalType, goalValue);
@@ -176,6 +178,7 @@ export function SessionSetup(): React.JSX.Element {
 
         // Clear any previous file exists error
         setFileExistsError(false);
+        setIsCreatingSession(true);
 
         try {
             // Check if file exists for new files (not loading existing)
@@ -183,6 +186,7 @@ export function SessionSetup(): React.JSX.Element {
                 const fileExists = await window.api.file.existsExternal(fullPath);
                 if (fileExists) {
                     setFileExistsError(true);
+                    setIsCreatingSession(false);
                     return;
                 }
             }
@@ -204,18 +208,26 @@ export function SessionSetup(): React.JSX.Element {
                 addRecentFile(loadedFilePath);
             }
 
-            // Add session to local state and navigate to editor
+            // Add session to local state
             addSession(newSession);
 
-            // Session started successfully
+            // Show success state briefly before closing modal
+            setSessionCreated(true);
+            setIsCreatingSession(false);
 
-            setView('editor');
+            // Brief delay to show success state, then the modal will close
+            // The Editor component will detect the new activeSession and close the modal
+            setTimeout(() => {
+                // Modal will be closed by the parent component when activeSession changes
+            }, 1500);
+
         } catch (error) {
             console.error('Failed to create session:', error);
+            setIsCreatingSession(false);
             // Handle validation errors from main process
             // You could show a toast notification here
         }
-    }, [isValid, isValidFileName, fullPath, fileName, goalType, goalValue, fileMode, isLoadingExisting, initialContent, loadedFilePath, addSession, setView]);
+    }, [isValid, isValidFileName, fullPath, fileName, goalType, goalValue, fileMode, isLoadingExisting, initialContent, loadedFilePath, addSession]);
 
     return (
         <div className={styles['setup-container']}>
@@ -372,11 +384,13 @@ export function SessionSetup(): React.JSX.Element {
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        disabled={!isValid || !isValidFileName || !fullPath}
-                        className={`${styles['submit-button']} ${(isValid && isValidFileName && fullPath) ? styles['submit-button-enabled'] : styles['submit-button-disabled']}`}
+                        disabled={!isValid || !isValidFileName || !fullPath || isCreatingSession}
+                        className={`${styles['submit-button']} ${(isValid && isValidFileName && fullPath && !isCreatingSession) ? styles['submit-button-enabled'] : styles['submit-button-disabled']}`}
                     >
                         <div>
-                            Start Writing
+                            {isCreatingSession ? 'Creating Session...' :
+                                sessionCreated ? 'Session Created! 🎉' :
+                                    'Start Writing'}
                         </div>
                     </button>
                 )}

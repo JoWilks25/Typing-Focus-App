@@ -183,6 +183,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    const markSessionIncomplete = useCallback(async (sessionId: string): Promise<Session> => {
+        try {
+            if (window.api?.session) {
+                // Mark session as incomplete and clear active session state
+                const incompleteSession = await (window.api.session as unknown as { markIncomplete: (id: string) => Promise<Session> }).markIncomplete(sessionId);
+                setActiveSessionId(null); // Clear active session only
+                return incompleteSession;
+            }
+            throw new Error('Session API not available');
+        } catch (error) {
+            console.warn('Failed to mark session as incomplete:', error);
+            throw error;
+        }
+    }, []);
+
     const pauseSession = useCallback(async (sessionId: string): Promise<Session> => {
         try {
             if (window.api?.session?.pause) {
@@ -249,6 +264,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         debouncedPersistProgress(activeSessionId, currentWords, timeElapsed, progressPercentage);
     }, [activeSessionId, debouncedPersistProgress]);
 
+    // Modal triggers
+    const triggerSessionSetup = useCallback(() => {
+        // This will be handled by the Editor component
+        // We'll use a custom event to communicate between components
+        window.dispatchEvent(new CustomEvent('trigger-session-setup'));
+    }, []);
+
     // Computed values
     const activeSession = useMemo(() => {
         return sessions.find(session => session.id === activeSessionId) || null;
@@ -261,6 +283,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             theme: appState.theme,
             setView,
             setTheme,
+            triggerSessionSetup,
 
             // Session state
             sessions,
@@ -275,6 +298,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             incrementDistraction,
             endSession,
             abandonSession,
+            markSessionIncomplete,
             pauseSession,
             resumeSession
         }),
@@ -283,6 +307,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             appState.theme,
             setView,
             setTheme,
+            triggerSessionSetup,
             sessions,
             activeSessionId,
             activeSession,
@@ -295,6 +320,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             incrementDistraction,
             endSession,
             abandonSession,
+            markSessionIncomplete,
             pauseSession,
             resumeSession
         ]
