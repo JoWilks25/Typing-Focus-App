@@ -18,25 +18,70 @@ export const TreeAnimation = ({ progress, isActive, playFullAnimation = false, s
     console.debug('TreeAnimation: Rendering with progress:', progress, 'isActive:', isActive, 'playFullAnimation:', playFullAnimation, 'showWiltedTree:', showWiltedTree);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
-    const [currentAnimation, setCurrentAnimation] = useState<unknown>(null);
+    const [stageAnimations, setStageAnimations] = useState<unknown[]>([]);
     const [animationsLoaded, setAnimationsLoaded] = useState(false);
     const [hasPlayedFullAnimation, setHasPlayedFullAnimation] = useState(false);
+    const previousStageRef = useRef<number | null>(null); // Track previous stage to detect changes
 
-    // Load animations when component mounts
+    // Load all 8 stage animations when component mounts
     useEffect(() => {
         const loadAnimations = async () => {
             try {
-                const growthModule = await import('../../../assets/animations/tree-growth.json');
-                setCurrentAnimation(growthModule.default);
+                // Load all 8 stage animations
+                const animationPromises = Array.from({ length: 8 }, (_, i) =>
+                    import(`../../../assets/animations/tree-grow-${i}.json`)
+                );
+
+                const animationModules = await Promise.all(animationPromises);
+                const animations = animationModules.map(module => module.default);
+
+                setStageAnimations(animations);
                 setAnimationsLoaded(true);
-                console.log('TreeAnimation: Animations loaded successfully');
+                console.log('TreeAnimation: All 8 stage animations loaded successfully');
             } catch (error) {
-                console.error('TreeAnimation: Failed to load animations:', error);
+                console.error('TreeAnimation: Failed to load stage animations:', error);
+                // Fallback to old animation if stage animations fail
+                try {
+                    const growthModule = await import('../../../assets/animations/tree-growth.json');
+                    setStageAnimations([growthModule.default]);
+                    setAnimationsLoaded(true);
+                    console.log('TreeAnimation: Loaded fallback animation');
+                } catch (fallbackError) {
+                    console.error('TreeAnimation: Failed to load fallback animation:', fallbackError);
+                }
             }
         };
 
         loadAnimations();
     }, []);
+
+    // Calculate current stage based on progress
+    // Stages 0-6 divide progress by 7, stage 7 only appears at 100%
+    const calculateStage = (progress: number): number => {
+        if (progress === 100) {
+            return 7; // Final stage only at 100%
+        }
+        // Stages 0-6: divide progress range into 7 equal parts
+        return Math.min(Math.floor(progress / (100 / 7)), 6);
+    };
+
+    const currentStage = calculateStage(progress);
+    const currentAnimation = stageAnimations[currentStage];
+
+    // Handle stage switching only when stage actually changes (not on every progress update)
+    useEffect(() => {
+        // Only restart animation if stage actually changed
+        if (previousStageRef.current !== null && previousStageRef.current !== currentStage) {
+            if (lottieRef.current && isActive && !playFullAnimation && !showWiltedTree && animationsLoaded && currentAnimation) {
+                console.log(`TreeAnimation: Switching from stage ${previousStageRef.current} to stage ${currentStage} (progress: ${progress}%)`);
+                // Force re-render of animation when stage changes
+                lottieRef.current.goToAndPlay(0, true);
+            }
+        }
+        // Update the previous stage reference
+        previousStageRef.current = currentStage;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentStage, isActive, playFullAnimation, showWiltedTree, animationsLoaded, currentAnimation]); // Intentionally exclude 'progress' - only react to stage changes
 
     // Handle full animation playback for completed sessions
     useEffect(() => {
@@ -46,32 +91,6 @@ export const TreeAnimation = ({ progress, isActive, playFullAnimation = false, s
             setHasPlayedFullAnimation(true);
         }
     }, [playFullAnimation, hasPlayedFullAnimation, animationsLoaded]);
-
-    // Calculate frame based on progress with custom scaling (only for non-animation modes)
-    const totalFrames = 48; // Actual animation frame count from Lottie file
-    const middleFrame = 24; // Frame to reach at 67%
-    const middleProgress = 85; // Progress percentage for middle frame
-
-    let targetFrame;
-    if (!playFullAnimation && !showWiltedTree) {
-        if (progress <= middleProgress) {
-            // 0-67% maps to frames 0-24 (slower growth in early stages)
-            targetFrame = Math.floor((progress / middleProgress) * middleFrame);
-        } else {
-            // 67-100% maps to frames 24-47 (faster growth in later stages)
-            const remainingProgress = progress - middleProgress;
-            const remainingFrames = totalFrames - 1 - middleFrame;
-            targetFrame = middleFrame + Math.floor((remainingProgress / (100 - middleProgress)) * remainingFrames);
-        }
-        targetFrame = Math.min(targetFrame, totalFrames - 1);
-    }
-
-    // Update animation frame when progress changes (only for frame-based mode)
-    useEffect(() => {
-        if (lottieRef.current && isActive && !playFullAnimation && !showWiltedTree) {
-            lottieRef.current.goToAndStop(targetFrame, true);
-        }
-    }, [progress, isActive, targetFrame, playFullAnimation, showWiltedTree]);
 
     return (
         <div className={styles['tree-container']}>
@@ -108,19 +127,19 @@ export const TreeAnimation = ({ progress, isActive, playFullAnimation = false, s
                         <Lottie
                             lottieRef={lottieRef}
                             animationData={currentAnimation}
-                            loop={false} // Never loop - we control playback manually
-                            autoplay={playFullAnimation} // Autoplay only for full animation mode
+                            loop={!playFullAnimation} // Loop for stage animations, no loop for full animation
+                            autoplay={true} // Always autoplay for continuous animation
                             style={{
-                                width: '150px',
-                                height: '150px',
-                                minWidth: '250px',
-                                minHeight: '250px'
+                                width: '300px',  // Increase from 150px
+                                height: '300px', // Increase from 150px
+                                minWidth: '300px',
+                                minHeight: '300px'
                             }}
                         />
                     </div>
                     {!playFullAnimation && (
                         <div className={styles['progress-indicator']}>
-                            {Math.round(progress)}% Complete
+                            {Math.round(progress)}% Complete (Stage {currentStage + 1})
                         </div>
                     )}
                 </>
