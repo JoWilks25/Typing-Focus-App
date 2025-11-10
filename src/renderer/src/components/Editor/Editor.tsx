@@ -279,7 +279,7 @@ export const Editor = () => {
       },
       autofocus: false,
     },
-    [activeSession, currentContent]
+    [activeSession?.id]
   );
 
   // Store editor reference for blur handler
@@ -316,7 +316,8 @@ export const Editor = () => {
 
     // Priority 2: Sync with session content only if it's longer
     // (prevents overwriting newer editor content with older session content)
-    if (editorContent !== currentContent && currentContent.length > editorContent.length) {
+    const contentMatchesRef = Math.abs(editorContent.length - contentRef.current.length) < 10;
+    if (!contentMatchesRef && editorContent !== currentContent && currentContent.length > editorContent.length) {
       editor.commands.setContent(currentContent, { emitUpdate: false });
     }
 
