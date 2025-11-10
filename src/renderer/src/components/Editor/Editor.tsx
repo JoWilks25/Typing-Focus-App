@@ -315,7 +315,7 @@ export const Editor = () => {
     }
 
     // Priority 2: Sync with session content only if it's longer
-    // (prevents overwriting newer editor content with older session content)
+    // BUT: Skip if editor content matches what we have in contentRef (user is typing)
     const contentMatchesRef = Math.abs(editorContent.length - contentRef.current.length) < 10;
     if (!contentMatchesRef && editorContent !== currentContent && currentContent.length > editorContent.length) {
       editor.commands.setContent(currentContent, { emitUpdate: false });
