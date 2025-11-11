@@ -38,10 +38,7 @@
   font-size: 1.5rem; /* Reduced from 1.875rem to fit better in nav */
   font-weight: 700; /* font-bold */
   text-align: left; /* Changed from center to left */
-  background: linear-gradient(to right, #60a5fa, #a855f7); /* from-blue-400 to-purple-500 */
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--text-title);
   margin: 0; /* Remove default margin */
 }
 

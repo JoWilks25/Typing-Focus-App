@@ -280,12 +280,8 @@
 .disabled-message h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-title);
   margin-bottom: 1rem;
-  background: linear-gradient(to right, var(--gradient-title-start), var(--gradient-title-end));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
 }
 
 .disabled-message p {
