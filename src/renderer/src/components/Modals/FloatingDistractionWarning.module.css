@@ -2,13 +2,13 @@
 /* Purpose: Floating distraction warning modal styling */
 
 .floating-modal {
-  background: rgba(31, 41, 55, 0.95);
+  background: var(--bg-overlay-light);
   backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.3); /* red-500 with opacity */
+  border: 1px solid var(--border-accent);
   box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(239, 68, 68, 0.1);
+    0 25px 50px -12px var(--shadow-md),
+    0 0 0 1px var(--shadow-accent);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -22,8 +22,8 @@
 
 .floating-modal:hover {
   box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(239, 68, 68, 0.2);
+    0 25px 50px -12px var(--shadow-lg),
+    0 0 0 1px var(--shadow-accent-hover);
 }
 
 .header {
@@ -40,7 +40,7 @@
 }
 
 .title {
-  color: #f9fafb;
+  color: var(--text-title);
   font-size: 12px;
   font-weight: 500;
   opacity: 0.8;
@@ -69,7 +69,7 @@
   justify-content: center;
   font-size: 10px;
   font-weight: bold;
-  color: #1f2937;
+  color: var(--text-inverse);
   line-height: 1;
 }
 
@@ -83,18 +83,18 @@
 }
 
 .close-button {
-  background: #ef4444; /* red-500 */
+  background: var(--accent-red);
 }
 
 .close-button:hover {
-  background: #dc2626; /* red-600 */
+  background: var(--accent-red-dark);
 }
 
 .content {
   flex: 1;
   padding: 16px;
   overflow: auto;
-  color: #f9fafb;
+  color: var(--text-title);
   background: transparent;
   text-align: center;
 }
@@ -111,13 +111,13 @@
 .warning-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #f9fafb;
+  color: var(--text-title);
   margin-bottom: 8px;
 }
 
 .warning-message {
   font-size: 0.875rem;
-  color: #d1d5db;
+  color: var(--text-secondary);
   margin-bottom: 16px;
   line-height: 1.4;
 }
@@ -125,7 +125,7 @@
 .countdown {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ef4444;
+  color: var(--accent-red);
   margin-bottom: 16px;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
@@ -147,19 +147,31 @@
 }
 
 .return-button {
-  background-color: #ef4444;
-  color: white;
+  background-color: var(--accent-red);
+  color: var(--btn-text);
 }
 
 .return-button:hover {
-  background-color: #dc2626;
+  background-color: var(--accent-red-dark);
+}
+
+.return-button:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 .end-button {
-  background-color: #6b7280;
-  color: white;
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-text);
+  border: 1px solid var(--border-tertiary);
 }
 
 .end-button:hover {
-  background-color: #4b5563;
+  background-color: var(--btn-secondary-bg-hover);
+  border-color: var(--border-tertiary);
+}
+
+.end-button:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }

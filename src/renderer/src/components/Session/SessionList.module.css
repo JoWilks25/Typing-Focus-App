@@ -2,7 +2,7 @@
 /* Purpose: Session list styling */
 
 .list-container {
-  background-color: #1f2937; /* bg-gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.5rem;
   padding: 1.5rem;
 }
@@ -10,10 +10,10 @@
 .list-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #f9fafb; /* text-gray-50 */
+  color: var(--text-title);
   margin-bottom: 1rem;
 }
 
 .list-content {
-  color: #d1d5db; /* text-gray-300 */
+  color: var(--text-secondary);
 }

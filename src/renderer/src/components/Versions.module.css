@@ -7,14 +7,14 @@
   align-items: center;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #9ca3af; /* gray-400 */
+  color: var(--text-tertiary);
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .version-item {
-  color: #9ca3af; /* gray-400 */
+  color: var(--text-tertiary);
 }
 
 .version-separator {
-  color: #4b5563; /* gray-600 */
+  color: var(--text-quaternary);
 }

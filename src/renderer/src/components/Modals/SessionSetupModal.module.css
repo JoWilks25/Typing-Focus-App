@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: var(--bg-overlay-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,13 +16,13 @@
 }
 
 .modal-container {
-  background-color: #1f2937; /* gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.75rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px var(--shadow-lg);
   max-width: 90vw;
   max-height: 90vh;
   overflow: hidden;
-  border: 1px solid #374151; /* gray-700 */
+  border: 1px solid var(--border-tertiary);
 }
 
 .modal-content {

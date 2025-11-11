@@ -9,7 +9,7 @@
 .editor-title-text {
   font-size: 1.75rem;
   font-weight: 600;
-  color: #f3f4f6; /* text-gray-100 */
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.2;
   letter-spacing: -0.025em;

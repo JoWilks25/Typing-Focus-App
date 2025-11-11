@@ -3,13 +3,13 @@
 
 .app-container {
   min-height: 100vh;
-  background-color: #111827; /* gray-900 */
-  color: #f3f4f6; /* gray-100 */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .navigation {
-  background-color: #1f2937; /* gray-800 */
-  border-bottom: 1px solid #374151; /* gray-700 */
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
   padding: 0.75rem 1.5rem;
 }
 
@@ -28,6 +28,12 @@
   gap: 0.75rem;
 }
 
+.app-logo {
+  height: 3rem; /* Larger logo size */
+  width: auto;
+  display: block;
+}
+
 .app-title {
   font-size: 1.5rem; /* Reduced from 1.875rem to fit better in nav */
   font-weight: 700; /* font-bold */
@@ -42,14 +48,14 @@
 .mvp-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: linear-gradient(135deg, #f59e0b, #d97706); /* amber-500 to amber-600 */
-  color: white;
+  background: linear-gradient(135deg, var(--gradient-badge-start), var(--gradient-badge-end));
+  color: var(--btn-text);
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 9999px; /* pill shape */
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px var(--shadow-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -68,28 +74,41 @@
 }
 
 .nav-button-active {
-  background-color: #2563eb; /* bg-blue-600 */
-  color: white;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-text);
 }
 
 .nav-button-inactive {
-  background-color: #374151; /* bg-gray-700 */
-  color: #d1d5db; /* text-gray-300 */
+  background-color: var(--btn-inactive-bg);
+  color: var(--btn-text-inactive);
 }
 
 .nav-button-inactive:hover {
-  background-color: #4b5563; /* hover:bg-gray-600 */
+  background-color: var(--btn-inactive-bg-hover);
+}
+
+.nav-button:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 .nav-button-disabled {
-  background-color: #1f2937; /* bg-gray-800 */
-  color: #6b7280; /* text-gray-500 */
+  background-color: var(--btn-disabled-bg);
+  color: var(--btn-text-disabled);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .nav-button-disabled:hover {
-  background-color: #1f2937; /* keep same background on hover */
+  background-color: var(--btn-disabled-bg);
+}
+
+.theme-icon {
+  margin-right: 0.5rem;
+}
+
+.theme-label {
+  font-size: 0.875rem;
 }
 
 .main-content {
@@ -103,7 +122,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #1f2937; /* bg-gray-800 */
-  border-top: 1px solid #374151; /* border-gray-700 */
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
   padding: 0.5rem;
 }

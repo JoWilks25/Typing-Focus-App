@@ -2,12 +2,12 @@
 /* Purpose: Modern floating modal styling with PiP-style appearance */
 
 .floatingModal {
-  background: rgba(31, 41, 55, 0.95);
+  background: var(--bg-overlay-light);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 25px 50px -12px var(--shadow-md),
     0 0 0 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
@@ -20,7 +20,7 @@
 
 .floatingModal:hover {
   box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.3),
+    0 25px 50px -12px var(--shadow-lg),
     0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
@@ -39,7 +39,7 @@
 }
 
 .title {
-  color: #f9fafb;
+  color: var(--text-title);
   font-size: 12px;
   font-weight: 500;
   opacity: 0.8;
@@ -68,7 +68,7 @@
   justify-content: center;
   font-size: 10px;
   font-weight: bold;
-  color: #1f2937;
+  color: var(--text-inverse);
   line-height: 1;
 }
 
@@ -82,19 +82,19 @@
 }
 
 .minimizeButton {
-  background: #f59e0b;
+  background: var(--accent-amber);
 }
 
 .minimizeButton:hover {
-  background: #d97706;
+  background: var(--accent-amber-dark);
 }
 
 .closeButton {
-  background: #ef4444;
+  background: var(--accent-red);
 }
 
 .closeButton:hover {
-  background: #dc2626;
+  background: var(--accent-red-dark);
 }
 
 /* Content */
@@ -102,7 +102,7 @@
   flex: 1;
   padding: 16px;
   overflow: auto;
-  color: #f9fafb;
+  color: var(--text-title);
   background: transparent;
 }
 
@@ -215,12 +215,12 @@
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .floatingModal {
-    border: 2px solid #ffffff;
-    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid var(--text-primary);
+    background: var(--bg-overlay-dark);
   }
   
   .header {
-    border-bottom: 2px solid #ffffff;
+    border-bottom: 2px solid var(--text-primary);
   }
   
   .title {

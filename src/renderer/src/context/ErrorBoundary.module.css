@@ -6,23 +6,23 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #111827; /* bg-gray-900 */
+  background-color: var(--bg-primary);
 }
 
 .error-content {
   padding: 1.5rem;
-  background-color: #1f2937; /* bg-gray-800 */
-  border: 1px solid #ef4444; /* border-red-500 */
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--accent-red);
   border-radius: 0.5rem;
 }
 
 .error-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f87171; /* text-red-400 */
+  color: var(--accent-red-light);
   margin-bottom: 0.5rem;
 }
 
 .error-message {
-  color: #d1d5db; /* text-gray-300 */
+  color: var(--text-secondary);
 }

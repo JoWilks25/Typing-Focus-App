@@ -2,37 +2,37 @@
 /* Purpose: Dashboard component styling */
 
 .dashboard-container {
-  background-color: #1f2937; /* bg-gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.5rem;
   padding: 2rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px var(--shadow-sm);
 }
 
 .dashboard-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #f9fafb; /* text-gray-50 */
+  color: var(--text-title);
   margin-bottom: 1rem;
 }
 
 .dashboard-description {
-  color: #9ca3af; /* text-gray-400 */
+  color: var(--text-tertiary);
   margin-bottom: 1.5rem;
 }
 
 .demo-section {
-  border-top: 1px solid #374151; /* border-gray-700 */
+  border-top: 1px solid var(--border-primary);
   padding-top: 1.5rem;
 }
 
 .demo-title {
   font-size: 1.125rem;
   font-weight: 500;
-  color: #f9fafb; /* text-gray-50 */
+  color: var(--text-title);
   margin-bottom: 1rem;
 }
 
 .demo-description {
-  color: #9ca3af; /* text-gray-400 */
+  color: var(--text-tertiary);
   margin-bottom: 1rem;
 }

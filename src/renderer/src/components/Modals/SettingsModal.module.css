@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,20 +15,20 @@
 }
 
 .modal-container {
-  background-color: #1f2937; /* bg-gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.75rem;
   padding: 2rem;
   max-width: 32rem; /* max-w-lg */
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px var(--shadow-md);
 }
 
 .modal-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #f9fafb; /* text-gray-50 */
+  color: var(--text-title);
   margin-bottom: 1.5rem;
 }
 
@@ -39,7 +39,7 @@
 .section-title {
   font-size: 1.125rem;
   font-weight: 500;
-  color: #e5e7eb; /* text-gray-200 */
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
@@ -48,16 +48,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #374151; /* border-gray-700 */
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .setting-label {
-  color: #d1d5db; /* text-gray-300 */
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .setting-description {
-  color: #9ca3af; /* text-gray-400 */
+  color: var(--text-tertiary);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
@@ -68,7 +68,7 @@
   justify-content: flex-end;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #374151; /* border-gray-700 */
+  border-top: 1px solid var(--border-primary);
 }
 
 .modal-button {
@@ -81,19 +81,31 @@
 }
 
 .modal-button-primary {
-  background-color: #3b82f6; /* bg-blue-600 */
-  color: white;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-text);
 }
 
 .modal-button-primary:hover {
-  background-color: #2563eb; /* hover:bg-blue-700 */
+  background-color: var(--btn-primary-bg-hover);
+}
+
+.modal-button-primary:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 .modal-button-secondary {
-  background-color: #6b7280; /* bg-gray-500 */
-  color: white;
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-text);
+  border: 1px solid var(--border-tertiary);
 }
 
 .modal-button-secondary:hover {
-  background-color: #4b5563; /* hover:bg-gray-600 */
+  background-color: var(--btn-secondary-bg-hover);
+  border-color: var(--border-tertiary);
+}
+
+.modal-button-secondary:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
