@@ -1,6 +1,6 @@
 # User Stories & Acceptance Criteria
 
-Comprehensive user stories and acceptance criteria for the Typing Focus App, consolidated from multiple sources and aligned with current implementation.
+Comprehensive user stories and acceptance criteria for Draft Tree, consolidated from multiple sources and aligned with current implementation.
 
 ## 1. Application Navigation & Setup
 

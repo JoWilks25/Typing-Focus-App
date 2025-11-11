@@ -1,173 +1,419 @@
 # IPC Communication
 
-Guide to Inter-Process Communication between main and renderer processes using Electron's IPC system.
+Guide to Inter-Process Communication between main and renderer processes using Electron's IPC system in Draft Tree.
 
-## 📁 Files Created
+## Architecture
 
-### 1. **src/preload/index.ts**
+Draft Tree uses a centralized IPC handler pattern with type-safe communication between processes.
 
-Exposes `window.electronAPI` with placeholder functions:
+### Key Files
 
-- `saveSession(sessionData)` - Save a session
-- `loadSession(sessionId)` - Load a session
-- `deleteSession(sessionId)` - Delete a session
-- `listSessions()` - List all sessions
-- `saveFile(filePath, content)` - Save file
-- `loadFile(filePath)` - Load file
+1. **`src/main/ipcHandlers.ts`** - Centralized IPC handler registration
+2. **`src/preload/index.ts`** - Context bridge exposing APIs to renderer
+3. **`src/main/types/ipc.ts`** - IPC channel type definitions
 
-### 2. **src/preload/index.d.ts**
+## IPC Channel Categories
 
-Type definitions for the preload script.
+### Session Operations
+```typescript
+// Channel names from src/main/ipcHandlers.ts
+SESSION_START: 'session:start'
+SESSION_STOP: 'session:stop'
+SESSION_END: 'session:end'
+SESSION_GET: 'session:get'
+SESSION_GET_ACTIVE: 'session:get-active'
+SESSION_GET_LAST_ENDED: 'session:get-last-ended'
+SESSION_LIST: 'session:list'
+SESSION_UPDATE_CONTENT: 'session:update-content'
+SESSION_UPDATE_PROGRESS: 'session:update-progress'
+SESSION_INCREMENT_DISTRACTION: 'session:increment-distraction'
+SESSION_ABANDON: 'session:abandon'
+SESSION_MARK_INCOMPLETE: 'session:mark-incomplete'
+SESSION_PAUSE: 'session:pause'
+SESSION_RESUME: 'session:resume'
+```
 
-### 3. **src/renderer/src/types/electron.d.ts**
+### File Operations
+```typescript
+FILE_READ: 'file:read'
+FILE_READ_EXTERNAL: 'file:read-external'
+FILE_WRITE: 'file:write'
+FILE_EXISTS: 'file:exists'
+FILE_EXISTS_EXTERNAL: 'file:exists-external'
+FILE_AUTOSAVE: 'file:autosave'
+```
 
-Type definitions for renderer process (window.electronAPI).
+### Storage Operations
+```typescript
+STORAGE_SET: 'storage:set'
+STORAGE_GET: 'storage:get'
+STORAGE_REMOVE: 'storage:remove'
+```
 
-### 4. **src/renderer/src/utils/electronAPI.ts**
+### Activity Operations
+```typescript
+ACTIVITY_TYPING: 'activity:typing'
+```
 
-Helper utility to access the API safely from components.
+### Dialog Operations
+```typescript
+DIALOG_SHOW_OPEN_DIRECTORY: 'dialog:show-open-directory'
+DIALOG_GET_DEFAULT_SAVE_DIRECTORY: 'dialog:get-default-save-directory'
+DIALOG_OPEN_FOLDER: 'dialog:open-folder'
+DIALOG_SHOW_OPEN_FILE: 'dialog:show-open-file'
+```
 
-## 🚀 Usage in React Components
+### Floating Modal Operations
+```typescript
+FLOATING_MODAL_CREATE: 'floating-modal:create'
+FLOATING_MODAL_CLOSE: 'floating-modal:close'
+FLOATING_MODAL_CLOSE_ALL: 'floating-modal:close-all'
+FLOATING_MODAL_MINIMIZE: 'floating-modal:minimize'
+// ... and more
+```
 
-### Method 1: Direct Access
+## Usage in React Components
+
+### Via AppContext (Recommended)
 
 ```typescript
-// In any component
-import '../types/electron' // Import types
+import { useSession } from '@renderer/hooks/useSession';
 
 function MyComponent() {
-  const handleSave = async () => {
-    const result = await window.electronAPI.saveSession({
-      title: 'My Session',
-      content: 'Hello world'
-    })
-    console.log(result) // { success: false, message: 'Not implemented' }
-  }
+  const { activeSession, startSession, endSession } = useSession();
 
-  return <button onClick={handleSave}>Save Session</button>
+  const handleStartSession = async () => {
+    const session = await startSession(
+      '/path/to/file.txt',
+      'My Session',
+      'Session Title',
+      'word',
+      500
+    );
+    console.log('Session started:', session);
+  };
+
+  return <button onClick={handleStartSession}>Start Session</button>;
 }
 ```
 
-### Method 2: Using Helper Utility (Recommended)
+### Direct API Access
 
 ```typescript
-import { sessionAPI, fileAPI } from '@renderer/utils/electronAPI'
-
 function MyComponent() {
   const handleSave = async () => {
     // Session operations
-    const result = await sessionAPI.save({ title: 'My Session' })
-    const session = await sessionAPI.load('session-id')
-    const sessions = await sessionAPI.list()
-    await sessionAPI.delete('session-id')
+    const session = await window.api.session.start(
+      '/path/to/file.txt',
+      'Session Name',
+      'Session Title',
+      'word',
+      500
+    );
+    
+    // Update content
+    await window.api.session.updateContent(session.id, 'New content');
+    
+    // Update progress
+    await window.api.session.updateProgress(
+      session.id,
+      250,  // currentWords
+      1800, // timeElapsed (ms)
+      50    // progressPercentage
+    );
+  };
 
-    // File operations
-    await fileAPI.save('/path/to/file.txt', 'content')
-    const content = await fileAPI.load('/path/to/file.txt')
+  return <button onClick={handleSave}>Start Session</button>;
+}
+```
+
+## Session API
+
+### Starting a Session
+
+```typescript
+const session = await window.api.session.start(
+  filePath: string,          // Required: Path to .txt file
+  name?: string,             // Optional: Session name
+  title?: string,            // Optional: Session title
+  goalType: GoalType,        // 'word' | 'time'
+  goalValue: number,         // Goal value (words or minutes)
+  initialContent?: string,   // Optional: Initial content
+  isLoadingExisting?: boolean // Optional: Loading existing file
+);
+```
+
+**Returns**: `Session` object
+
+**Validation**:
+- Word goals: 100-10,000 words
+- Time goals: 5-480 minutes (8 hours)
+- Invalid goals throw an error
+
+### Updating Session Content
+
+```typescript
+const updatedSession = await window.api.session.updateContent(
+  sessionId: string,
+  content: string
+);
+```
+
+**Returns**: Updated `Session` object
+
+**Used by**: Editor component (debounced, 2-second delay)
+
+### Updating Session Progress
+
+```typescript
+const updatedSession = await window.api.session.updateProgress(
+  sessionId: string,
+  currentWords: number,
+  timeElapsed: number,
+  progressPercentage: number
+);
+```
+
+**Returns**: Updated `Session` object
+
+**Used by**: Editor component (5-second intervals)
+
+### Ending a Session
+
+```typescript
+const endedSession = await window.api.session.end(
+  sessionId: string,
+  finalContent: string,
+  finalWordCount: number
+);
+```
+
+**Returns**: Completed `Session` object with calculated stats
+
+### Session State Management
+
+```typescript
+// Pause session (inactivity)
+await window.api.session.pause(sessionId: string);
+
+// Resume session
+await window.api.session.resume(sessionId: string);
+
+// Mark incomplete (distraction countdown expired)
+await window.api.session.markIncomplete(sessionId: string);
+
+// Abandon session (user explicitly ends early)
+await window.api.session.abandon(sessionId: string);
+
+// Increment distraction count
+await window.api.session.incrementDistraction(sessionId: string);
+```
+
+## File API
+
+### External File Operations
+
+```typescript
+// Read external file (user-selected)
+const content = await window.api.file.readExternal(filePath: string);
+
+// Write to external file
+await window.api.file.write(filePath: string, content: string);
+
+// Check if external file exists
+const exists = await window.api.file.existsExternal(filePath: string);
+```
+
+### Internal File Operations
+
+```typescript
+// Read internal file (from app data)
+const content = await window.api.file.read(path: string);
+
+// Write internal file
+await window.api.file.write(path: string, content: string);
+
+// Check if file exists
+const exists = await window.api.file.exists(path: string);
+
+// Autosave (used internally by backend)
+await window.api.file.autosave(path: string, content: string);
+```
+
+## Storage API
+
+```typescript
+// Set key-value storage
+await window.api.storage.set(key: string, value: unknown);
+
+// Get value by key
+const value = await window.api.storage.get(key: string);
+
+// Remove key
+await window.api.storage.remove(key: string);
+```
+
+## Dialog API
+
+```typescript
+// Show directory picker
+const result = await window.api.dialog.showOpenDirectory();
+// Returns: { directoryPath?: string, canceled: boolean }
+
+// Get default save directory
+const defaultDir = await window.api.dialog.getDefaultSaveDirectory();
+
+// Open folder in system file manager
+await window.api.dialog.openFolder(filePath: string);
+
+// Show file picker
+const result = await window.api.dialog.showOpenFile();
+// Returns: { filePath?: string, canceled: boolean }
+```
+
+## Activity API
+
+```typescript
+// Record typing activity (for inactivity tracking)
+await window.api.activity.recordTyping();
+```
+
+**Used by**: Editor component on every keystroke (immediate, not debounced)
+
+## Implementation Pattern
+
+### Main Process Handler
+
+```typescript
+// src/main/ipcHandlers.ts
+export function registerIpcHandlers(mainWindow: BrowserWindow): void {
+  // Session start handler
+  ipcMain.handle(IPC_CHANNELS.SESSION_START, async (
+    _event,
+    filePath: string,
+    name?: string,
+    title?: string,
+    goalType: GoalType = 'word',
+    goalValue: number = 500,
+    initialContent?: string,
+    isLoadingExisting?: boolean
+  ) => {
+    try {
+      const session = await sessionManager.startSession(
+        filePath,
+        name,
+        title,
+        goalType,
+        goalValue,
+        initialContent
+      );
+      return session;
+    } catch (error) {
+      console.error('Failed to start session:', error);
+      throw error;
+    }
+  });
+  
+  // ... other handlers
+}
+```
+
+### Preload API Exposure
+
+```typescript
+// src/preload/index.ts
+const sessionAPI = {
+  start: (filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500, initialContent?: string, isLoadingExisting?: boolean): Promise<Session> => {
+    return ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue, initialContent, isLoadingExisting);
+  },
+  updateContent: (sessionId: string, content: string): Promise<Session> => {
+    return ipcRenderer.invoke('session:update-content', sessionId, content);
+  },
+  // ... other methods
+};
+
+contextBridge.exposeInMainWorld('api', {
+  session: sessionAPI,
+  file: fileAPI,
+  storage: storageAPI,
+  // ... other APIs
+});
+```
+
+### Type Definitions
+
+```typescript
+// src/preload/index.d.ts
+declare global {
+  interface Window {
+    api: {
+      session: {
+        start(filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number, initialContent?: string, isLoadingExisting?: boolean): Promise<Session>;
+        updateContent(sessionId: string, content: string): Promise<Session>;
+        updateProgress(sessionId: string, currentWords: number, timeElapsed: number, progressPercentage: number): Promise<Session>;
+        // ... other methods
+      };
+      file: {
+        // ... file methods
+      };
+      storage: {
+        // ... storage methods
+      };
+    };
   }
-
-  return <button onClick={handleSave}>Save</button>
 }
 ```
 
-### Method 3: In Custom Hooks
+## Best Practices
+
+### Error Handling
 
 ```typescript
-// src/renderer/src/hooks/useSession.ts
-import { sessionAPI } from '@renderer/utils/electronAPI';
-import { useState } from 'react';
+try {
+  const session = await window.api.session.start(
+    '/path/to/file.txt',
+    'My Session',
+    undefined,
+    'word',
+    500
+  );
+  console.log('Session started:', session);
+} catch (error) {
+  console.error('Failed to start session:', error);
+  // Handle error appropriately
+}
+```
 
-export const useSession = () => {
-  const [sessions, setSessions] = useState([]);
+### Type Safety
 
-  const loadSessions = async () => {
-    const list = await sessionAPI.list();
-    setSessions(list);
-  };
+- All IPC calls are fully typed
+- TypeScript will catch type mismatches at compile time
+- Use shared types between main and renderer processes
 
-  const saveSession = async (data: unknown) => {
-    return await sessionAPI.save(data);
-  };
+### Performance
 
-  return { sessions, loadSessions, saveSession };
+- Debounce frequent updates (content: 2s, progress: 5s)
+- Use refs to avoid unnecessary re-renders
+- Batch related operations when possible
+
+## Testing IPC
+
+```typescript
+// Mock in tests
+global.window = {
+  api: {
+    session: {
+      start: vi.fn().mockResolvedValue(mockSession),
+      updateContent: vi.fn().mockResolvedValue(mockSession),
+      // ... other methods
+    }
+  }
 };
 ```
 
-## 🔧 Current Status
+---
 
-The API has been implemented with the following methods:
-
-### Session API
-- `session.start(sessionData)` - Create a new writing session
-- `session.stop(sessionId)` - Stop an active session
-- `session.getActive()` - Get the currently active session
-- `session.list()` - List all sessions
-
-### File API
-- `file.save(filePath, content)` - Save content to a file
-- `file.load(filePath)` - Load content from a file
-
-### Response Format
-All session operations return:
-```typescript
-{
-  success: boolean;
-  data?: any;
-  error?: string;
-}
-```
-
-### Session Creation Example
-```typescript
-// Create a new writing session
-const result = await window.electronAPI.session.start({
-  name: 'Writing Session - 500 words',
-  goalType: 'word',
-  goalValue: 500
-});
-
-if (result.success) {
-  const session = result.data.session;
-  // Session created successfully
-} else {
-  console.error('Session creation failed:', result.error);
-}
-```
-
-### Validation Rules
-Session creation validates:
-- **Word Count Goals**: 10-10,000 words
-- **Time Duration Goals**: 5-480 minutes
-- Invalid goals will cause session creation to fail
-
-## 📝 Next Steps (For Implementation)
-
-When ready to implement actual IPC:
-
-1. **In src/main/index.ts** - Add IPC handlers:
-
-```typescript
-import { ipcMain } from 'electron';
-
-ipcMain.handle('session:save', async (event, sessionData) => {
-  // Actual implementation
-  return { success: true, message: 'Saved' };
-});
-```
-
-2. **In src/preload/index.ts** - Connect to IPC:
-
-```typescript
-import { ipcRenderer } from 'electron';
-
-const electronAPI = {
-  saveSession: (sessionData: unknown) => ipcRenderer.invoke('session:save', sessionData)
-  // ... etc
-};
-```
-
-3. **Update types** - Replace `unknown` with proper interfaces
-
-## ✅ Testing the Setup
-
-Run `npm run dev` and open DevTools console. You'll see placeholder logs when calling API methods.
+For related information, see:
+- [State Management](./STATE_MANAGEMENT.md)
+- [Project Structure](./PROJECT_STRUCTURE.md)
+- [Session Lifecycle](../guides/SESSION_LIFECYCLE.md)

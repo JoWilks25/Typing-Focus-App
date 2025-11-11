@@ -1,6 +1,6 @@
 # Draft Tree
 
-A minimalist writing app built with Electron, React, and TypeScript. Write without distractions with beautiful animations that respond to your typing.
+A minimalist writing app built with Electron, React, and TypeScript. Write without distractions with beautiful animations that respond to your typing progress.
 
 ## Prerequisites
 

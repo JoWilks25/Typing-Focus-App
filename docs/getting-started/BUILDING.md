@@ -1,6 +1,6 @@
 # Building Installers
 
-Complete guide for building Mac and Windows installers for the Typing Focus App.
+Complete guide for building Mac and Windows installers for Draft Tree.
 
 ## Prerequisites
 
@@ -46,7 +46,7 @@ Creates a signed and notarized installer for both Intel and Apple Silicon Macs.
 
 ### Output Files
 - **Location**: `dist/` directory
-- **Primary Distribution**: `mac-typing-writing-app-{version}.dmg` - DMG installer for end users
+- **Primary Distribution**: `Draft Tree-{version}.dmg` - DMG installer for end users
 - **Alternative**: `Draft Tree-{version}-universal-mac.zip` - ZIP archive (for developers/CI)
 - **Note**: Both files are signed and notarized, but DMG provides better user experience
 
@@ -129,7 +129,7 @@ Before distribution, test installers on target systems:
 ### Distribution Files
 
 **For Mac users, distribute:**
-- **`mac-typing-writing-app-{version}.dmg`** - Primary distribution file (recommended)
+- **`Draft Tree-{version}.dmg`** - Primary distribution file (recommended)
 - **`Draft Tree-{version}-universal-mac.zip`** - Alternative ZIP format
 
 **For Windows users, distribute:**

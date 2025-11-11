@@ -274,4 +274,4 @@ When adding new features:
 
 ## License
 
-This floating modal system is part of the Typing Focus App and follows the same license terms.
+This floating modal system is part of Draft Tree and follows the same license terms.

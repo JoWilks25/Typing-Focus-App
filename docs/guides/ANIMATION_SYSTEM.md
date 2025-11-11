@@ -1,6 +1,6 @@
 # Animation System
 
-Tree growth animations and visual feedback system for the Typing Focus App.
+Tree growth animations and visual feedback system for Draft Tree.
 
 ## Overview
 
@@ -85,41 +85,50 @@ export const useAnimationController = (): AnimationController => {
 
 ## State Management
 
-### Animation Context
+### Animation State (Local Component State)
+
+**Note**: Draft Tree uses local component state for animations rather than a separate AnimationContext.
+
 ```typescript
-interface AnimationState {
-  currentState: TreeState;
-  progress: number;
+// TreeAnimation component manages its own state
+interface TreeAnimationState {
+  currentStage: number;      // 0-7 for 8 growth stages
   isTransitioning: boolean;
-  isWilted: boolean;
-  isCompleted: boolean;
+  progress: number;          // 0-100
 }
 
-interface AnimationContextType {
-  state: AnimationState;
-  updateProgress: (progress: number) => void;
-  triggerWilt: () => void;
-  triggerCompletion: () => void;
-  reset: () => void;
+// Animation controlled by props from parent
+interface TreeAnimationProps {
+  progress: number;           // 0-100 from session progress
+  isActive: boolean;         // Session active state
+  onAnimationComplete?: () => void;
 }
 ```
 
 ### Progress Calculation
 ```typescript
-const calculateTreeState = (progress: number): TreeState => {
-  if (progress < 34) return 'seedling';
-  if (progress < 67) return 'small';
-  return 'mature';
+// Calculate animation stage based on progress percentage
+const calculateAnimationStage = (progress: number): number => {
+  // 8 stages (0-7) corresponding to tree growth
+  // Stage boundaries: 0%, 14%, 28%, 42%, 56%, 70%, 84%, 100%
+  if (progress >= 100) return 7;
+  if (progress >= 84) return 6;
+  if (progress >= 70) return 5;
+  if (progress >= 56) return 4;
+  if (progress >= 42) return 3;
+  if (progress >= 28) return 2;
+  if (progress >= 14) return 1;
+  return 0;
 };
 
-const updateTreeAnimation = (progress: number) => {
-  const newState = calculateTreeState(progress);
-  
-  if (newState !== currentState) {
+// Update tree animation based on session progress
+useEffect(() => {
+  const newStage = calculateAnimationStage(progress);
+  if (newStage !== currentStage) {
+    setCurrentStage(newStage);
     setIsTransitioning(true);
-    transitionToState(newState);
   }
-};
+}, [progress]);
 ```
 
 ## Animation Transitions
@@ -152,32 +161,59 @@ const triggerWiltAnimation = () => {
 
 ### Progress Updates
 ```typescript
-// Session progress triggers animation updates
-useEffect(() => {
-  if (sessionProgress !== null) {
-    updateTreeAnimation(sessionProgress);
-  }
-}, [sessionProgress]);
+// TreeAnimation component receives progress from parent (Editor component)
+// Editor calculates progress from session state
+const TreeAnimation = ({ progress, isActive }: TreeAnimationProps) => {
+  const [currentStage, setCurrentStage] = useState(0);
+  
+  useEffect(() => {
+    const newStage = calculateAnimationStage(progress);
+    if (newStage !== currentStage && isActive) {
+      setCurrentStage(newStage);
+    }
+  }, [progress, currentStage, isActive]);
+  
+  return (
+    <div className={styles.container}>
+      <Lottie
+        animationData={treeAnimations[currentStage]}
+        loop={true}
+        autoplay={true}
+      />
+    </div>
+  );
+};
 ```
 
-### Session Completion
+### Session Progress Integration
 ```typescript
-// Goal completion triggers celebration
-useEffect(() => {
-  if (sessionStatus === 'completed') {
-    triggerCompletionAnimation();
-  }
-}, [sessionStatus]);
+// In Editor component
+const progress = activeSession?.progressPercentage || 0;
+
+return (
+  <div>
+    <TreeAnimation
+      progress={progress}
+      isActive={activeSession?.status === 'active'}
+    />
+    {/* ... editor content */}
+  </div>
+);
 ```
 
-### Session Abandonment
+### Animation Assets
 ```typescript
-// Early session end triggers wilt
-useEffect(() => {
-  if (sessionStatus === 'incomplete' || sessionStatus === 'abandoned') {
-    triggerWiltAnimation();
-  }
-}, [sessionStatus]);
+// Tree growth animations (Lottie JSON files)
+const treeAnimations = [
+  treeGrow0,  // Stage 0: 0-14%
+  treeGrow1,  // Stage 1: 14-28%
+  treeGrow2,  // Stage 2: 28-42%
+  treeGrow3,  // Stage 3: 42-56%
+  treeGrow4,  // Stage 4: 56-70%
+  treeGrow5,  // Stage 5: 70-84%
+  treeGrow6,  // Stage 6: 84-100%
+  treeGrow7,  // Stage 7: 100% (complete)
+];
 ```
 
 ## Performance Optimization

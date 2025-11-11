@@ -1,10 +1,10 @@
 # Architecture Overview
 
-High-level system design and architecture patterns for the Typing Focus App.
+High-level system design and architecture patterns for Draft Tree.
 
 ## System Architecture
 
-The Typing Focus App follows a three-process Electron architecture with clear separation of concerns:
+Draft Tree follows a three-process Electron architecture with clear separation of concerns:
 
 ```mermaid
 graph TB
@@ -131,25 +131,51 @@ contextBridge.exposeInMainWorld('electronAPI', {
 ```
 
 ### 3. State Management Pattern
-Centralized state with React Context:
+Consolidated state with single AppContext:
 
 ```typescript
-// Context Provider
+// Consolidated Context Provider
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<AppState>(initialState);
+  // App state
+  const [appState, setAppState] = useState<AppState>(() => loadAppState());
   
+  // Session state
+  const [sessions, setSessions] = useState<Session[]>(() => loadSessionState().sessions);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  
+  // Provides both app and session management
   return (
-    <AppContext.Provider value={{ state, setState }}>
+    <AppContext.Provider value={{
+      appState,
+      setView,
+      sessions,
+      activeSession,
+      startSession,
+      endSession,
+      updateProgress,
+      // ... other session methods
+    }}>
       {children}
     </AppContext.Provider>
   );
 };
 
-// Custom Hook
+// Custom Hooks
 export const useAppState = () => {
   const context = useContext(AppContext);
   if (!context) throw new Error('useAppState must be used within AppProvider');
   return context;
+};
+
+export const useSession = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useSession must be used within AppProvider');
+  return {
+    activeSession: context.activeSession,
+    startSession: context.startSession,
+    endSession: context.endSession,
+    // ... other session methods
+  };
 };
 ```
 
@@ -158,31 +184,33 @@ export const useAppState = () => {
 ### Component Hierarchy
 ```
 App
-├── AppProvider (Context)
-├── Navigation
-├── Dashboard
-│   ├── StatsPanel
-│   ├── SessionHistory
-│   └── TreeVisualization
+├── AppProvider (Consolidated Context)
+├── Navigation Buttons
+├── Dashboard (minimal implementation)
 └── Editor
-    ├── EditorToolbar
-    ├── SessionStats
-    ├── TextEditor (Tiptap)
-    └── AnimationLayer
-        └── TreeAnimation
+    ├── EditorTitle
+    ├── SessionStats (word count, timer, progress)
+    ├── Tiptap Editor (with local state)
+    ├── TreeAnimation
+    └── Modals
+        ├── SessionSetupModal
+        ├── InactivityModal
+        ├── FloatingDistractionWarning
+        └── CompletionModal
 ```
 
 ### State Flow
 ```mermaid
 graph TD
-    A[App State] --> B[Session Context]
-    A --> C[Animation Context]
-    B --> D[Editor Component]
-    B --> E[Session Stats]
+    A[AppContext] --> B[App State]
+    A --> C[Session State]
+    C --> D[Editor Component]
+    C --> E[Session Stats]
     C --> F[Tree Animation]
-    D --> G[Word Count Updates]
-    G --> B
-    G --> C
+    D --> G[Local State Updates]
+    G --> H[Debounced Backend]
+    H --> C
+    G --> E
 ```
 
 ## Security Model
@@ -247,16 +275,16 @@ tests/
 ## Future Extensibility
 
 ### Modular Design
-- **Service Layer**: Easy to swap implementations (local → cloud)
-- **Component System**: Reusable UI components
-- **Plugin Architecture**: Extensible animation and feature system
-- **API Design**: Versioned APIs for backward compatibility
+- **Service Layer**: Clean separation between SessionManager, FileManager, and other services
+- **Component System**: Reusable UI components with CSS Modules
+- **Context-Based State**: Single AppContext for simplified state management
+- **Type-Safe IPC**: Centralized IPC handlers with TypeScript
 
 ### Scalability Considerations
-- **State Management**: Ready for Redux if needed
-- **Component Library**: Reusable across features
-- **Service Architecture**: Microservice-ready design
-- **Testing Infrastructure**: Comprehensive test coverage
+- **State Management**: Context-based with option to migrate to Redux/Zustand if needed
+- **Component Library**: Reusable components across features
+- **Service Architecture**: Modular services in main process
+- **Testing Infrastructure**: Vitest with comprehensive test coverage
 
 ---
 

@@ -1,6 +1,6 @@
 # Testing Guide
 
-This guide covers the testing setup and best practices for the Typing Focus App.
+This guide covers the testing setup and best practices for Draft Tree.
 
 ## Overview
 
