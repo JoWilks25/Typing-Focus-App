@@ -8,8 +8,8 @@
 
 .selector-label {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
 }
@@ -29,8 +29,8 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
@@ -74,8 +74,8 @@
 }
 
 .coming-soon {
-  font-size: 0.625rem; /* text-xs */
-  font-weight: 600;
+  font-size: var(--font-size-xs); /* text-xs */
+  font-weight: var(--font-weight-semibold);
   color: var(--accent-amber);
   background-color: rgba(245, 158, 11, 0.2);
   padding: 0.125rem 0.375rem;
@@ -99,14 +99,14 @@
   background-color: rgba(245, 158, 11, 0.2);
   border: 1px solid var(--accent-amber);
   border-radius: 0.375rem;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--accent-amber-dark);
 }
 
 .notice-icon {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .notice-text {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }

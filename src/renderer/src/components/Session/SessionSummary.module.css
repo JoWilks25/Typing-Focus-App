@@ -16,21 +16,21 @@
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-title);
   margin-bottom: 0.75rem;
 }
 
 .subtitle {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--text-tertiary);
   margin-bottom: 0;
 }
 
 .summary-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-title);
   margin-bottom: 1.5rem;
   text-align: center;
@@ -51,7 +51,7 @@
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -59,8 +59,8 @@
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-title);
 }
 
@@ -78,8 +78,8 @@
 }
 
 .tree-status {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--text-title);
   text-align: center;
 }
@@ -89,8 +89,8 @@
 }
 
 .progress-title {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   margin-bottom: 1rem;
 }
@@ -111,7 +111,7 @@
 }
 
 .progress-text {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   text-align: center;
 }
@@ -125,7 +125,7 @@
 .action-button {
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
@@ -211,14 +211,14 @@
 }
 
 .file-info h3 {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   margin-bottom: 0.5rem;
   color: var(--text-secondary);
 }
 
 .file-path {
-  font-family: monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   word-break: break-all;
 }

@@ -9,8 +9,8 @@
 }
 
 .dashboard-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-title);
   margin-bottom: 1rem;
 }
@@ -26,8 +26,8 @@
 }
 
 .demo-title {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   color: var(--text-title);
   margin-bottom: 1rem;
 }

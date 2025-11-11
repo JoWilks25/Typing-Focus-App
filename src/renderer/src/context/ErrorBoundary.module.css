@@ -17,8 +17,8 @@
 }
 
 .error-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--accent-red-light);
   margin-bottom: 0.5rem;
 }

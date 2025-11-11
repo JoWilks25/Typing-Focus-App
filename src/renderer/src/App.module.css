@@ -35,8 +35,9 @@
 }
 
 .app-title {
-  font-size: 1.5rem; /* Reduced from 1.875rem to fit better in nav */
-  font-weight: 700; /* font-bold */
+  font-family: 'Dancing Script';
+  font-size: var(--font-size-4xl); /* Reduced from 1.875rem to fit better in nav */
+  font-weight: var(--font-weight-bold); /* font-bold */
   text-align: left; /* Changed from center to left */
   color: var(--text-title);
   margin: 0; /* Remove default margin */
@@ -47,8 +48,8 @@
   padding: 0.25rem 0.75rem;
   background: linear-gradient(135deg, var(--gradient-badge-start), var(--gradient-badge-end));
   color: var(--btn-text);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   border-radius: 9999px; /* pill shape */
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -64,7 +65,7 @@
 .nav-button {
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
@@ -105,7 +106,7 @@
 }
 
 .theme-label {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .main-content {

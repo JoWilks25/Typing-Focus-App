@@ -13,8 +13,8 @@
 }
 
 .title {
-  font-size: 1.875rem; /* text-3xl */
-  font-weight: 700; /* font-bold */
+  font-size: var(--font-size-3xl); /* text-3xl */
+  font-weight: var(--font-weight-bold); /* font-bold */
   color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
@@ -31,7 +31,7 @@
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
   margin-bottom: 1rem;
   color: var(--text-primary);
 }
@@ -54,7 +54,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .file-mode-button:hover {
@@ -88,7 +88,7 @@
   color: var(--accent-blue-light);
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   height: 3rem;
 }
 
@@ -116,7 +116,7 @@
   border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 4px;
   color: var(--accent-green-lighter);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .filename-input {
@@ -126,7 +126,7 @@
 .filename-input label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .filename-input input {
@@ -136,7 +136,7 @@
   border: 1px solid var(--border-tertiary);
   border-radius: 4px;
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .filename-input input:focus {
@@ -159,7 +159,7 @@
   display: block;
   margin-top: 0.5rem;
   color: var(--accent-red-error);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .location-section {
@@ -169,7 +169,7 @@
 .location-section label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .location-display {
@@ -186,8 +186,8 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-tertiary);
   border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -219,7 +219,7 @@
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .path-preview strong {
@@ -228,7 +228,7 @@
 }
 
 .preview-path {
-  font-family: monospace;
+  font-family: var(--font-family-mono);
   color: var(--text-secondary);
   word-break: break-all;
 }
@@ -241,7 +241,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   cursor: pointer;
   transition: color 0.2s ease;
@@ -270,7 +270,7 @@
 }
 
 .advanced-text {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -278,7 +278,7 @@
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
@@ -310,7 +310,7 @@
 }
 
 .submit-hint {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   opacity: 0.75;
 }
 
@@ -354,7 +354,7 @@
   border: 1px solid var(--border-tertiary);
   border-radius: 4px;
   color: var(--text-tertiary);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   cursor: not-allowed;
 }
 
@@ -433,8 +433,8 @@
 }
 
 .recent-files-title {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
 }
@@ -458,7 +458,7 @@
 }
 
 .recent-file-icon {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--accent-blue-light);
 }
 
@@ -468,7 +468,7 @@
 }
 
 .recent-file-name {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
   margin-bottom: 0.25rem;
   overflow: hidden;
@@ -477,14 +477,14 @@
 }
 
 .recent-file-date {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
 .recent-file-path {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-quaternary);
-  font-family: monospace;
+  font-family: var(--font-family-mono);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -497,7 +497,7 @@
   align-items: center;
   margin: 1rem 0;
   color: var(--text-tertiary);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .divider::before,
@@ -522,19 +522,19 @@
 }
 
 .loaded-file-title {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--accent-green-lighter);
   margin-bottom: 0.5rem;
 }
 
 .loaded-file-path {
-  font-family: monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
   color: var(--accent-green-lighter);
   margin-bottom: 0.25rem;
 }
 
 .loaded-file-stats {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--accent-green-lighter);
 }

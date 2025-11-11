@@ -26,8 +26,8 @@
 }
 
 .modal-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-title);
   margin-bottom: 1.5rem;
 }
@@ -37,8 +37,8 @@
 }
 
 .section-title {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   margin-bottom: 1rem;
 }
@@ -53,12 +53,12 @@
 
 .setting-label {
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .setting-description {
   color: var(--text-tertiary);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   margin-top: 0.25rem;
 }
 
@@ -74,7 +74,7 @@
 .modal-button {
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;

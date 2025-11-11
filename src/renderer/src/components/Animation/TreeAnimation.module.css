@@ -26,10 +26,10 @@
 
 .progress-indicator {
   margin-top: 1rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   text-align: center;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Responsive sizing */

@@ -34,7 +34,7 @@
 }
 
 .celebration-icon {
-  font-size: 3rem;
+  font-size: var(--font-size-5xl);
   margin-bottom: 1rem;
   animation: bounce 1s ease-in-out;
 }
@@ -52,17 +52,17 @@
 }
 
 .title {
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-title);
   margin: 0 0 0.5rem 0;
 }
 
 .subtitle {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--text-quaternary);
   margin: 0;
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
 }
 
 .stats {
@@ -80,14 +80,14 @@
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-title);
   margin-bottom: 0.25rem;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-quaternary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -102,8 +102,8 @@
 .action-button {
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;

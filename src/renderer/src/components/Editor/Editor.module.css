@@ -43,6 +43,7 @@
   outline: none;
   flex: 1;
   position: relative; /* For read-only overlay positioning */
+  background-color: var(--bg-tertiary); /* Add this */
 }
 
 .editor-content:empty:before {
@@ -79,8 +80,8 @@
 }
 
 .readonly-message h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin-bottom: 1rem;
 }
@@ -88,7 +89,7 @@
 .readonly-message p {
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
 }
 
 .start-writing-button {
@@ -98,8 +99,8 @@
   color: var(--btn-text);
   border: none;
   border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px var(--shadow-accent);
@@ -123,10 +124,11 @@
 
 /* Tiptap/ProseMirror specific styles */
 .editor-content .ProseMirror {
+  background-color: var(--bg-tertiary);
   outline: none !important;
   min-height: 400px;
-  line-height: 1.6;
-  font-size: 16px;
+  line-height: var(--line-height-relaxed);
+  font-size: var(--font-size-base);
   color: var(--text-primary);
   white-space: pre-wrap; /* Required by ProseMirror */
   word-wrap: break-word;
@@ -278,8 +280,8 @@
 }
 
 .disabled-message h2 {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-title);
   margin-bottom: 1rem;
 }
@@ -287,8 +289,8 @@
 .disabled-message p {
   color: var(--text-secondary);
   margin-bottom: 2rem;
-  font-size: 1.125rem;
-  line-height: 1.6;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
 }
 
 .start-session-button {
@@ -297,8 +299,8 @@
   color: var(--btn-text);
   border: none;
   border-radius: 0.75rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 25px var(--shadow-accent);

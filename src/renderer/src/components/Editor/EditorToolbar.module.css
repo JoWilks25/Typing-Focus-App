@@ -11,6 +11,6 @@
 }
 
 .toolbar-text {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
 }

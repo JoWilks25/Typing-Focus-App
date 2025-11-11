@@ -308,7 +308,7 @@ export function SessionSetup(): React.JSX.Element {
                     {fileMode === 'existing' && (
                         <>
                             {/* Recent Files List */}
-                            {recentFiles.length > 0 && (
+                            {/* {recentFiles.length > 0 && (
                                 <div className={styles['recent-files-list']}>
                                     <div className={styles['recent-files-title']}>Recent Files:</div>
                                     {recentFiles.map((recentFile) => (
@@ -328,13 +328,13 @@ export function SessionSetup(): React.JSX.Element {
                                         </div>
                                     ))}
                                 </div>
-                            )}
+                            )} */}
 
                             {/* Divider */}
-                            {recentFiles.length > 0 && (
+                            {/* {recentFiles.length > 0 && (
                                 <div className={styles['divider']}>
                                     <span className={styles['divider-text']}>or</span>
-                                </div>)}
+                                </div>)} */}
 
                             {/* Choose File Button */}
                             <div className={styles['load-file-row']}>

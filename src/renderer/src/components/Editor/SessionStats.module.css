@@ -16,12 +16,12 @@
 }
 
 .word-count {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
 }
 
 .word-count-secondary {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-quaternary);
   font-style: italic;
 }
@@ -33,8 +33,8 @@
 }
 
 .timer {
-  font-size: 0.875rem;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-mono);
 }
 
 .timer-running {
@@ -69,7 +69,7 @@
 }
 
 .goal-label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-quaternary);
 }
 
@@ -103,12 +103,12 @@
 }
 
 .progress-percentage {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-quaternary);
 }
 
 .progress-indicator {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-quaternary);
 }
 
@@ -119,7 +119,7 @@
 }
 
 .save-hint {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-quaternary);
 }
 
@@ -127,7 +127,7 @@
   padding: 0.25rem 0.75rem;
   background-color: var(--accent-red-dark);
   color: var(--btn-text);
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   border-radius: 0.25rem;
   border: none;
   cursor: pointer;

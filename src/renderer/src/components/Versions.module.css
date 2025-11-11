@@ -6,9 +6,9 @@
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-family-mono);
 }
 
 .version-item {
