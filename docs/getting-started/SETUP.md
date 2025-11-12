@@ -1,6 +1,6 @@
 # Setup Guide
 
-Get the Typing Focus App running on your development machine.
+Get Draft Tree running on your development machine.
 
 ## Prerequisites
 

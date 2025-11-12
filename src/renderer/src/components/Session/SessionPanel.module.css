@@ -2,19 +2,19 @@
 /* Purpose: Session panel styling */
 
 .panel-container {
-  background-color: #1f2937; /* bg-gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 1rem;
 }
 
 .panel-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #f9fafb; /* text-gray-50 */
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-title);
   margin-bottom: 1rem;
 }
 
 .panel-content {
-  color: #d1d5db; /* text-gray-300 */
+  color: var(--text-secondary);
 }

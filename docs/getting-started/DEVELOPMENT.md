@@ -1,6 +1,6 @@
 # Development Guide
 
-Daily workflow and development practices for the Typing Focus App.
+Daily workflow and development practices for Draft Tree.
 
 ## Development Workflow
 
@@ -53,20 +53,30 @@ npm run typecheck
 ```
 src/
 ├── main/                    # Electron main process
+│   ├── index.ts            # Main process entry
+│   ├── ipcHandlers.ts      # Centralized IPC handlers
 │   ├── services/           # Business logic services
-│   ├── handlers/           # IPC handlers
+│   │   ├── sessionManager.ts
+│   │   ├── fileManager.ts
+│   │   ├── FloatingModalService.ts
+│   │   ├── FocusMonitorService.ts
+│   │   └── InactivityService.ts
 │   ├── utils/              # Utility functions
 │   └── types/              # TypeScript types
 ├── preload/                # Preload scripts (context bridge)
+│   └── index.ts
+├── shared/                 # Shared types and constants
+│   └── types/
+│       └── validation.ts
 └── renderer/               # React application
     ├── src/
     │   ├── components/     # React components
     │   ├── hooks/          # Custom React hooks
-    │   ├── context/        # React context providers
+    │   ├── context/        # React context (AppContext)
     │   ├── utils/          # Frontend utilities
     │   ├── types/          # Frontend types
     │   └── styles/         # Global styles
-    └── assets/             # Static assets
+    └── assets/             # Static assets (including animations)
 ```
 
 ## Development Patterns
@@ -104,54 +114,82 @@ export const Component = () => {
 
 ### 2. State Management
 
-Use React Context for state management:
+Use consolidated AppContext for state management:
 
 ```tsx
-// Create context
-const AppContext = createContext<AppState | undefined>(undefined);
-
-// Provider component
-export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<AppState>(initialState);
+// Consolidated context in AppContext.tsx
+export function AppProvider({ children }: { children: React.ReactNode }) {
+  // App state
+  const [appState, setAppState] = useState<AppState>(() => loadAppState());
+  
+  // Session state
+  const [sessions, setSessions] = useState<Session[]>(() => loadSessionState().sessions);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  
+  // Provides both app and session management
+  const contextValue = useMemo(() => ({
+    appState,
+    setView,
+    sessions,
+    activeSession,
+    startSession,
+    endSession,
+    updateProgress,
+    // ... other methods
+  }), [appState, sessions, activeSession]);
   
   return (
-    <AppContext.Provider value={{ state, setState }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );
-};
+}
 
-// Custom hook
+// Custom hooks
 export const useAppState = () => {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useAppState must be used within AppProvider');
-  }
+  if (!context) throw new Error('useAppState must be used within AppProvider');
   return context;
+};
+
+export const useSession = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useSession must be used within AppProvider');
+  return {
+    activeSession: context.activeSession,
+    startSession: context.startSession,
+    endSession: context.endSession,
+    // ... other session methods
+  };
 };
 ```
 
 ### 3. IPC Communication
 
-Use type-safe IPC channels:
+Use type-safe IPC channels via centralized handlers:
 
 ```typescript
-// Main process
-ipcMain.handle('session:start', async (event, data) => {
-  return await sessionService.startSession(data);
-});
+// Main process (ipcHandlers.ts)
+export function registerIpcHandlers(mainWindow: BrowserWindow): void {
+  ipcMain.handle('session:start', async (_event, filePath: string, name?: string, title?: string, goalType: GoalType = 'word', goalValue: number = 500) => {
+    return await sessionManager.startSession(filePath, name, title, goalType, goalValue);
+  });
+}
 
 // Preload script
-contextBridge.exposeInMainWorld('electronAPI', {
-  startSession: (data: SessionData) => 
-    ipcRenderer.invoke('session:start', data)
+const sessionAPI = {
+  start: (filePath: string, name?: string, title?: string, goalType?: GoalType, goalValue?: number) => 
+    ipcRenderer.invoke('session:start', filePath, name, title, goalType, goalValue)
+};
+
+contextBridge.exposeInMainWorld('api', {
+  session: sessionAPI,
+  // ... other APIs
 });
 
-// Renderer
-const startSession = async (data: SessionData) => {
-  const result = await window.electronAPI.startSession(data);
-  return result;
-};
+// Renderer (via AppContext)
+const { startSession } = useSession();
+const session = await startSession('/path/to/file.txt', 'My Session', 'Title', 'word', 500);
 ```
 
 ### 4. Service Layer Pattern
@@ -159,21 +197,53 @@ const startSession = async (data: SessionData) => {
 All data operations go through services:
 
 ```typescript
-// src/main/services/sessionService.ts
-export class SessionService {
-  async startSession(data: SessionData): Promise<Session> {
-    // Business logic here
-    const session = await this.createSession(data);
-    await this.saveSession(session);
+// src/main/services/sessionManager.ts
+export class SessionManager {
+  private sessions: Map<string, Session> = new Map();
+  private activeSessionId: string | null = null;
+  private fileManager: FileManager | null = null;
+  
+  async startSession(
+    filePath: string,
+    name?: string,
+    title?: string,
+    goalType: GoalType = 'word',
+    goalValue: number = 500,
+    initialContent?: string
+  ): Promise<Session> {
+    // Validate goal
+    if (!isValidGoal(goalType, goalValue)) {
+      throw new Error(`Invalid goal: ${goalType} goal value ${goalValue} is out of range`);
+    }
+    
+    // Stop any existing active session
+    if (this.activeSessionId) {
+      await this.stopSession(this.activeSessionId);
+    }
+    
+    // Create session
+    const session: Session = {
+      id: generateId(),
+      name: name || `Session ${new Date().toLocaleString()}`,
+      title,
+      filePath,
+      goalType,
+      goalValue,
+      startTime: Date.now(),
+      status: 'active',
+      // ... other fields
+    };
+    
+    // Save to file
+    if (this.fileManager) {
+      await this.fileManager.writeFileExternal(filePath, initialContent || '');
+    }
+    
+    this.sessions.set(session.id, session);
+    this.activeSessionId = session.id;
+    this.startAutosave();
+    
     return session;
-  }
-
-  private async createSession(data: SessionData): Promise<Session> {
-    // Implementation details
-  }
-
-  private async saveSession(session: Session): Promise<void> {
-    // Persistence logic
   }
 }
 ```

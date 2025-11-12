@@ -6,11 +6,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  background-color: #374151; /* bg-gray-700 */
+  background-color: var(--bg-tertiary);
   border-radius: 0.25rem;
 }
 
 .toolbar-text {
-  font-size: 0.875rem;
-  color: #9ca3af; /* text-gray-400 */
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
 }

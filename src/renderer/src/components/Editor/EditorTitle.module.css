@@ -7,23 +7,23 @@
 }
 
 .editor-title-text {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #f3f4f6; /* text-gray-100 */
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
   margin: 0;
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
   letter-spacing: -0.025em;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .editor-title-text {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
 }
 
 @media (max-width: 480px) {
   .editor-title-text {
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
   }
 }

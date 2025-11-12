@@ -2,9 +2,9 @@
 /* Purpose: ProseMirror-specific styles that require CSS selectors */
 
 .editor-container {
-  background-color: #1f2937; /* bg-gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px var(--shadow-sm);
   min-height: 500px;
   display: flex;
   flex-direction: column;
@@ -22,9 +22,9 @@
   width: 300px;
   min-width: 250px;
   max-width: 400px;
-  background-color: #374151; /* bg-gray-700 - make it visible */
+  background-color: var(--bg-tertiary);
   border-radius: 0.5rem;
-  border: 2px solid #4b5563; /* border-gray-600 - make it more visible */
+  border: 2px solid var(--border-secondary);
 }
 
 .editor-loading {
@@ -34,7 +34,7 @@
 }
 
 .loading-text {
-  color: #9ca3af; /* text-gray-400 */
+  color: var(--text-tertiary);
 }
 
 .editor-padding {
@@ -43,11 +43,12 @@
   outline: none;
   flex: 1;
   position: relative; /* For read-only overlay positioning */
+  background-color: var(--bg-tertiary); /* Add this */
 }
 
 .editor-content:empty:before {
   content: attr(data-placeholder);
-  color: #9ca3af; /* text-gray-400 */
+  color: var(--text-tertiary);
   font-style: italic;
   pointer-events: none;
 }
@@ -59,7 +60,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--bg-overlay-dark);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -72,57 +73,63 @@
   text-align: center;
   max-width: 500px;
   padding: 2rem;
-  background: rgba(31, 41, 55, 0.95);
+  background: var(--bg-overlay-light);
   border-radius: 0.75rem;
-  border: 2px solid rgba(59, 130, 246, 0.3);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--border-accent);
+  box-shadow: 0 20px 40px var(--shadow-lg);
 }
 
 .readonly-message h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #f3f4f6;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
 .readonly-message p {
-  color: #d1d5db;
+  color: var(--text-secondary);
   margin-bottom: 0.75rem;
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
 }
 
 .start-writing-button {
   margin-top: 1.5rem;
   padding: 0.875rem 2rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--gradient-button-start) 0%, var(--gradient-button-end) 100%);
+  color: var(--btn-text);
   border: none;
   border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px var(--shadow-accent);
 }
 
 .start-writing-button:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, var(--btn-primary-bg-hover) 0%, var(--btn-primary-bg-active) 100%);
+  box-shadow: 0 6px 16px var(--shadow-accent-hover);
   transform: translateY(-2px);
 }
 
 .start-writing-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px var(--shadow-accent);
+}
+
+.start-writing-button:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 /* Tiptap/ProseMirror specific styles */
 .editor-content .ProseMirror {
+  background-color: var(--bg-tertiary);
   outline: none !important;
   min-height: 400px;
-  line-height: 1.6;
-  font-size: 16px;
-  color: #f3f4f6; /* text-gray-100 */
+  line-height: var(--line-height-relaxed);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
   white-space: pre-wrap; /* Required by ProseMirror */
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -145,7 +152,7 @@
 /* Placeholder styling */
 .editor-content .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  color: #9ca3af; /* text-gray-400 */
+  color: var(--text-tertiary);
   font-style: italic;
   float: left;
   height: 0;
@@ -167,13 +174,13 @@
 
 /* ProseMirror selection */
 .editor-content .ProseMirror .ProseMirror-selectednode {
-  outline: 2px solid #3b82f6; /* blue-500 */
+  outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
 }
 
 /* ProseMirror cursor - create a blinking vertical line */
 .editor-content .ProseMirror .ProseMirror-cursor {
-  border-left: 2px solid #3b82f6; /* blue-500 */
+  border-left: 2px solid var(--accent-blue);
   margin-left: -1px;
   pointer-events: none;
   position: relative;
@@ -252,14 +259,14 @@
   bottom: -2px;
   left: -2px;
   right: -2px;
-  background: #3b82f6; /* blue-500 */
+  background: var(--accent-blue);
   pointer-events: none;
 }
 
 /* Disabled editor state */
 .editor-disabled {
-  background-color: #374151; /* bg-gray-700 */
-  border: 2px dashed #6b7280; /* border-gray-500 */
+  background-color: var(--bg-tertiary);
+  border: 2px dashed var(--border-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -273,52 +280,48 @@
 }
 
 .disabled-message h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f3f4f6; /* text-gray-100 */
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-title);
   margin-bottom: 1rem;
-  background: linear-gradient(to right, #60a5fa, #a855f7); /* from-blue-400 to-purple-500 */
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
 }
 
 .disabled-message p {
-  color: #d1d5db; /* text-gray-300 */
+  color: var(--text-secondary);
   margin-bottom: 2rem;
-  font-size: 1.125rem;
-  line-height: 1.6;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
 }
 
 .start-session-button {
   padding: 1rem 2.5rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--gradient-button-start) 0%, var(--gradient-button-end) 100%);
+  color: var(--btn-text);
   border: none;
   border-radius: 0.75rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8px 25px var(--shadow-accent);
   text-transform: none;
   letter-spacing: 0.025em;
 }
 
 .start-session-button:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, var(--btn-primary-bg-hover) 0%, var(--btn-primary-bg-active) 100%);
+  box-shadow: 0 12px 35px var(--shadow-accent-hover);
   transform: translateY(-3px);
 }
 
 .start-session-button:active {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 6px 20px var(--shadow-accent);
 }
 
 .start-session-button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
 }
 
 /* Responsive design for editor layout */

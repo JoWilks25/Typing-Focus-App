@@ -1,6 +1,6 @@
 # Product Goals
 
-Core product vision and objectives for the Typing Focus App.
+Core product vision and objectives for Draft Tree.
 
 ## Primary Goals
 
@@ -151,7 +151,7 @@ Core product vision and objectives for the Typing Focus App.
 
 ## Success Criteria
 
-The Typing Focus App will be considered successful when:
+Draft Tree will be considered successful when:
 
 1. **Users consistently complete their writing goals** (60%+ completion rate)
 2. **Users report improved focus and productivity** during writing sessions

@@ -1,67 +1,97 @@
 # Project Structure
 
-Complete folder structure and file organization for the Typing Focus App.
+Complete folder structure and file organization for Draft Tree.
 
 ## Directory Structure
 
 ```
-Typing-Focus-App/
+Draft-Tree/
 ├── src/
 │   ├── main/                      # Electron main process (Node.js)
-│   │   ├── index.ts               # [existing] Main process entry
-│   │   ├── services/              # [NEW] Data service layer
-│   │   │   ├── sessionService.ts  # Session CRUD operations
-│   │   │   └── fileService.ts     # File I/O operations
-│   │   ├── handlers/              # [NEW] IPC handlers
-│   │   │   ├── sessionHandlers.ts # Session IPC handlers
-│   │   │   └── fileHandlers.ts    # File IPC handlers
-│   │   ├── utils/                 # [NEW] Utility functions
-│   │   │   └── pathUtils.ts       # Path handling utilities
-│   │   └── types/                 # [NEW] Type definitions
+│   │   ├── index.ts               # Main process entry
+│   │   ├── ipcHandlers.ts         # IPC handlers (centralized)
+│   │   ├── services/              # Data service layer
+│   │   │   ├── sessionManager.ts  # Session management
+│   │   │   ├── fileManager.ts     # File I/O operations
+│   │   │   ├── FloatingModalService.ts # Floating modal windows
+│   │   │   ├── FocusMonitorService.ts  # Focus detection
+│   │   │   └── InactivityService.ts    # Inactivity tracking
+│   │   ├── utils/                 # Utility functions
+│   │   │   ├── calculateSessionStats.ts
+│   │   │   ├── generateId.ts
+│   │   │   ├── pathUtils.ts
+│   │   │   └── validation.ts
+│   │   └── types/                 # Type definitions
 │   │       ├── session.ts         # Session types
 │   │       └── ipc.ts             # IPC channel types
 │   │
-│   ├── preload/                   # [existing] Preload scripts
+│   ├── preload/                   # Preload scripts
 │   │   ├── index.ts
 │   │   └── index.d.ts
 │   │
+│   ├── shared/                    # Shared types and constants
+│   │   └── types/
+│   │       └── validation.ts      # Shared validation types
+│   │
 │   └── renderer/                  # React application (frontend)
-│       ├── index.html             # [existing]
-│       ├── assets/                # [existing + NEW]
-│       │   └── animations/        # [NEW] Animation assets
-│       │       └── .gitkeep
+│       ├── index.html
+│       ├── assets/                # Static assets
+│       │   └── animations/        # Lottie animation JSON files
+│       │       ├── tree-grow-0.json through tree-grow-7.json
+│       │       └── tree-growth.json
 │       └── src/
-│           ├── App.tsx            # [existing] Main app component
-│           ├── main.tsx           # [existing] Entry point
-│           ├── components/        # [NEW] React components
+│           ├── App.tsx            # Main app component
+│           ├── main.tsx           # Entry point
+│           ├── components/        # React components
 │           │   ├── Editor/
 │           │   │   ├── Editor.tsx
-│           │   │   └── EditorToolbar.tsx
+│           │   │   ├── EditorTitle.tsx
+│           │   │   ├── EditorToolbar.tsx
+│           │   │   ├── SessionStats.tsx
+│           │   │   └── editorConfig.ts
 │           │   ├── Session/
+│           │   │   ├── SessionSetup.tsx
 │           │   │   ├── SessionPanel.tsx
-│           │   │   └── SessionList.tsx
+│           │   │   ├── SessionList.tsx
+│           │   │   ├── SessionSummary.tsx
+│           │   │   ├── GoalInput.tsx
+│           │   │   └── GoalSelector.tsx
 │           │   ├── Modals/
 │           │   │   ├── Modal.tsx
+│           │   │   ├── SessionSetupModal.tsx
+│           │   │   ├── CompletionModal.tsx
+│           │   │   ├── InactivityModal.tsx
+│           │   │   ├── FloatingModal.tsx
+│           │   │   ├── FloatingDistractionWarning.tsx
 │           │   │   └── SettingsModal.tsx
 │           │   ├── Animation/
 │           │   │   ├── AnimationLayer.tsx
-│           │   │   └── AnimationControls.tsx
-│           │   └── Dashboard/
-│           │       └── Dashboard.tsx
-│           ├── hooks/             # [NEW] Custom React hooks
+│           │   │   ├── AnimationControls.tsx
+│           │   │   └── TreeAnimation.tsx
+│           │   ├── Dashboard/
+│           │   │   └── Dashboard.tsx
+│           │   └── Toast/
+│           ├── hooks/             # Custom React hooks
+│           │   ├── useAppState.ts
 │           │   ├── useSession.ts
-│           │   └── useAnimation.ts
-│           ├── store/             # [NEW] State management
-│           │   ├── index.ts
-│           │   ├── sessionSlice.ts
-│           │   └── editorSlice.ts
-│           ├── utils/             # [NEW] Frontend utilities
-│           │   ├── formatters.ts
-│           │   └── validators.ts
-│           ├── types/             # [NEW] Frontend types
+│           │   ├── useDebounce.ts
+│           │   ├── useTimer.ts
+│           │   └── useFloatingModal.ts
+│           ├── context/           # React context (state management)
+│           │   ├── AppContext.tsx       # Consolidated app + session context
+│           │   ├── AppContextDef.ts     # Context type definitions
+│           │   ├── appStorage.ts        # App state persistence
+│           │   └── sessionStorage.ts    # Session state persistence
+│           ├── utils/             # Frontend utilities
+│           │   ├── formatTime.ts
+│           │   ├── validation.ts
+│           │   ├── wordCount.ts
+│           │   └── electronAPI.ts
+│           ├── types/             # Frontend types
+│           │   ├── app.ts
 │           │   ├── session.ts
-│           │   └── editor.ts
-│           └── styles/            # [NEW] Styles
+│           │   └── timer.ts
+│           └── styles/            # Global styles
 │               ├── global.css
 │               └── theme.css
 │
@@ -93,28 +123,27 @@ Typing-Focus-App/
 └── README.md                      # [existing]
 ```
 
-## Placeholder Files Created
+## Key Files and Their Purposes
 
-All `.ts` and `.tsx` files contain:
+### Main Process
+- **`index.ts`**: Main process entry point, creates windows
+- **`ipcHandlers.ts`**: Centralized IPC handler registration (not separate handlers/ directory)
+- **`sessionManager.ts`**: Session lifecycle and state management
+- **`fileManager.ts`**: File I/O operations with external file support
+- **`FloatingModalService.ts`**: Creates and manages floating modal windows
+- **`FocusMonitorService.ts`**: Detects when user switches away from app
+- **`InactivityService.ts`**: Tracks keyboard inactivity for session pausing
 
-- A comment describing the file's purpose
-- Empty export statements or placeholder functions
+### Renderer Process
+- **`AppContext.tsx`**: Consolidated app and session state management (no separate contexts)
+- **`Editor.tsx`**: Main text editor with Tiptap integration and local state management
+- **`useSession.ts`**: Custom hook for session operations
+- **`useDebounce.ts`**: Debouncing utility for content updates
+- **`wordCount.ts`**: Word counting algorithm
+- **`sessionStorage.ts`**: Session state persistence to localStorage
 
-Example:
-
-```typescript
-// src/main/services/sessionService.ts
-// Purpose: Handle session CRUD operations (save, load, delete sessions)
-export const sessionService = {};
-```
-
-## Next Steps for Developers
-
-1. Install dependencies: `npm install`
-2. Implement actual logic in placeholder files according to CONTRIBUTING.md guidelines
-3. Follow the data service layer pattern for all data operations
-4. Use type-safe IPC channels defined in preload scripts
-5. Manage state centrally using Redux or Context API in the store/ directory
+### Shared
+- **`validation.ts`**: Shared validation constants (100-10,000 words, 5-480 minutes)
 
 ## Testing Architecture
 
@@ -143,8 +172,10 @@ npm run test:ui      # Run with UI interface
 ## Architecture Guidelines
 
 - **Data Service Layer**: All data operations go through `src/main/services/`
-- **IPC Communication**: Use type-safe channels in `src/preload/`
-- **State Management**: Centralize state in `src/renderer/src/store/`
+- **IPC Communication**: Centralized in `src/main/ipcHandlers.ts` with type-safe channels
+- **State Management**: Single `AppContext` in `src/renderer/src/context/` (no Redux/separate contexts)
 - **Component Organization**: Group related components in feature folders
-- **Type Safety**: Define types in dedicated `types/` directories
+- **Type Safety**: Define types in dedicated `types/` directories, shared types in `src/shared/types/`
 - **Testing**: Use Vitest + React Testing Library for all test layers
+- **File Persistence**: Sessions save to user-selected .txt file paths
+- **Local Storage**: App state and session state persist to localStorage

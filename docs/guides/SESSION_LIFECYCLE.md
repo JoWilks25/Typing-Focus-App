@@ -1,6 +1,6 @@
 # Session Lifecycle
 
-Complete flow of writing sessions from creation to completion or abandonment.
+Complete flow of writing sessions from creation to completion or abandonment in Draft Tree.
 
 ## Session Flow Overview
 
@@ -28,20 +28,27 @@ stateDiagram-v2
 **User Actions**:
 - Select goal type (word count or time duration)
 - Set goal value within valid ranges
-- Review recommended settings
+- Choose file path (new file or existing file)
+- Optionally set session name and title
+- Review recommended settings: "15-30 min or 250-500 words for focused sessions"
 
 **Validation Rules**:
 - Word goals: 100-10,000 words
-- Time goals: 5-480 minutes
+- Time goals: 5-480 minutes (8 hours)
 - Real-time validation feedback
+- File path required
 
 **Data Structure**:
 ```typescript
-interface SessionSetup {
+// Setup modal state
+interface SessionSetupState {
+  filePath: string;
+  name?: string;
+  title?: string;
   goalType: 'word' | 'time';
   goalValue: number;
-  isValid: boolean;
-  errors: string[];
+  initialContent?: string;
+  isLoadingExisting?: boolean;
 }
 ```
 
@@ -49,115 +56,178 @@ interface SessionSetup {
 **Purpose**: User is actively writing toward their goal
 
 **Key Features**:
-- Real-time word count tracking
-- Progress visualization
-- Tree growth animation
-- Timer display (for time goals)
-- Autosave every 30 seconds
+- Real-time word count tracking (local state, immediate)
+- Progress visualization (progress bar with percentage)
+- Tree growth animation (8 stages)
+- Timer display (1-second updates, focus-aware)
+- Content autosave (2-second debounce to backend)
+- File autosave (10 seconds via SessionManager)
+- Progress updates (5-second intervals)
 
 **State Management**:
 ```typescript
+// Session stored in AppContext and backend
 interface ActiveSession {
   id: string;
+  name: string;
+  title?: string;
+  filePath: string;
   startTime: number;
   goalType: 'word' | 'time';
   goalValue: number;
-  currentProgress: number;
-  wordsWritten: number;
-  timeElapsed: number;
-  isPaused: boolean;
-  lastActivity: number;
+  currentWords?: number;
+  timeElapsed?: number;
+  progressPercentage?: number;
+  isPaused?: boolean;
+  pauseStartTime?: number;
+  totalPauseTime?: number;
+  distractionCount?: number;
+  initialWordCount?: number;
+  status: 'active';
+}
+
+// Local editor state (immediate UI updates)
+interface LocalEditorState {
+  content: string;
+  text: string;
+  wordCount: number;
+  characterCount: number;
+  lastUpdated: number;
 }
 ```
 
 **Progress Calculation**:
 ```typescript
-// Word count goals
-const progress = (wordsWritten - initialWordCount) / goalValue * 100;
+// Word count goals (only new words count)
+const newWords = currentWords - (initialWordCount || 0);
+const progress = Math.min(100, Math.floor((newWords / goalValue) * 100));
 
 // Time goals
-const progress = timeElapsed / (goalValue * 60) * 100;
+const progress = Math.min(100, Math.floor((timeElapsed / (goalValue * 60 * 1000)) * 100));
 ```
 
 ### 3. Paused Phase
-**Trigger**: No typing activity for 3 minutes
+**Trigger**: No typing activity for 1 minute
 
 **Purpose**: Maintain accurate session timing without penalties
 
 **User Experience**:
-- Session timer pauses
+- Session timer continues (pause time tracked separately)
 - Inactivity modal appears
 - Clear messaging about pause (not penalty)
 - Easy resume option
+- "Taking a thinking break is normal!" message
 
 **Modal Content**:
-- "Session Paused" heading
+- "Session Paused" heading with pause icon
 - "We noticed you haven't typed for a while..."
-- Current progress display
+- Current session stats (word count, time elapsed, progress)
 - "Resume Writing" (primary) and "End Session" (secondary) buttons
 
 **State Updates**:
 ```typescript
-interface PausedSession extends ActiveSession {
+// Session state
+interface PausedSession {
+  // ... all Session fields
   isPaused: true;
   pauseStartTime: number;
-  totalPauseDuration: number;
+  totalPauseTime: number; // Accumulated pause duration
 }
 ```
 
+**Backend Integration**:
+```typescript
+// Pause session (called by InactivityService)
+await window.api.session.pause(sessionId);
+
+// Resume session (called when user resumes)
+await window.api.session.resume(sessionId);
+```
+
 ### 4. Completed Phase
-**Trigger**: User reaches their set goal
+**Trigger**: User reaches their set goal (100% progress)
 
 **Success Criteria**:
-- Word goals: Written target number of words
+- Word goals: Written target number of NEW words (excluding initialWordCount)
 - Time goals: Elapsed target duration
 
 **User Experience**:
-- Tree reaches mature state
-- Celebration animation
-- Session marked as completed
-- Statistics updated
-- Option to start new session
+- Completion modal appears automatically (once per session)
+- Shows final word count and time elapsed
+- Displays goal value and type
+- "Keep Writing" button (dismisses modal, session continues)
+- "End Session" button (ends session, navigates to summary)
+- Tree shows fully grown state (stage 7)
+
+**Modal Detection**:
+```typescript
+// Triggered when progress reaches 100%
+if (currentProgress >= 100 && !hasShownCompletionModal) {
+  setShowCompletionModal(true);
+  setHasShownCompletionModal(true);
+}
+```
 
 **Data Persistence**:
 ```typescript
 interface CompletedSession {
   id: string;
+  name: string;
+  filePath: string;
   startTime: number;
   endTime: number;
   goalType: 'word' | 'time';
   goalValue: number;
-  wordsWritten: number;
+  currentWords: number;
   timeElapsed: number;
+  totalPauseTime: number;
   status: 'completed';
-  completionRate: 100;
-  treeState: 'mature';
+  progressPercentage: 100;
+  distractionCount?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
 ### 5. Incomplete Phase
-**Trigger**: User manually ends session before reaching goal
+**Trigger**: Session ends before reaching goal
+
+**Triggers**:
+- User manually clicks "End Session" in inactivity modal
+- Distraction warning countdown expires (10 seconds)
 
 **User Experience**:
-- Wilt/death animation plays
+- Session content saved to file
 - Session marked as incomplete
-- Statistics reflect incomplete session
-- Clear feedback about goal not reached
+- Active session cleared from app state
+- Editor returns to "Ready to Start Writing?" state
+- User must start new session to continue writing
 
 **Data Persistence**:
 ```typescript
 interface IncompleteSession {
   id: string;
+  name: string;
+  filePath: string;
   startTime: number;
   endTime: number;
   goalType: 'word' | 'time';
   goalValue: number;
-  wordsWritten: number;
+  currentWords: number;
   timeElapsed: number;
+  totalPauseTime: number;
   status: 'incomplete';
-  completionRate: number; // < 100
-  treeState: 'wilted' | 'dead';
+  progressPercentage: number; // < 100
+  distractionCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
+```
+
+**Backend Integration**:
+```typescript
+// Mark session as incomplete
+await window.api.session.markIncomplete(sessionId);
 ```
 
 ### 6. Incomplete Phase (Distraction)
@@ -204,25 +274,38 @@ interface IncompleteSession {
 
 **User Experience**:
 - Session ends immediately without countdown
+- Session content saved to file
 - Session marked as abandoned
-- Wilt/death animation plays
+- Active session cleared from app state
+- Editor returns to "Ready to Start Writing?" state
 - Statistics reflect abandoned session
 
 **Abandonment Logic**:
 ```typescript
 interface AbandonedSession {
   id: string;
+  name: string;
+  filePath: string;
   startTime: number;
   endTime: number;
   goalType: 'word' | 'time';
   goalValue: number;
-  wordsWritten: number;
+  currentWords: number;
   timeElapsed: number;
+  totalPauseTime: number;
   status: 'abandoned';
-  completionRate: number;
-  treeState: 'wilted' | 'dead';
+  progressPercentage: number; // < 100
   distractionCount: number;
+  isAbandoned: true;
+  createdAt: string;
+  updatedAt: string;
 }
+```
+
+**Backend Integration**:
+```typescript
+// Abandon session (explicit user choice)
+await window.api.session.abandon(sessionId);
 ```
 
 ## State Transitions
@@ -275,7 +358,7 @@ const handleStateTransition = (session: Session, newState: SessionState) => {
 ### Autosave Strategy
 - **Frequency**: Every 30 seconds during active sessions
 - **Content**: Editor content and session state
-- **Location**: `~/Library/Application Support/focus-writer/autosave/`
+- **Location**: User-selected file paths (e.g., `~/Documents/my-writing.txt`)
 - **Recovery**: Automatic recovery on app restart
 
 ### Session Storage

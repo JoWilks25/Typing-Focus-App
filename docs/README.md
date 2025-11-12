@@ -1,10 +1,10 @@
-# Typing Focus App - Documentation
+# Draft Tree - Documentation
 
-Welcome to the Typing Focus App documentation. This guide provides comprehensive information for developers, contributors, and users.
+Welcome to the Draft Tree documentation. This guide provides comprehensive information for developers, contributors, and users.
 
 ## 📚 Documentation Overview
 
-The Typing Focus App is a distraction-free writing application built with Electron, React, and TypeScript. It uses gamified tree animations to encourage focused writing sessions and goal completion.
+Draft Tree is a distraction-free writing application built with Electron, React, and TypeScript. It uses gamified tree animations to encourage focused writing sessions and goal completion.
 
 ## 🚀 Quick Start
 
@@ -61,7 +61,7 @@ Product vision, requirements, and planning documents.
 
 ## 🏗️ System Architecture
 
-The Typing Focus App follows a three-process Electron architecture:
+Draft Tree follows a three-process Electron architecture:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -86,21 +86,22 @@ The Typing Focus App follows a three-process Electron architecture:
 - Distraction-free editor with live word count and timer
 - Goal-based sessions (word count or time duration)
 - Real-time progress tracking and visualization
+- File-based session management with autosave
 
 ### Tree Animation System
 - Visual progress representation through growing trees
-- Three growth stages: seedling, small tree, mature tree
-- Penalty animations for incomplete sessions
+- Eight growth stages tied to progress milestones
+- Animated transitions between growth states
 
 ### Focus Management
-- Inactivity detection with session pausing
-- Distraction warnings with countdown timers
-- Focus enforcement through visual consequences
+- Inactivity detection with session pausing (1 minute threshold)
+- Distraction warnings with countdown timers (10 seconds)
+- Focus enforcement through visual feedback
 
 ### File Management
-- Import existing text files
-- Export current work
-- Automatic saving and recovery
+- Session-based file creation and management
+- Automatic saving (every 10 seconds)
+- Plain text (.txt) file format
 
 ## 🛠️ Development Workflow
 

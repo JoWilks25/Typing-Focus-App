@@ -9,9 +9,9 @@
   height: 100%;
   min-height: 250px;
   padding: 1rem;
-  background-color: #1f2937; /* bg-gray-800 */
+  background-color: var(--bg-secondary);
   border-radius: 0.5rem;
-  border: 1px solid #374151; /* border-gray-700 */
+  border: 1px solid var(--border-primary);
 }
 
 .tree-animation {
@@ -26,10 +26,10 @@
 
 .progress-indicator {
   margin-top: 1rem;
-  font-size: 0.875rem;
-  color: #9ca3af; /* text-gray-400 */
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
   text-align: center;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Responsive sizing */

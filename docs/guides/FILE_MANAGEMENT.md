@@ -1,23 +1,29 @@
 # File Management
 
-Import, export, and autosave functionality for the Typing Focus App.
+Import, export, and autosave functionality for Draft Tree.
 
 ## Overview
 
-The file management system handles all file operations including importing existing documents, exporting current work, and automatic saving to prevent data loss. All operations are local-only in V1, with no cloud sync.
+The file management system in Draft Tree handles session-based file operations with automatic saving to prevent data loss. Each session is associated with a user-selected .txt file that is automatically saved every 10 seconds. All operations are local-only in V1, with no cloud sync.
+
+**Key Concepts**:
+- **Session Files**: User-selected .txt file paths where session content is saved
+- **Autosave**: Automatic file saving every 10 seconds via SessionManager
+- **File Manager**: Backend service (`fileManager.ts`) handling file I/O operations
+- **External Files**: Files outside app data directory (user-selected locations)
 
 ## File Operations
 
-### Import Functionality
+### File Selection
 
-**Purpose**: Load existing plain text files to continue writing
+**Purpose**: Choose file location for session content
 
 **Supported Formats**:
 - Plain text files (`.txt`)
 - UTF-8 encoding
 - No rich text or formatting
 
-**Import Flow**:
+**File Selection Flow**:
 ```typescript
 interface ImportResult {
   success: boolean;
@@ -65,20 +71,24 @@ const importFile = async (): Promise<ImportResult> => {
 };
 ```
 
-**Import Behavior**:
-1. User triggers import via menu or button
-2. Native file dialog opens
-3. User selects `.txt` file
-4. File content loaded into editor
-5. Initial word count calculated
-6. User prompted to set new session goal
-7. Imported words don't count toward goal progress
+**File Selection Behavior**:
+1. User starts new session via SessionSetupModal
+2. User chooses file path (via directory picker + filename input or file picker)
+3. If existing file selected:
+   - File content loaded as initialContent
+   - Initial word count calculated and stored in `initialWordCount`
+   - Only NEW words (beyond initialWordCount) count toward goal
+4. If new file:
+   - Empty file created at selected path
+   - initialWordCount is 0
+5. Session created with filePath
+6. File automatically saved every 10 seconds during session
 
-### Export Functionality
+### Manual File Save (Not Currently Implemented)
 
-**Purpose**: Save current work to user-selected location
+**Note**: In current implementation, files are automatically saved to the session's filePath. Manual export functionality is not yet implemented.
 
-**Export Flow**:
+**Planned Export Flow**:
 ```typescript
 interface ExportResult {
   success: boolean;
@@ -129,35 +139,28 @@ const exportFile = async (content: string): Promise<ExportResult> => {
 
 ### Autosave Strategy
 
-**Frequency**: Every 30 seconds during active sessions
-**Trigger**: Also on editor content changes (debounced)
+**Frequency**: Every 10 seconds during active sessions (backend)
+**Additional Saves**: Content updates debounced at 2 seconds (renderer to backend)
 **Purpose**: Prevent data loss from crashes or unexpected shutdowns
+**Location**: SessionManager service in main process
 
 ### Autosave Implementation
 
 ```typescript
-interface AutosaveData {
-  sessionId: string;
-  content: string;
-  timestamp: number;
-  wordCount: number;
-  characterCount: number;
-}
-
-class AutosaveService {
+// SessionManager.ts
+class SessionManager {
   private autosaveInterval: NodeJS.Timeout | null = null;
-  private debouncedSave: (() => void) | null = null;
+  private readonly AUTOSAVE_INTERVAL = 10000; // 10 seconds
+  private fileManager: FileManager | null = null;
 
-  startAutosave(sessionId: string) {
-    // Interval-based autosave
+  startAutosave() {
+    if (this.autosaveInterval) {
+      return; // Already running
+    }
+
     this.autosaveInterval = setInterval(async () => {
-      await this.performAutosave(sessionId);
-    }, 30 * 1000); // 30 seconds
-
-    // Debounced autosave on content changes
-    this.debouncedSave = debounce(async () => {
-      await this.performAutosave(sessionId);
-    }, 5000); // 5 seconds after last edit
+      await this.performAutosave();
+    }, this.AUTOSAVE_INTERVAL);
   }
 
   stopAutosave() {
@@ -167,98 +170,141 @@ class AutosaveService {
     }
   }
 
-  private async performAutosave(sessionId: string) {
-    try {
-      const autosaveData: AutosaveData = {
-        sessionId,
-        content: getCurrentEditorContent(),
-        timestamp: Date.now(),
-        wordCount: getCurrentWordCount(),
-        characterCount: getCurrentCharacterCount()
-      };
+  private async performAutosave() {
+    if (!this.activeSessionId) return;
 
-      const autosavePath = this.getAutosavePath(sessionId);
-      await fs.writeFile(autosavePath, JSON.stringify(autosaveData, null, 2));
+    const session = this.sessions.get(this.activeSessionId);
+    if (!session || !this.fileManager) return;
+
+    try {
+      // Convert HTML to plain text
+      const plainText = this.htmlToPlainText(session.content || '');
       
-      console.log('Autosave completed:', autosavePath);
+      // Save to external file
+      await this.fileManager.writeFileExternal(session.filePath, plainText);
+      
+      // Update last saved timestamp
+      session.lastSavedToFile = new Date().toISOString();
+      
+      console.log('Autosave completed:', session.filePath);
     } catch (error) {
       console.error('Autosave failed:', error);
     }
   }
 
-  private getAutosavePath(sessionId: string): string {
-    const autosaveDir = path.join(app.getPath('userData'), 'autosave');
-    return path.join(autosaveDir, `${sessionId}.json`);
+  private htmlToPlainText(html: string): string {
+    // Strip HTML tags and convert to plain text
+    return html
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .trim();
   }
 }
 ```
+
+### Renderer-Side Content Updates
+
+```typescript
+// Editor.tsx - Debounced content save
+const debouncedUpdateSession = useDebounce(
+  useCallback(async () => {
+    const content = contentRef.current;
+    const currentActiveSession = activeSessionRef.current;
+    if (currentActiveSession) {
+      try {
+        // Update session content in backend
+        const updatedSession = await window.api.session.updateContent(
+          currentActiveSession.id,
+          content
+        );
+        
+        // Update AppContext
+        updateSession(updatedSession);
+      } catch (error) {
+        console.error('Failed to update session content:', error);
+      }
+    }
+  }, [updateSession]),
+  2000 // 2 second delay
+);
+```
+
+**Combined Strategy**:
+- **Renderer**: Updates session content in backend after 2s typing pause (via `session.updateContent`)
+- **Backend**: SessionManager autosaves session content to file every 10s
+- **Result**: Maximum 10 seconds of data loss in worst case scenario
 
 ### Autosave Storage
 
-**Location**: `~/Library/Application Support/focus-writer/autosave/`
-**Format**: JSON files with session data
-**Naming**: `{sessionId}.json`
+**Location**: User-selected file paths (e.g., `~/Documents/my-writing.txt`)
+**Format**: Plain text (.txt)
+**Content**: HTML stripped to plain text before saving
 
-**File Structure**:
-```json
-{
-  "sessionId": "session-123",
-  "content": "User's written content...",
-  "timestamp": 1703123456789,
-  "wordCount": 250,
-  "characterCount": 1250
+**Session Tracking**:
+```typescript
+interface Session {
+  // ...
+  filePath: string;           // Path to .txt file
+  lastSavedToFile?: string;   // ISO timestamp of last save
 }
 ```
 
-## Recovery System
+**Additional Storage**:
+- **App Data**: `~/Library/Application Support/Draft Tree/`
+- **Storage JSON**: `storage.json` (key-value store)
+- **Session History**: `session-history.json` (completed sessions)
 
-### Recovery Detection
+## Session Recovery
+
+### Active Session Validation
+
+Draft Tree validates active sessions on startup to ensure consistency between localStorage and backend state.
 
 ```typescript
-interface RecoveryData {
-  sessionId: string;
-  content: string;
-  timestamp: number;
-  wordCount: number;
-  isRecent: boolean;
-}
-
-const detectRecoveryData = async (): Promise<RecoveryData | null> => {
-  try {
-    const autosaveDir = path.join(app.getPath('userData'), 'autosave');
-    const files = await fs.readdir(autosaveDir);
+// AppContext.tsx - Startup validation
+useEffect(() => {
+  const validateActiveSession = async () => {
+    const storedState = loadSessionState();
     
-    if (files.length === 0) return null;
-
-    // Find most recent autosave
-    let mostRecent: RecoveryData | null = null;
-    let mostRecentTime = 0;
-
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue;
-      
-      const filePath = path.join(autosaveDir, file);
-      const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
-      
-      if (data.timestamp > mostRecentTime) {
-        mostRecentTime = data.timestamp;
-        mostRecent = {
-          sessionId: data.sessionId,
-          content: data.content,
-          timestamp: data.timestamp,
-          wordCount: data.wordCount,
-          isRecent: Date.now() - data.timestamp < 24 * 60 * 60 * 1000 // 24 hours
-        };
+    if (storedState.activeSessionId) {
+      try {
+        // Check if stored active session is still active in backend
+        const backendActiveSession = await window.api.session.getActive();
+        
+        if (backendActiveSession && backendActiveSession.id === storedState.activeSessionId) {
+          // Backend confirms session is still active
+          setActiveSessionId(storedState.activeSessionId);
+          console.log('✅ Validated active session from storage');
+        } else {
+          // Backend says no active session, clear localStorage
+          console.log('❌ Stored active session is no longer active in backend');
+          setActiveSessionId(null);
+          saveSessionState({ sessions: storedState.sessions, activeSessionId: null });
+        }
+      } catch (error) {
+        console.warn('Failed to validate active session:', error);
+        // On error, clear active session to be safe
+        setActiveSessionId(null);
+        saveSessionState({ sessions: storedState.sessions, activeSessionId: null });
       }
     }
+  };
 
-    return mostRecent;
-  } catch (error) {
-    console.error('Recovery detection failed:', error);
-    return null;
-  }
-};
+  validateActiveSession();
+}, []);
 ```
+
+### File Recovery
+
+**Current Implementation**: No automatic recovery modal. Users can manually load existing files when starting a new session.
+
+**File Persistence**:
+- Session files are saved to user-selected locations
+- Files persist even after app closes
+- Users can reload files by selecting them when creating a new session
 
 ### Recovery Modal
 
@@ -317,27 +363,25 @@ const handleRecovery = async (recoveryData: RecoveryData) => {
 ### Storage Locations
 
 **macOS**:
-- App Data: `~/Library/Application Support/focus-writer/`
-- Autosave: `~/Library/Application Support/focus-writer/autosave/`
-- Sessions: `~/Library/Application Support/focus-writer/sessions/`
+- App Data: `~/Library/Application Support/Draft Tree/`
+- Sessions: Session files stored in user-selected locations
+- Storage: `~/Library/Application Support/Draft Tree/storage.json`
+- Session History: `~/Library/Application Support/Draft Tree/session-history.json`
 
 **Windows** (future):
-- App Data: `%APPDATA%/focus-writer/`
-- Autosave: `%APPDATA%/focus-writer/autosave/`
-- Sessions: `%APPDATA%/focus-writer/sessions/`
+- App Data: `%APPDATA%/Draft Tree/`
+- Sessions: Session files stored in user-selected locations
+- Storage: `%APPDATA%/Draft Tree/storage.json`
 
 ### Directory Structure
 
 ```
-~/Library/Application Support/focus-writer/
-├── autosave/
-│   ├── session-123.json
-│   └── session-456.json
-├── sessions/
-│   ├── active-session.json
-│   └── session-history.json
-└── config/
-    └── app-config.json
+~/Library/Application Support/Draft Tree/
+├── storage.json              # Key-value storage
+├── session-history.json      # Completed sessions history
+└── [user-selected paths]/    # Session .txt files
+    ├── my-document.txt
+    └── another-file.txt
 ```
 
 ## Error Handling
@@ -371,7 +415,7 @@ const handleAutosaveError = (error: Error, sessionId: string) => {
   console.error('Autosave failed:', error);
   
   // Try alternative storage location
-  const fallbackPath = path.join(os.tmpdir(), `focus-writer-autosave-${sessionId}.json`);
+  const fallbackPath = path.join(os.tmpdir(), `draft-tree-autosave-${sessionId}.json`);
   
   try {
     // Attempt fallback save
