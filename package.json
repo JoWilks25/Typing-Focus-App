@@ -33,6 +33,7 @@
     "icon-gen": "^5.0.0",
     "lottie-react": "^2.4.1",
     "prosemirror-view": "^1.41.2",
+    "styled-components": "^6.1.19",
     "uuid": "^13.0.0",
     "zustand": "^5.0.8"
   },
