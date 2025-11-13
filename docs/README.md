@@ -35,11 +35,22 @@ Technical documentation for system design and implementation.
 
 | Document | Description |
 |----------|-------------|
-| [Overview](./architecture/OVERVIEW.md) | High-level system architecture and design patterns |
+| [Overview](./architecture/OVERVIEW.md) | High-level system architecture and design patterns (Current v1.0) |
 | [Project Structure](./architecture/PROJECT_STRUCTURE.md) | File organization and folder structure |
-| [State Management](./architecture/STATE_MANAGEMENT.md) | State flow, patterns, and update strategies |
-| [IPC Communication](./architecture/IPC_COMMUNICATION.md) | Inter-process communication patterns |
+| [State Management](./architecture/STATE_MANAGEMENT.md) | State flow, patterns, and update strategies (Current v1.0) |
+| [IPC Communication](./architecture/IPC_COMMUNICATION.md) | Inter-process communication patterns (Current v1.0) |
 | [Features](./architecture/FEATURES.md) | Feature implementation details and validation rules |
+
+### Rewrite Architecture (Planned v2.0)
+Documentation for the upcoming architecture rewrite with Zustand state management and improved IPC structure.
+
+| Document | Description |
+|----------|-------------|
+| [Rewrite Overview](./rewrite/README.md) | Overview of rewrite goals, timeline, and key changes |
+| [Architecture](./rewrite/ARCHITECTURE.md) | Complete system architecture with diagrams |
+| [State Management](./rewrite/STATE_MANAGEMENT.md) | Zustand store patterns and implementation |
+| [IPC Communication](./rewrite/IPC.md) | New IPC structure and request/response pattern |
+| [Migration Guide](./rewrite/MIGRATION.md) | Step-by-step migration plan (8 weeks) |
 
 ### Implementation Guides
 Detailed guides for specific system components.
@@ -144,7 +155,10 @@ npm run typecheck
 - ✅ Autosave and recovery system
 
 ### In Progress
-- 🔄 State management optimization
+- 🔄 Architecture rewrite (v2.0) - See [Rewrite Documentation](./rewrite/README.md)
+  - Migrating to Zustand for state management
+  - Reorganizing IPC handlers with type-safe patterns
+  - Refactoring components for better maintainability
 - 🔄 Animation performance improvements
 - 🔄 Error handling and validation
 - 🔄 Testing coverage expansion
