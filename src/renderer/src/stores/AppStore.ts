@@ -1,9 +1,10 @@
+import { THEME_SYSTEM, ThemePreference } from '@renderer/styles/theme';
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 interface AppState {
   currentView: 'dashboard' | 'editor' | 'session-summary';
-  theme: 'light' | 'dark' | 'system';
+  theme: ThemePreference;
   setView: (view: AppState['currentView']) => void;
   setTheme: (theme: AppState['theme']) => void;
 }
@@ -15,7 +16,7 @@ export const useAppStore = create<AppState>()(
       (set) => ({
         // Initial State
         currentView: 'editor',
-        theme: 'light',
+        theme: THEME_SYSTEM,
 
         // Actions
         setView: (view) => set({ currentView: view }, false, 'setView'),

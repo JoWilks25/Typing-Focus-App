@@ -1,3 +1,10 @@
+// Theme preference constants
+export const THEME_LIGHT = 'light' as const;
+export const THEME_DARK = 'dark' as const;
+export const THEME_SYSTEM = 'system' as const;
+
+export type ThemePreference = typeof THEME_LIGHT | typeof THEME_DARK | typeof THEME_SYSTEM;
+
 // Theme type definition
 export interface Theme {
   fonts: {
@@ -326,12 +333,12 @@ export const lightTheme: Theme = {
 };
 
 // Helper function to get theme based on preference
-export const getTheme = (themePreference: 'light' | 'dark' | 'system'): Theme => {
-  if (themePreference === 'system') {
+export const getTheme = (themePreference: ThemePreference): Theme => {
+  if (themePreference === THEME_SYSTEM) {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     return prefersDark ? darkTheme : lightTheme;
   }
-  return themePreference === 'dark' ? darkTheme : lightTheme;
+  return themePreference === THEME_DARK ? darkTheme : lightTheme;
 };
 
 // Type augmentation for styled-components
