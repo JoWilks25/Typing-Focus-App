@@ -1,6 +1,6 @@
 import { ThemeProvider } from 'styled-components';
 import { useAppStore } from './stores/AppStore';
-import { getTheme, THEME_DARK, THEME_LIGHT, THEME_SYSTEM } from './styles/theme';
+import { getTheme, THEME_DARK, THEME_LIGHT, THEME_SYSTEM, ThemePreference } from './styles/theme';
 import { GlobalStyles } from './styles/globalStyles';
 import {
   AppContainer,
@@ -19,6 +19,7 @@ import {
 import logoDark from './assets/logo_dark.svg';
 import logoLight from './assets/logo_light.svg';
 import { useEffectiveTheme } from './hooks/useEffectiveTheme';
+import Versions from './components/Versions';
 
 
 function App(): React.JSX.Element {
@@ -27,7 +28,7 @@ function App(): React.JSX.Element {
   const theme = getTheme(themePreference);
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newTheme = event.target.value as 'light' | 'dark' | 'system';
+    const newTheme = event.target.value as ThemePreference;
     useAppStore.getState().setTheme(newTheme);
   }
 
@@ -81,7 +82,7 @@ function App(): React.JSX.Element {
 
         {/* Footer with Versions */}
         <Footer>
-          {/* <Versions /> */}
+          <Versions />
         </Footer>
 
 
