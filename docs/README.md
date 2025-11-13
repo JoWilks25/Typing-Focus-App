@@ -1,225 +1,161 @@
-# Draft Tree - Documentation
+# Draft Tree - Rewrite Architecture Documentation
 
-Welcome to the Draft Tree documentation. This guide provides comprehensive information for developers, contributors, and users.
+**Version:** 2.0 (Post-Refactor)  
+**Status:** Implementation Guide  
+**Last Updated:** December 2024
 
-## 📚 Documentation Overview
+## Overview
 
-Draft Tree is a distraction-free writing application built with Electron, React, and TypeScript. It uses gamified tree animations to encourage focused writing sessions and goal completion.
+This documentation guides the rewrite of Draft Tree's architecture to improve maintainability, debuggability, and feature development speed. The rewrite focuses on:
 
-## 🚀 Quick Start
+- **State Management**: Migrating from React Context to Zustand
+- **IPC Architecture**: Reorganizing IPC handlers with type-safe request/response patterns
+- **Component Structure**: Refactoring large components into smaller, focused modules
+- **Developer Experience**: Better debugging tools and clearer code organization
 
-### For New Developers
-1. **[Setup Guide](./getting-started/SETUP.md)** - Get the development environment running
-2. **[Development Guide](./getting-started/DEVELOPMENT.md)** - Daily development workflow
-3. **[Architecture Overview](./architecture/OVERVIEW.md)** - Understand the system design
-
-### For Contributors
-1. **[User Stories](./user-stories/USER_STORIES.md)** - Feature requirements and acceptance criteria
-2. **[Testing Guide](./getting-started/TESTING.md)** - Testing setup and best practices
-3. **[Project Goals](./project/PRODUCT_GOALS.md)** - Product vision and objectives
-
-## 📖 Documentation Structure
-
-### Getting Started
-Essential guides for new developers and contributors.
+## Quick Links
 
 | Document | Description |
 |----------|-------------|
-| [Setup Guide](./getting-started/SETUP.md) | Installation, verification, and troubleshooting |
-| [Development Guide](./getting-started/DEVELOPMENT.md) | Daily workflow, patterns, and best practices |
-| [Build Guide](./getting-started/BUILDING.md) | Building installers for Mac and Windows |
-| [Testing Guide](./getting-started/TESTING.md) | Testing setup, strategies, and coverage requirements |
+| [Architecture Overview](./ARCHITECTURE.md) | Complete system architecture with diagrams |
+| [State Management](./STATE_MANAGEMENT.md) | Zustand store patterns and implementation |
+| [IPC Communication](./IPC.md) | New IPC structure and request/response pattern |
+| [Migration Guide](./MIGRATION.md) | Step-by-step migration plan (8 weeks) |
 
-### Architecture
-Technical documentation for system design and implementation.
+## Rewrite Goals
 
-| Document | Description |
-|----------|-------------|
-| [Overview](./architecture/OVERVIEW.md) | High-level system architecture and design patterns (Current v1.0) |
-| [Project Structure](./architecture/PROJECT_STRUCTURE.md) | File organization and folder structure |
-| [State Management](./architecture/STATE_MANAGEMENT.md) | State flow, patterns, and update strategies (Current v1.0) |
-| [IPC Communication](./architecture/IPC_COMMUNICATION.md) | Inter-process communication patterns (Current v1.0) |
-| [Features](./architecture/FEATURES.md) | Feature implementation details and validation rules |
+### Primary Objectives
 
-### Rewrite Architecture (Planned v2.0)
-Documentation for the upcoming architecture rewrite with Zustand state management and improved IPC structure.
+1. **Improve Debuggability**
+   - Redux DevTools integration for state inspection
+   - Clear action names and state transitions
+   - Better error messages and stack traces
 
-| Document | Description |
-|----------|-------------|
-| [Rewrite Overview](./rewrite/README.md) | Overview of rewrite goals, timeline, and key changes |
-| [Architecture](./rewrite/ARCHITECTURE.md) | Complete system architecture with diagrams |
-| [State Management](./rewrite/STATE_MANAGEMENT.md) | Zustand store patterns and implementation |
-| [IPC Communication](./rewrite/IPC.md) | New IPC structure and request/response pattern |
-| [Migration Guide](./rewrite/MIGRATION.md) | Step-by-step migration plan (8 weeks) |
+2. **Easier Feature Development**
+   - Modular store architecture
+   - Organized IPC handlers by domain
+   - Reusable component hooks
+   - Clear data flow
 
-### Implementation Guides
-Detailed guides for specific system components.
+3. **Better Code Organization**
+   - Smaller, focused files
+   - Clear separation of concerns
+   - Easier to navigate and understand
 
-| Document | Description |
-|----------|-------------|
-| [Animation System](./guides/ANIMATION_SYSTEM.md) | Tree growth animations and visual feedback |
-| [Session Lifecycle](./guides/SESSION_LIFECYCLE.md) | Complete session flow from creation to completion |
-| [File Management](./guides/FILE_MANAGEMENT.md) | Import, export, and autosave functionality |
-| [Floating Modal System](./guides/FLOATING_MODAL_SYSTEM.md) | Modal system architecture and implementation |
+4. **Maintain Existing Functionality**
+   - Keep all existing services
+   - Keep all existing utilities
+   - Keep all existing components
+   - Minimal breaking changes
 
-### Project Management
-Product vision, requirements, and planning documents.
+## Key Architectural Changes
 
-| Document | Description |
-|----------|-------------|
-| [Product Goals](./project/PRODUCT_GOALS.md) | Core product vision and success metrics |
-| [User Stories](./user-stories/USER_STORIES.md) | Feature requirements and acceptance criteria |
+### State Management: Context → Zustand
 
-## 🏗️ System Architecture
+**Before:**
+- Single `AppContext.tsx` (330 lines)
+- Mixed app and session state
+- Complex dependency arrays
+- Hard to debug
 
-Draft Tree follows a three-process Electron architecture:
+**After:**
+- Four focused stores (~400 lines total)
+- Clear separation of concerns
+- Redux DevTools compatible
+- Easy to test and debug
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Main Process  │    │  Preload Script │    │ Renderer Process│
-│   (Node.js)     │◄──►│ (Context Bridge)│◄──►│    (React)      │
-│                 │    │                 │    │                 │
-│ • Window Mgmt   │    │ • API Exposure  │    │ • UI Components │
-│ • File System   │    │ • Type Safety   │    │ • State Mgmt    │
-│ • Session Mgmt  │    │ • Validation    │    │ • Animations    │
-│ • Focus Monitor │    │ • Security      │    │ • User Input    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+### IPC Architecture: Monolithic → Organized
 
-### Key Components
-- **Main Process**: Handles file I/O, session persistence, and system integration
-- **Preload Script**: Provides secure, type-safe API bridge
-- **Renderer Process**: Manages UI, user interactions, and visual feedback
+**Before:**
+- Single `ipcHandlers.ts` (786 lines)
+- 70+ IPC channels in one file
+- Hard to understand flow
+- Type safety issues
 
-## 🎯 Core Features
+**After:**
+- Organized by domain (4 handler files)
+- Type-safe request/response pattern
+- Clear error handling
+- Easy to test
 
-### Writing Sessions
-- Distraction-free editor with live word count and timer
-- Goal-based sessions (word count or time duration)
-- Real-time progress tracking and visualization
-- File-based session management with autosave
+### Component Structure: Large → Modular
 
-### Tree Animation System
-- Visual progress representation through growing trees
-- Eight growth stages tied to progress milestones
-- Animated transitions between growth states
+**Before:**
+- `Editor.tsx` (658 lines)
+- Multiple responsibilities
+- Hard to test
+- Hard to debug
 
-### Focus Management
-- Inactivity detection with session pausing (1 minute threshold)
-- Distraction warnings with countdown timers (10 seconds)
-- Focus enforcement through visual feedback
+**After:**
+- Container component (100 lines)
+- Focused hooks (3 files)
+- Clear responsibilities
+- Easy to test
 
-### File Management
-- Session-based file creation and management
-- Automatic saving (every 10 seconds)
-- Plain text (.txt) file format
+## Timeline
 
-## 🛠️ Development Workflow
+### Phase 1: Foundation (Week 1-2)
+- Set up Zustand stores
+- Create new IPC structure
+- Write migration utilities
 
-### Daily Development
-```bash
-# Start development server
-npm run dev
+### Phase 2: Core Migration (Week 3-4)
+- Migrate session management
+- Migrate IPC handlers
+- Refactor Editor component
 
-# Run tests in watch mode
-npm run test:watch
+### Phase 3: Testing & Polish (Week 5-6)
+- Write tests
+- Performance optimization
+- Documentation updates
 
-# Check code quality
-npm run lint
-npm run typecheck
-```
+### Phase 4: Cleanup (Week 7-8)
+- Remove old code
+- Final testing
+- Deploy
 
-### Testing Strategy
-- **Unit Tests**: Individual functions and components
-- **Integration Tests**: IPC communication and data flow
-- **Component Tests**: React components with React Testing Library
-- **Coverage**: 80%+ required for business logic
+## Benefits Summary
+
+### Debugging
+- ✅ Redux DevTools integration
+- ✅ Visual state inspection
+- ✅ Time-travel debugging
+- ✅ Better error messages
+
+### Development
+- ✅ Modular architecture
+- ✅ Clear data flow
+- ✅ Easy to add features
+- ✅ Better code organization
 
 ### Code Quality
-- **TypeScript**: Strict mode for type safety
-- **ESLint**: Code style and best practices
-- **Prettier**: Consistent code formatting
-- **CSS Modules**: Component-scoped styling
+- ✅ Smaller files
+- ✅ Better separation of concerns
+- ✅ Easier to maintain
+- ✅ Better testability
 
-## 📋 Project Status
+## Getting Started
 
-### Current Implementation
-- ✅ Basic Electron app structure
-- ✅ React UI with navigation
-- ✅ Session setup and goal configuration
-- ✅ Text editor with Tiptap integration
-- ✅ Word count and timer functionality
-- ✅ Tree animation system
-- ✅ Modal system (inactivity, distraction, completion)
-- ✅ File import/export functionality
-- ✅ Autosave and recovery system
+1. **Read the Architecture Overview** - [ARCHITECTURE.md](./ARCHITECTURE.md)
+2. **Understand State Management** - [STATE_MANAGEMENT.md](./STATE_MANAGEMENT.md)
+3. **Review IPC Structure** - [IPC.md](./IPC.md)
+4. **Follow Migration Guide** - [MIGRATION.md](./MIGRATION.md)
 
-### In Progress
-- 🔄 Architecture rewrite (v2.0) - See [Rewrite Documentation](./rewrite/README.md)
-  - Migrating to Zustand for state management
-  - Reorganizing IPC handlers with type-safe patterns
-  - Refactoring components for better maintainability
-- 🔄 Animation performance improvements
-- 🔄 Error handling and validation
-- 🔄 Testing coverage expansion
+## Current vs. Planned Architecture
 
-### Planned Features
-- 📅 Dashboard and statistics
-- 📅 Session history and streaks
-- 📅 Enhanced animation system
-- 📅 Accessibility improvements
+### Current Architecture (v1.0)
+- React Context for state management
+- Monolithic IPC handlers
+- Large component files
+- See: [../architecture/](../architecture/)
 
-## 🤝 Contributing
-
-### Getting Started
-1. Read the [Setup Guide](./getting-started/SETUP.md)
-2. Review [User Stories](./user-stories/USER_STORIES.md)
-3. Check [Development Guide](./getting-started/DEVELOPMENT.md)
-4. Follow [CONTRIBUTING.md](../CONTRIBUTING.md) guidelines
-
-### Development Standards
-- Use TypeScript for all new code
-- Follow existing patterns and architecture
-- Write tests for new features
-- Update documentation for changes
-- Use conventional commit messages
-
-### Code Review Process
-- All changes require pull request review
-- Tests must pass before merging
-- Documentation must be updated
-- Code must follow style guidelines
-
-## 📞 Support
-
-### Documentation Issues
-- Check existing documentation first
-- Search for similar issues
-- Create detailed issue reports
-- Include relevant code and error messages
-
-### Development Questions
-- Review architecture documentation
-- Check existing implementations
-- Ask specific, detailed questions
-- Provide context and examples
-
-## 🔗 External Resources
-
-### Technology Stack
-- [Electron](https://www.electronjs.org/) - Desktop app framework
-- [React](https://reactjs.org/) - UI library
-- [TypeScript](https://www.typescriptlang.org/) - Type system
-- [Tiptap](https://tiptap.dev/) - Text editor
-- [Vitest](https://vitest.dev/) - Testing framework
-
-### Development Tools
-- [VS Code](https://code.visualstudio.com/) - Recommended editor
-- [React DevTools](https://reactjs.org/blog/2019/08/15/new-react-devtools.html) - React debugging
-- [Electron DevTools](https://www.electronjs.org/docs/latest/tutorial/devtools) - Electron debugging
+### Planned Architecture (v2.0)
+- Zustand for state management
+- Organized IPC handlers
+- Modular component structure
+- See: This documentation
 
 ---
 
-**Last Updated**: December 2024  
-**Documentation Version**: 1.0  
-**App Version**: MVP Development
+**Next Steps:** Start with [ARCHITECTURE.md](./ARCHITECTURE.md) for a complete overview of the new architecture.
+
