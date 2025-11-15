@@ -13,14 +13,21 @@ export const EditorMain = styled.div`
   display: flex;
   flex: 1;
   gap: 1rem;
-  min-height: 400px;
+  min-height: calc(100vh - 150px);
+  height: calc(100vh - 150px); /* Add explicit height */
+  max-height: calc(100vh - 150px); /* Constrain height */
 `;
 
-export const EditorContent = styled.div`
+export const EditorContentDiv = styled.div`
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  height: calc(100vh - 200px); /* Fixed height based on viewport */
+  background-color: ${props => props.theme.colors.background.secondary};
+  border-radius: 0.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 `;
 
 export const AnimationSidebar = styled.div`
@@ -94,3 +101,108 @@ export const DisabledEditorContent = styled.div`
   padding: 2rem;
 `;
 
+export const TipTapEditor = styled.div`
+  flex: 1;
+  padding: 1rem;
+  min-height: 0;
+  
+  .tiptap {
+    outline: none;
+    /* Basic editor styles */
+    :first-child {
+      margin-top: 0;
+    }
+
+    /* List styles */
+    ul,
+    ol {
+      padding: 0 1rem;
+      margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+      li p {
+        margin-top: 0.25em;
+        margin-bottom: 0.25em;
+      }
+    }
+
+    /* Heading styles */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      line-height: 1.1;
+      margin-top: 2.5rem;
+      text-wrap: pretty;
+    }
+
+    h1,
+    h2 {
+      margin-top: 3.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+    }
+
+    h4,
+    h5,
+    h6 {
+      font-size: 1rem;
+    }
+
+    /* Code and preformatted text styles */
+    code {
+      background-color: ${props => props.theme.colors.accent.purple}33;
+      border-radius: 0.4rem;
+      color: ${props => props.theme.colors.text.inverse};
+      font-size: 0.85rem;
+      padding: 0.25em 0.3em;
+    }
+
+    pre {
+      background: ${props => props.theme.colors.background.primary};
+      border-radius: 0.5rem;
+      color: ${props => props.theme.colors.text.primary};
+      font-family: ${props => props.theme.fonts.mono};
+      margin: 1.5rem 0;
+      padding: 0.75rem 1rem;
+
+      code {
+        background: none;
+        color: inherit;
+        font-size: 0.8rem;
+        padding: 0;
+      }
+    }
+
+    blockquote {
+      border-left: 3px solid ${props => props.theme.colors.border.secondary};
+      margin: 1.5rem 0;
+      padding-left: 1rem;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid ${props => props.theme.colors.border.primary};
+      margin: 2rem 0;
+    }
+  }
+`;
+
+export const EditorContentArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  min-height: 0; /* Important for flex scrolling */
+`;

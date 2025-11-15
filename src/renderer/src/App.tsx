@@ -30,7 +30,6 @@ function App(): React.JSX.Element {
   const effectiveTheme = useEffectiveTheme(themePreference);
   const theme = getTheme(themePreference);
 
-
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = event.target.value as ThemePreference;
     useAppStore.getState().setTheme(newTheme);
@@ -82,8 +81,8 @@ function App(): React.JSX.Element {
 
         {/* Main Content */}
         <MainContent>
-          {/* {currentView === 'dashboard' && <Dashboard />} */}
           {currentView === 'editor' && <Editor />}
+          {/* {currentView === 'dashboard' && <Dashboard />} */}
           {/* {currentView === 'session-summary' && <SessionSummary />} */}
         </MainContent>
 
