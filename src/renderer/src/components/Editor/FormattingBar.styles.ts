@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const ControlGroup = styled.div`
+export const ControlGroup = styled.div<{ $disabled?: boolean }>`
   position: sticky;
   top: 0;
   z-index: 5;
@@ -8,9 +8,10 @@ export const ControlGroup = styled.div`
   border-bottom: 1px solid ${props => props.theme.colors.border.secondary};
   padding: 0.75rem 1rem;
   flex-shrink: 0;
-  width: 100%; /* Ensure full width */
+  width: 100%;
+  pointer-events: ${props => props.$disabled ? 'none' : 'auto'};
+  opacity: ${props => props.$disabled ? 0.5 : 1};
 `;
-
 
 export const ButtonGroup = styled.div`
   display: flex;
@@ -52,4 +53,15 @@ export const EditorToolbarButton = styled.button<{ $isActive?: boolean }>`
     outline: 2px solid ${props => props.theme.colors.accent.blue};
     outline-offset: 2px;
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+export const HeadingNumber = styled.span`
+  font-size: 0.7em;
+  vertical-align: middle;
+  margin-left: -0.3em;
 `;

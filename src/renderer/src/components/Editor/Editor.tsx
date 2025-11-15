@@ -8,6 +8,7 @@ import {
   StartSessionButton,
   DisabledEditorContent,
   TipTapEditor,
+  DisabledOverlay,
 } from './Editor.styles';
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -16,7 +17,7 @@ import { FormattingBar } from './FormattingBar';
 
 
 export const Editor = () => {
-  const [activeSession, setActiveSession] = useState(true);
+  const [activeSession, setActiveSession] = useState(false);
   const [currentContent, setCurrentContent] = useState('');
 
   const handleOpenSessionSetup = () => {
@@ -32,7 +33,8 @@ export const Editor = () => {
         types: ['heading', 'paragraph'],
       }),
     ], // define your extension array
-    content: currentContent, // initial content
+    content: currentContent,
+    editable: activeSession,
   })
 
   return (
@@ -41,16 +43,13 @@ export const Editor = () => {
 
       {/* TODO: Add Session Stats */}
       <EditorMain>
-        {activeSession ? (
-          <EditorContentDiv>
-            <FormattingBar editor={editor} />
-            <TipTapEditor>
-              <EditorContent editor={editor} />
-            </TipTapEditor>
-          </EditorContentDiv>
-        ) : (
-          <EditorContentDiv>
-            <DisabledEditorContent>
+        <EditorContentDiv>
+          <FormattingBar editor={editor} disabled={!activeSession} />
+          <TipTapEditor $disabled={!activeSession}>
+            <EditorContent editor={editor} />
+          </TipTapEditor>
+          {!activeSession && (
+            <DisabledOverlay>
               <DisabledMessage>
                 <h2>Ready to Start Writing?</h2>
                 <p>Begin your writing journey by starting a new session.</p>
@@ -58,9 +57,9 @@ export const Editor = () => {
               <StartSessionButton onClick={handleOpenSessionSetup}>
                 Start New Writing Session
               </StartSessionButton>
-            </DisabledEditorContent>
-          </EditorContentDiv>
-        )}
+            </DisabledOverlay>
+          )}
+        </EditorContentDiv>
 
         <AnimationSidebar>
           {/* TODO: Add Tree animation */}

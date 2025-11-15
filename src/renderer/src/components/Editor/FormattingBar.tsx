@@ -1,83 +1,118 @@
 import { Editor } from '@tiptap/core';
 import {
+  FaHeading,
+  FaBold,
+  FaItalic,
+  FaStrikethrough,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaAlignJustify,
+  FaParagraph
+} from 'react-icons/fa';
+import {
   ControlGroup,
   ButtonGroup,
   EditorToolbarButton,
+  HeadingNumber,
 } from './FormattingBar.styles';
 
 interface FormattingBarProps {
   editor: Editor
+  disabled?: boolean
 }
 
-export const FormattingBar = ({ editor }: FormattingBarProps) => {
+export const FormattingBar = ({ editor, disabled }: FormattingBarProps) => {
   return (
-    <ControlGroup>
+    <ControlGroup $disabled={disabled}>
       <ButtonGroup>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
+          title="Heading 1"
+          disabled={disabled}
         >
-          H1
+          <FaHeading /> <HeadingNumber>1</HeadingNumber>
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+          title="Heading 2"
+          disabled={disabled}
         >
-          H2
+          <FaHeading /> <HeadingNumber>2</HeadingNumber>
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}
+          title="Heading 3"
+          disabled={disabled}
         >
-          H3
+          <FaHeading /> <HeadingNumber>3</HeadingNumber>
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().setParagraph().run()}
           className={editor.isActive('paragraph') ? 'is-active' : ''}
+          title="Paragraph"
+          disabled={disabled}
         >
-          Paragraph
+          <FaParagraph />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={editor.isActive('bold') ? 'is-active' : ''}
+          title="Bold"
+          disabled={disabled}
         >
-          Bold
+          <FaBold />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={editor.isActive('italic') ? 'is-active' : ''}
+          title="Italic"
+          disabled={disabled}
         >
-          Italic
+          <FaItalic />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className={editor.isActive('strike') ? 'is-active' : ''}
+          title="Strikethrough"
+          disabled={disabled}
         >
-          Strike
+          <FaStrikethrough />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
           className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}
+          title="Align Left"
+          disabled={disabled}
         >
-          Left
+          <FaAlignLeft />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
           className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}
+          title="Align Center"
+          disabled={disabled}
         >
-          Center
+          <FaAlignCenter />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
           className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
+          title="Align Right"
+          disabled={disabled}
         >
-          Right
+          <FaAlignRight />
         </EditorToolbarButton>
         <EditorToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
           className={editor.isActive({ textAlign: 'justify' }) ? 'is-active' : ''}
+          title="Justify"
+          disabled={disabled}
         >
-          Justify
+          <FaAlignJustify />
         </EditorToolbarButton>
       </ButtonGroup>
     </ControlGroup>

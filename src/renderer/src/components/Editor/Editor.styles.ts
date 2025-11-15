@@ -13,6 +13,7 @@ export const EditorMain = styled.div`
   display: flex;
   flex: 1;
   gap: 1rem;
+  padding: 1rem;
   min-height: calc(100vh - 150px);
   height: calc(100vh - 150px); /* Add explicit height */
   max-height: calc(100vh - 150px); /* Constrain height */
@@ -23,7 +24,7 @@ export const EditorContentDiv = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 200px); /* Fixed height based on viewport */
-  background-color: ${props => props.theme.colors.background.secondary};
+  background-color: ${props => props.theme.colors.background.primary};
   border-radius: 0.5rem;
   overflow-y: auto;
   overflow-x: hidden;
@@ -95,16 +96,35 @@ export const StartSessionButton = styled.button`
   }
 `;
 
+export const DisabledOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: ${props => props.theme.colors.background.overlayDark};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 2rem;
+  text-align: center;
+`;
+
+// Remove or keep DisabledEditorContent if needed elsewhere
 export const DisabledEditorContent = styled.div`
   text-align: center;
-  max-width: 500px;
+  width: 100%;
   padding: 2rem;
 `;
 
-export const TipTapEditor = styled.div`
+export const TipTapEditor = styled.div<{ $disabled?: boolean }>`
   flex: 1;
   padding: 1rem;
   min-height: 0;
+  pointer-events: ${props => props.$disabled ? 'none' : 'auto'};
+  opacity: ${props => props.$disabled ? 0.5 : 1};
   
   .tiptap {
     outline: none;
