@@ -161,7 +161,7 @@ export const darkTheme: Theme = {
       secondary: '#202b3a', // gray-800
       tertiary: '#374151', // gray-700
       quaternary: '#4b5563', // gray-600
-      overlay: 'rgba(0, 0, 0, 0.5)',
+      overlay: 'rgba(0, 0, 0, 0.3)',
       overlayDark: 'rgba(0, 0, 0, 0.85)',
       overlayLight: 'rgba(31, 41, 55, 0.95)',
     },

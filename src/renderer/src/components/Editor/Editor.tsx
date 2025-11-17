@@ -6,7 +6,6 @@ import {
   AnimationSidebar,
   DisabledMessage,
   StartSessionButton,
-  DisabledEditorContent,
   TipTapEditor,
   DisabledOverlay,
 } from './Editor.styles';
@@ -17,7 +16,7 @@ import { FormattingBar } from './FormattingBar';
 
 
 export const Editor = () => {
-  const [activeSession, setActiveSession] = useState(false);
+  const [activeSession, setActiveSession] = useState(true);
   const [currentContent, setCurrentContent] = useState('');
 
   const handleOpenSessionSetup = () => {
