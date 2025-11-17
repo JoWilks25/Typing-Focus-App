@@ -3,10 +3,13 @@ import styled from "styled-components";
 export const AppContainer = styled.div`
   min-height: 100vh;
   background-color: ${props => props.theme.colors.background.primary};
-  background: ${props => props.theme.colors.text.primary};
+  color: ${props => props.theme.colors.text.primary};
 `
 
 export const Navigation = styled.nav`
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background-color: ${props => props.theme.colors.background.secondary};
   border-bottom: 1px solid ${props => props.theme.colors.border.secondary};
   padding: 0.75rem 1.5rem;

@@ -20,9 +20,12 @@ import logoDark from './assets/logo_dark.svg';
 import logoLight from './assets/logo_light.svg';
 import { useEffectiveTheme } from './hooks/useEffectiveTheme';
 import Versions from './components/Versions';
+import { Editor } from './components/Editor/Editor';
+import { useState } from 'react';
 
 
 function App(): React.JSX.Element {
+  // THEMING
   const themePreference = useAppStore((state) => state.theme);
   const effectiveTheme = useEffectiveTheme(themePreference);
   const theme = getTheme(themePreference);
@@ -31,6 +34,9 @@ function App(): React.JSX.Element {
     const newTheme = event.target.value as ThemePreference;
     useAppStore.getState().setTheme(newTheme);
   }
+
+  // VIEWS
+  const [currentView, setCurrentView] = useState('editor')
 
   return (
     <ThemeProvider theme={theme}>
@@ -75,8 +81,8 @@ function App(): React.JSX.Element {
 
         {/* Main Content */}
         <MainContent>
+          {currentView === 'editor' && <Editor />}
           {/* {currentView === 'dashboard' && <Dashboard />} */}
-          {/* {currentView === 'editor' && <Editor />} */}
           {/* {currentView === 'session-summary' && <SessionSummary />} */}
         </MainContent>
 
