@@ -1,11 +1,12 @@
 import React from 'react';
-import { useDraggableModal } from '@renderer/hooks/useDraggableModal';
+import { useDraggableModal, SizeConstraints } from '@renderer/hooks/useDraggableModal';
 import {
   ModalContainer,
   ModalHeader,
   ModalTitle,
   ModalCloseButton,
   ModalContent,
+  ResizeHandle,
 } from './DraggableModal.styles';
 
 export interface DraggableModalProps {
@@ -17,14 +18,16 @@ export interface DraggableModalProps {
   onClose: () => void;
   /** Initial position of the modal */
   initialPosition?: { x: number; y: number };
+  /** Initial size of the modal */
+  initialSize?: { width: number; height: number };
+  /** Size constraints */
+  sizeConstraints?: SizeConstraints;
   /** Modal content */
   children: React.ReactNode;
-  /** Optional custom width */
-  width?: number | string;
-  /** Optional custom height */
-  height?: number | string;
   /** Optional custom z-index */
   zIndex?: number;
+  /** Whether to show resize handles (default: true) */
+  resizable?: boolean;
 }
 
 export const DraggableModal: React.FC<DraggableModalProps> = ({
@@ -32,12 +35,21 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
   isVisible,
   onClose,
   initialPosition = { x: 100, y: 100 },
+  initialSize = { width: 300, height: 400 },
+  sizeConstraints,
   children,
-  width = 300,
-  height = 400,
   zIndex = 1000,
+  resizable = true,
 }) => {
-  const { ref, position, isDragging, handleMouseDown } = useDraggableModal(initialPosition);
+  const {
+    ref,
+    position,
+    size,
+    isDragging,
+    isResizing,
+    handleMouseDown,
+    handleResizeMouseDown
+  } = useDraggableModal(initialPosition, initialSize, sizeConstraints);
 
   if (!isVisible) return null;
 
@@ -46,10 +58,11 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
       ref={ref}
       $x={position.x}
       $y={position.y}
-      $width={width}
-      $height={height}
+      $width={size.width}
+      $height={size.height}
       $zIndex={zIndex}
       $isDragging={isDragging}
+      $isResizing={isResizing}
     >
       <ModalHeader onMouseDown={handleMouseDown}>
         <ModalTitle>{title}</ModalTitle>
@@ -58,6 +71,22 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         </ModalCloseButton>
       </ModalHeader>
       <ModalContent>{children}</ModalContent>
+
+      {resizable && (
+        <>
+          {/* Corner handles */}
+          <ResizeHandle $direction="nw" onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} />
+          <ResizeHandle $direction="ne" onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} />
+          <ResizeHandle $direction="sw" onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} />
+          <ResizeHandle $direction="se" onMouseDown={(e) => handleResizeMouseDown(e, 'se')} />
+
+          {/* Edge handles */}
+          <ResizeHandle $direction="n" onMouseDown={(e) => handleResizeMouseDown(e, 'n')} />
+          <ResizeHandle $direction="s" onMouseDown={(e) => handleResizeMouseDown(e, 's')} />
+          <ResizeHandle $direction="e" onMouseDown={(e) => handleResizeMouseDown(e, 'e')} />
+          <ResizeHandle $direction="w" onMouseDown={(e) => handleResizeMouseDown(e, 'w')} />
+        </>
+      )}
     </ModalContainer>
   );
 };

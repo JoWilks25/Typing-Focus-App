@@ -3,16 +3,17 @@ import styled from 'styled-components';
 export const ModalContainer = styled.div<{
   $x: number;
   $y: number;
-  $width: number | string;
-  $height: number | string;
+  $width: number;
+  $height: number;
   $zIndex: number;
   $isDragging: boolean;
+  $isResizing: boolean;
 }>`
   position: fixed;
   top: ${props => props.$y}px;
   left: ${props => props.$x}px;
-  width: ${props => typeof props.$width === 'number' ? `${props.$width}px` : props.$width};
-  height: ${props => typeof props.$height === 'number' ? `${props.$height}px` : props.$height};
+  width: ${props => props.$width}px;
+  height: ${props => props.$height}px;
   min-width: 250px;
   max-width: 90vw;
   max-height: 90vh;
@@ -25,12 +26,12 @@ export const ModalContainer = styled.div<{
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  user-select: ${props => props.$isDragging ? 'none' : 'auto'};
+  user-select: ${props => (props.$isDragging || props.$isResizing) ? 'none' : 'auto'};
   cursor: ${props => props.$isDragging ? 'grabbing' : 'default'};
-  transition: ${props => props.$isDragging ? 'none' : 'box-shadow 0.2s ease'};
+  transition: ${props => (props.$isDragging || props.$isResizing) ? 'none' : 'box-shadow 0.2s ease'};
 
   &:hover {
-    box-shadow: ${props => props.$isDragging
+    box-shadow: ${props => (props.$isDragging || props.$isResizing)
     ? `0 20px 25px -5px ${props.theme.colors.shadow.lg}, 0 10px 10px -5px ${props.theme.colors.shadow.md}`
     : `0 25px 30px -5px ${props.theme.colors.shadow.lg}, 0 15px 15px -5px ${props.theme.colors.shadow.md}`};
   }
@@ -114,5 +115,93 @@ export const ModalContent = styled.div`
     &:hover {
       background: ${props => props.theme.colors.border.tertiary};
     }
+  }
+`;
+
+export const ResizeHandle = styled.div<{ $direction: string }>`
+  position: absolute;
+  background-color: transparent;
+  z-index: 1;
+
+  ${props => {
+    const size = 8;
+    const offset = -4; // Half of size to center on edge
+
+    switch (props.$direction) {
+      case 'n':
+        return `
+          top: ${offset}px;
+          left: 0;
+          right: 0;
+          height: ${size}px;
+          cursor: ns-resize;
+        `;
+      case 's':
+        return `
+          bottom: ${offset}px;
+          left: 0;
+          right: 0;
+          height: ${size}px;
+          cursor: ns-resize;
+        `;
+      case 'e':
+        return `
+          right: ${offset}px;
+          top: 0;
+          bottom: 0;
+          width: ${size}px;
+          cursor: ew-resize;
+        `;
+      case 'w':
+        return `
+          left: ${offset}px;
+          top: 0;
+          bottom: 0;
+          width: ${size}px;
+          cursor: ew-resize;
+        `;
+      case 'ne':
+        return `
+          top: ${offset}px;
+          right: ${offset}px;
+          width: ${size}px;
+          height: ${size}px;
+          cursor: nesw-resize;
+        `;
+      case 'nw':
+        return `
+          top: ${offset}px;
+          left: ${offset}px;
+          width: ${size}px;
+          height: ${size}px;
+          cursor: nwse-resize;
+        `;
+      case 'se':
+        return `
+          bottom: ${offset}px;
+          right: ${offset}px;
+          width: ${size}px;
+          height: ${size}px;
+          cursor: nwse-resize;
+        `;
+      case 'sw':
+        return `
+          bottom: ${offset}px;
+          left: ${offset}px;
+          width: ${size}px;
+          height: ${size}px;
+          cursor: nesw-resize;
+        `;
+      default:
+        return '';
+    }
+  }}
+
+  &:hover {
+    background-color: ${props => props.theme.colors.accent.blue}40;
+  }
+
+  &:active {
+    background-color: ${props => props.theme.colors.accent.blue}60;
   }
 `;

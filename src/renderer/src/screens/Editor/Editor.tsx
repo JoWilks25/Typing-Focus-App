@@ -23,6 +23,8 @@ export const Editor = () => {
   const [currentContent, setCurrentContent] = useState('');
   const displayTitle = 'Test Title';
 
+  const [showAnimationModal, setShowAnimationModal] = useState(true);
+
   const handleOpenSessionSetup = () => {
     // TODO: Implement session setup modal
     console.log('Open session setup');
@@ -45,11 +47,17 @@ export const Editor = () => {
       {/* TODO: Add Editor Title */}
       <DraggableModal
         title="Tree Animation"
-        isVisible={true}
+        isVisible={showAnimationModal}
         onClose={() => setShowAnimationModal(false)}
-        initialPosition={{ x: window.innerWidth - 350, y: 100 }}
-        width={300}
-        height={400}
+        initialPosition={{ x: 100, y: 100 }}
+        initialSize={{ width: 300, height: 400 }}
+        sizeConstraints={{
+          minWidth: 250,
+          maxWidth: 800,
+          minHeight: 200,
+          maxHeight: 600,
+        }}
+        resizable={true}
       >
         <EditorTitle>
           <EditorTitleText>
