@@ -6,7 +6,7 @@ export const ControlGroup = styled.div<{ $disabled?: boolean }>`
   z-index: 5;
   background-color: ${props => props.theme.colors.background.secondary};
   border-bottom: 1px solid ${props => props.theme.colors.border.secondary};
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0;
   flex-shrink: 0;
   width: 100%;
   pointer-events: ${props => props.$disabled ? 'none' : 'auto'};

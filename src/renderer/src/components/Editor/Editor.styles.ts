@@ -9,6 +9,28 @@ export const EditorContainer = styled.div`
   flex-direction: column;
 `;
 
+export const EditorTitle = styled.div`
+  padding: 1rem 0 0 1rem;
+`;
+
+export const EditorTitleText = styled.h1`
+  font-size: ${props => props.theme.fontSizes['3xl']};
+  font-weight: ${props => props.theme.fontWeights.semibold};
+  color: ${props => props.theme.colors.text.primary};
+  margin: 0;
+  line-height: ${props => props.theme.lineHeights.tight};
+  letter-spacing: -0.025em;
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    font-size: ${props => props.theme.fontSizes['2xl']};
+  }
+
+  @media (max-width: 480px) {
+    font-size: ${props => props.theme.fontSizes.xl};
+  }
+`;
+
 export const EditorMain = styled.div`
   display: flex;
   flex: 1;
