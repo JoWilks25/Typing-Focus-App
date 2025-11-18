@@ -15,6 +15,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import { FormattingBar } from './FormattingBar';
+import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 
 
 export const Editor = () => {
@@ -42,11 +43,20 @@ export const Editor = () => {
   return (
     <EditorContainer>
       {/* TODO: Add Editor Title */}
-      <EditorTitle>
-        <EditorTitleText>
-          {displayTitle}
-        </EditorTitleText>
-      </EditorTitle>
+      <DraggableModal
+        title="Tree Animation"
+        isVisible={true}
+        onClose={() => setShowAnimationModal(false)}
+        initialPosition={{ x: window.innerWidth - 350, y: 100 }}
+        width={300}
+        height={400}
+      >
+        <EditorTitle>
+          <EditorTitleText>
+            {displayTitle}
+          </EditorTitleText>
+        </EditorTitle>
+      </DraggableModal>
       {/* TODO: Add Session Stats */}
 
       <EditorMain>
@@ -68,9 +78,7 @@ export const Editor = () => {
           )}
         </EditorContentDiv>
 
-        <AnimationSidebar>
-          {/* TODO: Add Tree animation */}
-        </AnimationSidebar>
+        {/* TODO: Add Tree animation */}
       </EditorMain>
 
       {/* TODO: Add Session setup modal */}

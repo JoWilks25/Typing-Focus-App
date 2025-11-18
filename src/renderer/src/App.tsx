@@ -20,7 +20,7 @@ import logoDark from './assets/logo_dark.svg';
 import logoLight from './assets/logo_light.svg';
 import { useEffectiveTheme } from './hooks/useEffectiveTheme';
 import Versions from './components/Versions';
-import { Editor } from './components/Editor/Editor';
+import { Editor } from './screens/Editor/Editor';
 import { useState } from 'react';
 
 
