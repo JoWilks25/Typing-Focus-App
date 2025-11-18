@@ -1,22 +1,39 @@
 import styled from 'styled-components';
 
-export const ModalContainer = styled.div<{
+export const ModalContainer = styled.div.attrs<{
   $x: number;
   $y: number;
   $width: number;
   $height: number;
+  $minWidth: number;
+  $maxWidth: number;
+  $maxheight: number;
+  $zIndex: number;
+  $isDragging: boolean;
+  $isResizing: boolean;
+}>(props => ({
+  style: {
+    top: `${props.$y}px`,
+    left: `${props.$x}px`,
+    width: `${props.$width}px`,
+    height: `${props.$height}px`,
+    minWidth: `${props.$minWidth}px`,
+    maxWidth: `${props.$maxWidth}px`,
+    maxHeight: `${props.$maxheight}px`,
+  }
+})) <{
+  $x: number;
+  $y: number;
+  $width: number;
+  $height: number;
+  $minWidth: number;
+  $maxWidth: number;
+  $maxheight: number;
   $zIndex: number;
   $isDragging: boolean;
   $isResizing: boolean;
 }>`
   position: fixed;
-  top: ${props => props.$y}px;
-  left: ${props => props.$x}px;
-  width: ${props => props.$width}px;
-  height: ${props => props.$height}px;
-  min-width: 250px;
-  max-width: 90vw;
-  max-height: 90vh;
   background-color: ${props => props.theme.colors.background.tertiary};
   border-radius: 0.5rem;
   border: 2px solid ${props => props.theme.colors.border.secondary};
@@ -94,7 +111,7 @@ export const ModalCloseButton = styled.button`
 
 export const ModalContent = styled.div`
   flex: 1;
-  padding: 1rem;
+  padding: 0.75rem; /* Reduced from 1rem */
   overflow-y: auto;
   overflow-x: hidden;
   

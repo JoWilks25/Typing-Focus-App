@@ -7,6 +7,8 @@ export const EditorContainer = styled.div`
   min-height: 500px;
   display: flex;
   flex-direction: column;
+  max-width: 794px; /* A4 width at 96 DPI */
+  margin: 0 auto; /* Center the content */
 `;
 
 export const EditorTitle = styled.div`
@@ -45,7 +47,7 @@ export const EditorContentDiv = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px); /* Fixed height based on viewport */
+  height: calc(100vh - 200px);
   background-color: ${props => props.theme.colors.background.primary};
   border-radius: 0.5rem;
   overflow-y: auto;
