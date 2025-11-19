@@ -10,21 +10,30 @@ import {
   EditorTitle,
   EditorTitleText,
 } from './Editor.styles';
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, Editor as ttEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
+import CharacterCount from '@tiptap/extension-character-count'
 import { FormattingBar } from './FormattingBar';
 import { SessionStats } from './SessionStats';
+import { useEditorStore } from '@renderer/stores/EditorStore';
 
 export const Editor = () => {
   const [activeSession, setActiveSession] = useState(true);
-  const [currentContent, setCurrentContent] = useState('');
   const displayTitle = 'Test Title';
+  const updateContent = useEditorStore(state => state.updateContent)
 
   const handleOpenSessionSetup = () => {
     // TODO: Implement session setup modal
     console.log('Open session setup');
   };
+
+  const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
+    const content = editor.getHTML();
+    const text = editor.getText();
+    const wordCount = editor.storage.characterCount.words()
+    updateContent(content, text, wordCount)
+  }
 
   // Initialize Tiptap editor with basic extensions (always required for schema)
   const editor = useEditor({
@@ -33,9 +42,13 @@ export const Editor = () => {
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      CharacterCount.configure({
+        wordCounter: (text) => text.trim().split(/\s+/).filter(Boolean).length
+      }),
     ], // define your extension array
-    content: currentContent,
+    content: '',
     editable: activeSession,
+    onUpdate: handleOnUpdate,
   })
 
   return (

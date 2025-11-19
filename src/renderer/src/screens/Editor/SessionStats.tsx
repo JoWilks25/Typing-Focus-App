@@ -12,16 +12,17 @@ import {
   HeaderProgressBar,
   ExpandButton,
 } from './SessionStats.styles';
+import { useEditorStore } from '@renderer/stores/EditorStore';
 
 // Compact header version for inline display
 export const SessionStats = () => {
   const [showModal, setShowModal] = useState(false);
+  const wordCount = useEditorStore(state => state.wordCount);
+  const goalProgress = useEditorStore(state => state.goalProgress);
 
   // Hardcoded values for now
-  const wordCount = 1250;
   const sessionDuration = '00:45:23';
   const isTimerRunning = true;
-  const goalProgress = 62.5; // percentage
 
   return (
     <>
@@ -43,7 +44,7 @@ export const SessionStats = () => {
 
             <HeaderStatItem>
               <HeaderStatLabel>Progress</HeaderStatLabel>
-              <HeaderStatValue>{Math.round(goalProgress)}%</HeaderStatValue>
+              <HeaderStatValue>{goalProgress}%</HeaderStatValue>
               <HeaderProgressBar $width={goalProgress} />
             </HeaderStatItem>
 
