@@ -1,27 +1,22 @@
 import { ThemeProvider } from 'styled-components';
 import { useAppStore } from './stores/AppStore';
-import { getTheme, THEME_DARK, THEME_LIGHT, THEME_SYSTEM, ThemePreference } from './styles/theme';
+import { getTheme, THEME_LIGHT, THEME_DARK, THEME_SYSTEM, ThemePreference } from './styles/theme';
 import { GlobalStyles } from './styles/globalStyles';
 import {
   AppContainer,
   Navigation,
   NavContent,
-  AppTitleContainer,
-  AppLogo,
-  AppTitle,
-  MvpBadge,
   NavButtons,
   NavButton,
   ThemeDropdown,
   MainContent,
   Footer,
 } from './App.styles';
-import logoDark from './assets/logo_dark.svg';
-import logoLight from './assets/logo_light.svg';
 import { useEffectiveTheme } from './hooks/useEffectiveTheme';
 import Versions from './components/Versions';
 import { Editor } from './screens/Editor/Editor';
 import { useState } from 'react';
+import { AppTitleSection } from './components/AppTitleSection';
 
 
 function App(): React.JSX.Element {
@@ -45,16 +40,7 @@ function App(): React.JSX.Element {
         <Navigation>
           <NavContent>
             {/* Title on the left */}
-            <AppTitleContainer>
-              <AppLogo
-                src={effectiveTheme === THEME_DARK ? logoDark : logoLight}
-                alt="Draft Tree Logo"
-              />
-              <AppTitle>
-                Draft Tree
-              </AppTitle>
-              <MvpBadge>MVP</MvpBadge>
-            </AppTitleContainer>
+            <AppTitleSection effectiveTheme={effectiveTheme} />
 
             {/* Navigation buttons on the right */}
             <NavButtons>

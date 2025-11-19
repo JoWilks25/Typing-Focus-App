@@ -23,7 +23,7 @@ export const useEditorStore = create<EditorState>()(
       plainText: '',
       wordCount: 0,
       characterCount: 0,
-      goal: 1000,
+      goal: 100,
       goalProgress: 0,
 
       // Actions

@@ -13,6 +13,10 @@ export const Navigation = styled.nav`
   background-color: ${props => props.theme.colors.background.secondary};
   border-bottom: 1px solid ${props => props.theme.colors.border.secondary};
   padding: 0.75rem 1.5rem;
+  /* GPU acceleration to prevent flickering */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 `
 
 export const NavContent = styled.div`
@@ -27,6 +31,10 @@ export const AppTitleContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 `;
 
 export const AppLogo = styled.img`
