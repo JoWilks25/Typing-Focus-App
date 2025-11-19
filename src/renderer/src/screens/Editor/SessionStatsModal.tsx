@@ -1,3 +1,4 @@
+import { useEditorStore } from '@renderer/stores/EditorStore';
 import {
   StatsList,
   StatItem,
@@ -15,14 +16,14 @@ import {
 } from './SessionStatsModal.styles';
 
 export const SessionStatsModal = () => {
+  const wordCount = useEditorStore(state => state.wordCount);
+  const goalValue = useEditorStore(state => state.goal);;
+  const goalProgress = useEditorStore(state => state.goalProgress);
+
   // Hardcoded values for now
-  const wordCount = 1250;
   const sessionDuration = '00:45:23';
   const isTimerRunning = true;
-  const goalValue = 2000;
   const goalType = 'word'; // 'word' or 'minute'
-  const goalProgress = 62.5; // percentage
-  const currentProgress = 1250; // current words or minutes
 
   return (
     <StatsList>
@@ -55,9 +56,9 @@ export const SessionStatsModal = () => {
         <ProgressSection>
           <ProgressInfo>
             <ProgressText>
-              {currentProgress.toLocaleString()} / {goalValue.toLocaleString()} {goalType === 'word' ? 'words' : 'minutes'}
+              {wordCount.toLocaleString()} / {goalValue.toLocaleString()} {goalType === 'word' ? 'words' : 'minutes'}
             </ProgressText>
-            <ProgressPercentage>{Math.round(goalProgress)}%</ProgressPercentage>
+            <ProgressPercentage>{goalProgress}%</ProgressPercentage>
           </ProgressInfo>
           <ProgressBarContainer>
             <ProgressBar
