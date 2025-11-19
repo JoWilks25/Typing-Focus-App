@@ -3,21 +3,23 @@ import {
   EditorContainer,
   EditorMain,
   EditorContentDiv,
-  AnimationSidebar,
   DisabledMessage,
   StartSessionButton,
   TipTapEditor,
   DisabledOverlay,
+  EditorTitle,
+  EditorTitleText,
 } from './Editor.styles';
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import { FormattingBar } from './FormattingBar';
-
+import { SessionStats } from './SessionStats';
 
 export const Editor = () => {
   const [activeSession, setActiveSession] = useState(true);
   const [currentContent, setCurrentContent] = useState('');
+  const displayTitle = 'Test Title';
 
   const handleOpenSessionSetup = () => {
     // TODO: Implement session setup modal
@@ -38,9 +40,13 @@ export const Editor = () => {
 
   return (
     <EditorContainer>
-      {/* TODO: Add Editor Title */}
+      <EditorTitle>
+        <EditorTitleText>
+          {displayTitle}
+        </EditorTitleText>
+        <SessionStats />
+      </EditorTitle>
 
-      {/* TODO: Add Session Stats */}
       <EditorMain>
         <EditorContentDiv>
           <FormattingBar editor={editor} disabled={!activeSession} />
@@ -60,9 +66,7 @@ export const Editor = () => {
           )}
         </EditorContentDiv>
 
-        <AnimationSidebar>
-          {/* TODO: Add Tree animation */}
-        </AnimationSidebar>
+        {/* TODO: Add Tree animation */}
       </EditorMain>
 
       {/* TODO: Add Session setup modal */}
