@@ -17,15 +17,19 @@ import CharacterCount from '@tiptap/extension-character-count'
 import { FormattingBar } from './FormattingBar';
 import { SessionStats } from './SessionStats';
 import { useEditorStore } from '@renderer/stores/EditorStore';
+import { Modal } from '@renderer/components/Modal/Modal';
+import { SessionSetup } from '../SessionSetup/SessionSetup';
 
 export const Editor = () => {
-  const [activeSession, setActiveSession] = useState(true);
+  const [activeSession, setActiveSession] = useState(false);
+  const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
   const displayTitle = 'Test Title';
   const updateContent = useEditorStore(state => state.updateContent)
 
   const handleOpenSessionSetup = () => {
     // TODO: Implement session setup modal
     console.log('Open session setup');
+    setShowSessionSetupModal(true);
   };
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
@@ -82,7 +86,15 @@ export const Editor = () => {
         {/* TODO: Add Tree animation */}
       </EditorMain>
 
-      {/* TODO: Add Session setup modal */}
+      <Modal
+        title="Session Setup"
+        isVisible={showSessionSetupModal}
+        onClose={() => setShowSessionSetupModal(false)}
+        width={600}
+        height="auto"
+      >
+        <SessionSetup />
+      </Modal>
     </EditorContainer>
   );
 };
