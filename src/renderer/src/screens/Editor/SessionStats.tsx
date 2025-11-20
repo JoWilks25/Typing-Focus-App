@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { AiOutlineExport } from "react-icons/ai";
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 import { SessionStatsModal } from './SessionStatsModal';
@@ -17,12 +17,12 @@ import { useEditorStore } from '@renderer/stores/EditorStore';
 // Compact header version for inline display
 export const SessionStats = () => {
   const [showModal, setShowModal] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
   const wordCount = useEditorStore(state => state.wordCount);
   const goalProgress = useEditorStore(state => state.goalProgress);
 
   // Hardcoded values for now
-  const sessionDuration = '00:45:23';
-  const isTimerRunning = true;
+  const sessionDuration = '00:00:00';
 
   return (
     <>

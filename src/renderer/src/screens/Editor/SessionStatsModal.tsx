@@ -14,15 +14,16 @@ import {
   ProgressPercentage,
   ProgressText,
 } from './SessionStatsModal.styles';
+import { useState } from 'react';
 
 export const SessionStatsModal = () => {
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
   const wordCount = useEditorStore(state => state.wordCount);
   const goalValue = useEditorStore(state => state.goal);;
   const goalProgress = useEditorStore(state => state.goalProgress);
 
   // Hardcoded values for now
-  const sessionDuration = '00:45:23';
-  const isTimerRunning = true;
+  const sessionDuration = '00:00:00';
   const goalType = 'word'; // 'word' or 'minute'
 
   return (

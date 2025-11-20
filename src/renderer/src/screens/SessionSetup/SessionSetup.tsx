@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   SetupContainer,
   Header,
@@ -24,7 +24,18 @@ import {
   SubmitButton,
 } from './SessionSetup.styles';
 
+const NEW = 'new';
+const EXISTING = 'existing';
+
+type FileModeType = typeof NEW | typeof EXISTING;
+
 export function SessionSetup(): React.JSX.Element {
+  const [fileMode, setFileMode] = useState<FileModeType>(NEW);
+
+  const handleFileModeChange = (fileMode: FileModeType) => {
+    console.log('fileMode', fileMode)
+  }
+
 
   return (
     <SetupContainer>
@@ -42,22 +53,22 @@ export function SessionSetup(): React.JSX.Element {
           <FileModeToggle>
             <FileModeButton
               type="button"
-            // $active={fileMode === 'new'}
-            // onClick={() => handleFileModeChange('new')}
+              $active={fileMode === NEW}
+              onClick={() => handleFileModeChange(NEW)}
             >
               New File
             </FileModeButton>
             <FileModeButton
               type="button"
-            // $active={fileMode === 'existing'}
-            // onClick={() => handleFileModeChange('existing')}
+              $active={fileMode === EXISTING}
+              onClick={() => handleFileModeChange(EXISTING)}
             >
               Load Existing
             </FileModeButton>
           </FileModeToggle>
 
           {/* New File Mode */}
-          {/* {fileMode === 'new' && (
+          {/* {fileMode === NEW && (
             <FileGrid>
               <FilenameInput>
                 <label htmlFor="filename">Filename *</label>
@@ -99,7 +110,7 @@ export function SessionSetup(): React.JSX.Element {
           )} */}
 
           {/* Load Existing Mode */}
-          {/* {fileMode === 'existing' && (
+          {/* {fileMode === EXISTING && (
             <>
               <LoadFileRow>
                 <LoadFileButton
