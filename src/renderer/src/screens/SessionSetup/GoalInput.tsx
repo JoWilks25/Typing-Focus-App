@@ -1,12 +1,6 @@
 import React from 'react';
 import type { GoalType } from '@renderer/stores/SessionStore';
 import {
-  sanitizeInput,
-  getRecommendedRange,
-  getDefaultValue,
-  formatGoalValue
-} from '@renderer/utilities/validation';
-import {
   InputContainer,
   InputLabel,
   InputField,
@@ -22,45 +16,20 @@ interface GoalInputProps {
 export function GoalInput({ goalType, value, onChange }: GoalInputProps): React.JSX.Element {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = event.target.value;
-    const sanitizedValue = sanitizeInput(rawValue);
-
-    // Convert to number, defaulting to 0 if empty
-    const numericValue = sanitizedValue === '' ? 0 : parseFloat(sanitizedValue);
-
-    // Handle NaN case
-    if (isNaN(numericValue)) {
-      onChange(0);
-      return;
-    }
-
+    const numericValue = rawValue === '' ? 0 : parseFloat(rawValue);
     onChange(numericValue);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      // Let the form handle submission
       event.preventDefault();
     }
-  };
-
-  const getLabel = () => {
-    return goalType === 'wordcount' ? 'Target Word Count' : 'Target Time Duration';
-  };
-
-  const getPlaceholder = () => {
-    const defaultValue = getDefaultValue(goalType);
-    return formatGoalValue(goalType, defaultValue);
-  };
-
-  const getRecommendationText = () => {
-    const recommended = getRecommendedRange(goalType);
-    return `Recommended: ${recommended.label} for focused sessions`;
   };
 
   return (
     <InputContainer>
       <InputLabel htmlFor="goal-input">
-        {getLabel()}
+        {goalType === 'wordcount' ? 'Target Word Count' : 'Target Time Duration (min)'}
       </InputLabel>
 
       <InputField
@@ -70,14 +39,14 @@ export function GoalInput({ goalType, value, onChange }: GoalInputProps): React.
         value={value || ''}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder={getPlaceholder()}
+        placeholder={goalType === 'wordcount' ? '500' : '30'}
         aria-describedby="goal-recommendation"
       />
 
       <InputHint
         id="goal-recommendation"
       >
-        {getRecommendationText()}
+        Recommended: {goalType === 'wordcount' ? '250-1000 words' : '15-60 minutes'} for focused sessions
       </InputHint>
     </InputContainer>
   );
