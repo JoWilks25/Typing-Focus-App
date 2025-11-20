@@ -26,7 +26,6 @@ export const Editor = () => {
   const activeSession = useSessionStore(state => state.sessionActive)
   const displayTitle = useSessionStore(state => state.fileName)
   const updateContent = useEditorStore(state => state.updateContent)
-  console.log('activeSession', activeSession)
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
