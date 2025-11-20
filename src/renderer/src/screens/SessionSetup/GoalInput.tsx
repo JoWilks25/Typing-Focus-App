@@ -41,6 +41,8 @@ export function GoalInput({ goalType, value, onChange }: GoalInputProps): React.
         onKeyDown={handleKeyDown}
         placeholder={goalType === 'wordcount' ? '500' : '30'}
         aria-describedby="goal-recommendation"
+        min={goalType === 'wordcount' ? 50 : 5}
+        max={goalType === 'wordcount' ? 100000 : 720}
       />
 
       <InputHint

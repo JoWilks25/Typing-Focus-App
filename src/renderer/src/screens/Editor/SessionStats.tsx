@@ -13,13 +13,14 @@ import {
   ExpandButton,
 } from './SessionStats.styles';
 import { useEditorStore } from '@renderer/stores/EditorStore';
+import { useSessionStore } from '@renderer/stores/SessionStore';
 
 // Compact header version for inline display
 export const SessionStats = () => {
   const [showModal, setShowModal] = useState(false);
-  const [isTimerRunning, setIsTimerRunning] = useState(false)
   const wordCount = useEditorStore(state => state.wordCount);
   const goalProgress = useEditorStore(state => state.goalProgress);
+  const sessionActive = useSessionStore(state => state.sessionActive);
 
   // Hardcoded values for now
   const sessionDuration = '00:00:00';
@@ -36,9 +37,9 @@ export const SessionStats = () => {
 
             <HeaderStatItem>
               <HeaderStatLabel>Time</HeaderStatLabel>
-              <HeaderTimerValue $isRunning={isTimerRunning}>
+              <HeaderTimerValue $isRunning={sessionActive}>
                 {sessionDuration}
-                {isTimerRunning && <HeaderTimerIndicator />}
+                {sessionActive && <HeaderTimerIndicator />}
               </HeaderTimerValue>
             </HeaderStatItem>
 

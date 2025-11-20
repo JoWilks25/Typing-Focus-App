@@ -33,12 +33,15 @@ const EXISTING = 'existing';
 
 type FileModeType = typeof NEW | typeof EXISTING;
 
+interface SessionSetup {
+  closeModal: () => void;
+}
 
-export function SessionSetup(): React.JSX.Element {
+export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   const [fileMode, setFileMode] = useState<FileModeType>(NEW);
   const [formData, setFormData] = useState({
     fileName: 'test.txt',
-    filePath: '',
+    filePath: '/some-path',
     goal: 0,
     goalType: 'wordcount' as 'wordcount' | 'time',
   });
@@ -72,12 +75,17 @@ export function SessionSetup(): React.JSX.Element {
       formData.filePath,
       formData.goal,
       formData.goalType,
+      true
     );
-    // ... rest of submit logic
+    closeModal()
   };
 
   const handleBrowseDirectory = () => {
   }
+
+  const allInputsFilled = useMemo((): boolean => {
+    return !!(isValidFileName && formData.filePath && formData.goal > 0);
+  }, [formData.filePath, formData.goal, isValidFileName])
 
   return (
     <SetupContainer>
@@ -196,20 +204,16 @@ export function SessionSetup(): React.JSX.Element {
         )}
 
         {/* Submit Button */}
-        {/* {isValidFileName && (
+        {isValidFileName && (
           <SubmitButton
             type="button"
             onClick={handleSubmit}
-            disabled={!isValid || !isValidFileName || !fullPath || isCreatingSession}
-            $enabled={isValid && isValidFileName && fullPath && !isCreatingSession}
+            disabled={!allInputsFilled}
+            $enabled={allInputsFilled}
           >
-            <div>
-              {isCreatingSession ? 'Creating Session...' :
-                sessionCreated ? 'Session Created! 🎉' :
-                  'Start Writing'}
-            </div>
+            Start Writing
           </SubmitButton>
-        )} */}
+        )}
 
       </div>
     </SetupContainer>
