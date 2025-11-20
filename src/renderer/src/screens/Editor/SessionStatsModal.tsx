@@ -34,9 +34,9 @@ export const SessionStatsModal = () => {
         <StatValue>{wordCount.toLocaleString()} words</StatValue>
       </StatItem>
 
-      {/* Session Duration */}
+      {/* Session duration */}
       <StatItem>
-        <StatLabel>Session Duration</StatLabel>
+        <StatLabel>Session duration</StatLabel>
         <TimerValue $isRunning={isTimerRunning}>
           {sessionDuration}
           {isTimerRunning && <TimerIndicator />}

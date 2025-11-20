@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   SetupContainer,
   Header,
@@ -23,19 +23,61 @@ import {
   FormGrid,
   SubmitButton,
 } from './SessionSetup.styles';
+import { GoalType, useSessionStore } from '@renderer/stores/SessionStore';
+import { fileNameCheck } from '@renderer/utilities/isValidFileName';
+import { GoalSelector } from './GoalSelector';
+import { GoalInput } from './GoalInput';
 
 const NEW = 'new';
 const EXISTING = 'existing';
 
 type FileModeType = typeof NEW | typeof EXISTING;
 
+
 export function SessionSetup(): React.JSX.Element {
   const [fileMode, setFileMode] = useState<FileModeType>(NEW);
+  const [formData, setFormData] = useState({
+    fileName: 'test.txt',
+    filePath: '',
+    goal: 0,
+    goalType: 'wordcount' as 'wordcount' | 'time',
+  });
+  const setInitSession = useSessionStore(state => state.setInitSession);
 
   const handleFileModeChange = (fileMode: FileModeType) => {
-    console.log('fileMode', fileMode)
+    setFileMode(fileMode);
   }
 
+  // Update local state only
+  const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, fileName: e.target.value }));
+  };
+
+  const isValidFileName = useMemo(() => {
+    return fileNameCheck(formData.fileName);
+  }, [formData.fileName])
+
+  const handleGoalChange = (value: number) => {
+    setFormData(prev => ({ ...prev, goal: value }));
+  };
+
+  const handleGoalTypeChange = (value: GoalType) => {
+    setFormData(prev => ({ ...prev, goalType: value }));
+  }
+
+  // Update store on submit
+  const handleSubmit = () => {
+    setInitSession(
+      formData.fileName,
+      formData.filePath,
+      formData.goal,
+      formData.goalType,
+    );
+    // ... rest of submit logic
+  };
+
+  const handleBrowseDirectory = () => {
+  }
 
   return (
     <SetupContainer>
@@ -68,35 +110,35 @@ export function SessionSetup(): React.JSX.Element {
           </FileModeToggle>
 
           {/* New File Mode */}
-          {/* {fileMode === NEW && (
+          {fileMode === NEW && (
             <FileGrid>
               <FilenameInput>
                 <label htmlFor="filename">Filename *</label>
                 <Input
                   id="filename"
                   type="text"
-                  value={fileName}
-                  onChange={(e) => { setFileName(e.target.value); clearFileExistsError(); }}
+                  value={formData.fileName}
+                  onChange={(e) => handleFileNameChange(e)}
                   placeholder="Enter filename (e.g., my-story.txt)"
-                  $hasError={!isValidFileName && fileName.length > 0}
+                  $hasError={!isValidFileName && formData.fileName.length > 0}
                 />
-                {!isValidFileName && fileName.length > 0 && (
+                {!isValidFileName && formData.fileName.length > 0 && (
                   <ErrorText>
                     Filename must end with .txt and contain no invalid characters
                   </ErrorText>
                 )}
-                {fileExistsError && (
+                {/* {fileExistsError && (
                   <ErrorText>
                     A file with this name already exists. Please choose a different filename or location.
                   </ErrorText>
-                )}
+                )} */}
               </FilenameInput>
 
               <LocationSection>
                 <label>Save Location</label>
                 <LocationDisplay>
-                  <PathDisplay title={saveDirectory}>
-                    {saveDirectory || 'Loading...'}
+                  <PathDisplay title={formData.filePath}>
+                    {formData.filePath || 'Loading...'}
                   </PathDisplay>
                   <BrowseButton
                     type="button"
@@ -107,7 +149,7 @@ export function SessionSetup(): React.JSX.Element {
                 </LocationDisplay>
               </LocationSection>
             </FileGrid>
-          )} */}
+          )}
 
           {/* Load Existing Mode */}
           {/* {fileMode === EXISTING && (
@@ -139,20 +181,19 @@ export function SessionSetup(): React.JSX.Element {
         </FileSection>
 
         {/* Goal Selection - show only if valid filename */}
-        {/* {isValidFileName && (
+        {isValidFileName && (
           <FormGrid>
             <GoalSelector
-              goalType={goalType}
+              goalType={formData.goalType}
               onGoalTypeChange={handleGoalTypeChange}
             />
             <GoalInput
-              goalType={goalType}
-              value={goalValue}
-              onChange={handleGoalValueChange}
-              isValid={isValid}
+              goalType={formData.goalType}
+              value={formData.goal}
+              onChange={handleGoalChange}
             />
           </FormGrid>
-        )} */}
+        )}
 
         {/* Submit Button */}
         {/* {isValidFileName && (

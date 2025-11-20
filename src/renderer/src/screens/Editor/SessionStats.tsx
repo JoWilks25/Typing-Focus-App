@@ -1,4 +1,4 @@
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { AiOutlineExport } from "react-icons/ai";
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 import { SessionStatsModal } from './SessionStatsModal';

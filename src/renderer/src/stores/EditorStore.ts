@@ -10,7 +10,7 @@ interface EditorState {
   goal: number;
   goalProgress: number;
   lastUpdated: number;
-  Duration: number;
+  duration: number;
   updateContent: (content: EditorState['formattedContent'], text: EditorState['plainText'], wordCount: EditorState['wordCount']) => void;
   setGoal: (goal: number) => void;
 }
