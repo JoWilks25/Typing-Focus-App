@@ -15,16 +15,17 @@ import {
   ProgressText,
 } from './SessionStatsModal.styles';
 import { useState } from 'react';
+import { useSessionStore } from '@renderer/stores/SessionStore';
 
 export const SessionStatsModal = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const wordCount = useEditorStore(state => state.wordCount);
   const goalValue = useEditorStore(state => state.goal);;
   const goalProgress = useEditorStore(state => state.goalProgress);
+  const goalType = useSessionStore(state => state.goalType);
 
   // Hardcoded values for now
   const sessionDuration = '00:00:00';
-  const goalType = 'word'; // 'word' or 'minute'
 
   return (
     <StatsList>
@@ -47,7 +48,7 @@ export const SessionStatsModal = () => {
       <StatItem>
         <StatLabel>Goal</StatLabel>
         <GoalValue>
-          {goalValue.toLocaleString()} {goalType === 'word' ? 'words' : 'minutes'}
+          {goalValue.toLocaleString()} {goalType === 'wordcount' ? 'words' : 'minutes'}
         </GoalValue>
       </StatItem>
 
@@ -57,7 +58,7 @@ export const SessionStatsModal = () => {
         <ProgressSection>
           <ProgressInfo>
             <ProgressText>
-              {wordCount.toLocaleString()} / {goalValue.toLocaleString()} {goalType === 'word' ? 'words' : 'minutes'}
+              {wordCount.toLocaleString()} / {goalValue.toLocaleString()} {goalType === 'wordcount' ? 'words' : 'minutes'}
             </ProgressText>
             <ProgressPercentage>{goalProgress}%</ProgressPercentage>
           </ProgressInfo>

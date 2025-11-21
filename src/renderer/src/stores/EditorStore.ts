@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import dayjs from 'dayjs'
 
 interface EditorState {
   formattedContent: string;
   plainText: string;
   wordCount: number;
   characterCount: number;
-  startTime: number;
   goal: number;
   goalProgress: number;
-  lastUpdated: number;
+  lastUpdated: string | null;
   duration: number;
   updateContent: (content: EditorState['formattedContent'], text: EditorState['plainText'], wordCount: EditorState['wordCount']) => void;
   setGoal: (goal: number) => void;
@@ -25,6 +25,7 @@ export const useEditorStore = create<EditorState>()(
       characterCount: 0,
       goal: 100,
       goalProgress: 0,
+      lastUpdated: null,
 
       // Actions
       updateContent: (content, text, wordCount) => {
@@ -38,7 +39,7 @@ export const useEditorStore = create<EditorState>()(
               plainText: text,
               wordCount,
               characterCount: text.length,
-              lastUpdated: Date.now(),
+              lastUpdated: dayjs().format(),
             };
           }
 
@@ -48,7 +49,7 @@ export const useEditorStore = create<EditorState>()(
             wordCount,
             characterCount: text.length,
             goalProgress: newGoalProgress,
-            lastUpdated: Date.now(),
+            lastUpdated: dayjs().format(),
           };
         }, false, 'updateContent');
       },
