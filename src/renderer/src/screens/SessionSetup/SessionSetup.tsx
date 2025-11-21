@@ -27,6 +27,7 @@ import { GoalType, useSessionStore } from '@renderer/stores/SessionStore';
 import { fileNameCheck } from '@renderer/utilities/isValidFileName';
 import { GoalSelector } from './GoalSelector';
 import { GoalInput } from './GoalInput';
+import { useEditorStore } from '@renderer/stores/EditorStore';
 
 const NEW = 'new';
 const EXISTING = 'existing';
@@ -46,6 +47,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
     goalType: 'wordcount' as 'wordcount' | 'time',
   });
   const setInitSession = useSessionStore(state => state.setInitSession);
+  const setGoal = useEditorStore(state => state.setGoal);
 
   const handleFileModeChange = (fileMode: FileModeType) => {
     setFileMode(fileMode);
@@ -77,6 +79,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
       formData.goalType,
       true
     );
+    setGoal(formData.goal);
     closeModal()
   };
 

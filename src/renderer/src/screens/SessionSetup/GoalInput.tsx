@@ -34,7 +34,7 @@ export function GoalInput({ goalType, value, onChange }: GoalInputProps): React.
 
       <InputField
         id="goal-input"
-        type="text"
+        type="number"
         inputMode="numeric"
         value={value || ''}
         onChange={handleInputChange}
