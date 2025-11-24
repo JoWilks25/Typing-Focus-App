@@ -33,7 +33,7 @@ interface AnimationDisplayProps {
   lottieRef: React.RefObject<LottieRefCurrentProps | null>;
 }
 
-const AnimationDisplay = ({ currentStage, currentAnimation, lottieRef }: AnimationDisplayProps) => {
+const AnimationDisplay = ({ currentStage, currentAnimation }: AnimationDisplayProps) => {
   if (!currentAnimation) {
     return <LoadingMessage />;
   }
@@ -42,7 +42,6 @@ const AnimationDisplay = ({ currentStage, currentAnimation, lottieRef }: Animati
     <LottieContainer>
       <Lottie
         key={currentStage}
-        lottieRef={lottieRef}
         animationData={currentAnimation}
         loop={true}
         autoplay={true}
@@ -60,7 +59,6 @@ export const TreeAnimation = ({ isPoppedOut, onPopOut }: TreeAnimationProps) => 
   const goalType = useSessionStore(state => state.goalType);
   const wordProgress = useEditorStore(state => state.goalProgress);
   const timeProgress = useEditorStore(state => state.timeProgress);
-  const previousStageRef = useRef<number | null>(null);
 
   useEffect(() => {
     const loadAnimations = async () => {
@@ -74,14 +72,12 @@ export const TreeAnimation = ({ isPoppedOut, onPopOut }: TreeAnimationProps) => 
 
         setStageAnimations(animations);
         setAnimationsLoaded(true);
-        console.log('TreeAnimation: All 8 stage animations loaded successfully');
       } catch (error) {
         console.error('TreeAnimation: Failed to load stage animations:', error);
         try {
           const growthModule = await import('../../assets/animations/tree-growth.json');
           setStageAnimations([growthModule.default]);
           setAnimationsLoaded(true);
-          console.log('TreeAnimation: Loaded fallback animation');
         } catch (fallbackError) {
           console.error('TreeAnimation: Failed to load fallback animation:', fallbackError);
         }
@@ -97,19 +93,8 @@ export const TreeAnimation = ({ isPoppedOut, onPopOut }: TreeAnimationProps) => 
     }
     return Math.min(Math.floor(progress / (100 / 7)), 6);
   };
-
   const currentStage = calculateStage(goalType === 'time' ? timeProgress : wordProgress);
   const currentAnimation = stageAnimations[currentStage];
-
-  useEffect(() => {
-    if (previousStageRef.current !== null && previousStageRef.current !== currentStage) {
-      if (lottieRef.current && sessionActive && animationsLoaded && currentAnimation) {
-        lottieRef.current.goToAndPlay(0, true);
-      }
-    }
-    previousStageRef.current = currentStage;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStage, animationsLoaded, currentAnimation, timeProgress, wordProgress]);
 
   return (
     <TreeAnimationStyled>
@@ -123,7 +108,7 @@ export const TreeAnimation = ({ isPoppedOut, onPopOut }: TreeAnimationProps) => 
         </PopOutButton>
       )}
       {!sessionActive && <InactiveMessage />}
-      {sessionActive && (
+      {sessionActive && animationsLoaded && (
         <AnimationDisplay
           currentStage={currentStage}
           currentAnimation={currentAnimation}
