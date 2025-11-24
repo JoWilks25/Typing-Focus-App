@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   EditorContainer,
   EditorMain,
@@ -17,16 +17,15 @@ import CharacterCount from '@tiptap/extension-character-count'
 import { FormattingBar } from './FormattingBar';
 import { SessionStats } from './SessionStats';
 import { useEditorStore } from '@renderer/stores/EditorStore';
+import { Modal } from '@renderer/components/Modal/Modal';
+import { SessionSetup } from '../SessionSetup/SessionSetup';
+import { useSessionStore } from '@renderer/stores/SessionStore';
 
 export const Editor = () => {
-  const [activeSession, setActiveSession] = useState(true);
-  const displayTitle = 'Test Title';
+  const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
+  const activeSession = useSessionStore(state => state.sessionActive)
+  const displayTitle = useSessionStore(state => state.fileName)
   const updateContent = useEditorStore(state => state.updateContent)
-
-  const handleOpenSessionSetup = () => {
-    // TODO: Implement session setup modal
-    console.log('Open session setup');
-  };
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
@@ -51,6 +50,16 @@ export const Editor = () => {
     onUpdate: handleOnUpdate,
   })
 
+  // Clear editor content when session ends
+  useEffect(() => {
+    if (editor && !activeSession) {
+      editor.commands.clearContent();
+      editor.setEditable(false);
+    } else if (editor && activeSession) {
+      editor.setEditable(true);
+    }
+  }, [activeSession, editor]);
+
   return (
     <EditorContainer>
       <EditorTitle>
@@ -63,7 +72,7 @@ export const Editor = () => {
       <EditorMain>
         <EditorContentDiv>
           <FormattingBar editor={editor} disabled={!activeSession} />
-          <TipTapEditor $disabled={!activeSession}>
+          <TipTapEditor>
             <EditorContent editor={editor} />
           </TipTapEditor>
           {!activeSession && (
@@ -72,7 +81,7 @@ export const Editor = () => {
                 <h2>Ready to Start Writing?</h2>
                 <p>Begin your writing journey by starting a new session.</p>
               </DisabledMessage>
-              <StartSessionButton onClick={handleOpenSessionSetup}>
+              <StartSessionButton onClick={() => setShowSessionSetupModal(true)}>
                 Start New Writing Session
               </StartSessionButton>
             </DisabledOverlay>
@@ -82,7 +91,15 @@ export const Editor = () => {
         {/* TODO: Add Tree animation */}
       </EditorMain>
 
-      {/* TODO: Add Session setup modal */}
-    </EditorContainer>
+      <Modal
+        title="Session Setup"
+        isVisible={showSessionSetupModal}
+        onClose={() => setShowSessionSetupModal(false)}
+        width={600}
+        height="auto"
+      >
+        <SessionSetup closeModal={() => setShowSessionSetupModal(false)} />
+      </Modal>
+    </EditorContainer >
   );
 };

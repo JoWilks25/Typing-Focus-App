@@ -32,6 +32,7 @@
     "@tiptap/react": "^3.6.5",
     "@tiptap/starter-kit": "^3.10.7",
     "@types/uuid": "^10.0.0",
+    "dayjs": "^1.11.19",
     "icon-gen": "^5.0.0",
     "lottie-react": "^2.4.1",
     "prosemirror-view": "^1.41.2",

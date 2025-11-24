@@ -15,7 +15,9 @@ import {
   ButtonGroup,
   EditorToolbarButton,
   HeadingNumber,
+  EndSessionButton,
 } from './FormattingBar.styles';
+import { useSessionStore } from '@renderer/stores/SessionStore';
 
 interface FormattingBarProps {
   editor: Editor
@@ -23,6 +25,9 @@ interface FormattingBarProps {
 }
 
 export const FormattingBar = ({ editor, disabled }: FormattingBarProps) => {
+  const sessionActive = useSessionStore(state => state.sessionActive);
+  const endSession = useSessionStore(state => state.endSession);
+
   return (
     <ControlGroup $disabled={disabled}>
       <ButtonGroup>
@@ -115,6 +120,12 @@ export const FormattingBar = ({ editor, disabled }: FormattingBarProps) => {
           <FaAlignJustify />
         </EditorToolbarButton>
       </ButtonGroup>
+      {sessionActive && <EndSessionButton
+        onClick={endSession}
+        title="End Session"
+      >
+        End Session
+      </EndSessionButton>}
     </ControlGroup>
   );
 };

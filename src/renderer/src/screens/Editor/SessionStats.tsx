@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AiOutlineExport } from "react-icons/ai";
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
-import { SessionStatsModal } from './SessionStatsModal';
 import {
   HeaderStatsContainer,
   HeaderStatItem,
@@ -11,18 +10,52 @@ import {
   HeaderTimerIndicator,
   HeaderProgressBar,
   ExpandButton,
+  StatsList,
+  StatItem,
+  StatLabel,
+  StatValue,
+  TimerValue,
+  TimerIndicator,
+  GoalValue,
+  ProgressSection,
+  ProgressInfo,
+  ProgressText,
+  ProgressPercentage,
+  ProgressBarContainer,
+  ProgressBar,
 } from './SessionStats.styles';
+
 import { useEditorStore } from '@renderer/stores/EditorStore';
+import { useSessionStore } from '@renderer/stores/SessionStore';
+import { useSessionTimer } from '@renderer/hooks/useSessionTimer';
+
 
 // Compact header version for inline display
 export const SessionStats = () => {
   const [showModal, setShowModal] = useState(false);
   const wordCount = useEditorStore(state => state.wordCount);
   const goalProgress = useEditorStore(state => state.goalProgress);
+  const sessionActive = useSessionStore(state => state.sessionActive);
+  const goalValue = useEditorStore(state => state.goal);
+  const goalType = useSessionStore(state => state.goalType);
+  const timeProgressFromStore = useEditorStore(state => state.timeProgress);
+  const setTimeProgress = useEditorStore(state => state.setTimeProgress);
+  const { formattedTime, isRunning, timeProgress, minutes: elapsedMinutes } = useSessionTimer();
 
-  // Hardcoded values for now
-  const sessionDuration = '00:45:23';
-  const isTimerRunning = true;
+  // Determine which progress to show
+  const displayProgress = goalType === 'time' ? timeProgress : goalProgress;
+
+  // NEW: Compute display values based on goal type
+  const currentProgressValue = goalType === 'time' ? elapsedMinutes : wordCount;
+  const progressUnit = goalType === 'time' ? 'minutes' : 'words';
+
+
+  // Update the store with time progress
+  useEffect(() => {
+    if (goalType === 'time') {
+      setTimeProgress(timeProgress);
+    }
+  }, [goalType, timeProgress, setTimeProgress]);
 
   return (
     <>
@@ -36,16 +69,16 @@ export const SessionStats = () => {
 
             <HeaderStatItem>
               <HeaderStatLabel>Time</HeaderStatLabel>
-              <HeaderTimerValue $isRunning={isTimerRunning}>
-                {sessionDuration}
-                {isTimerRunning && <HeaderTimerIndicator />}
+              <HeaderTimerValue $isRunning={sessionActive}>
+                {formattedTime}
+                {sessionActive && <HeaderTimerIndicator />}
               </HeaderTimerValue>
             </HeaderStatItem>
 
             <HeaderStatItem>
               <HeaderStatLabel>Progress</HeaderStatLabel>
-              <HeaderStatValue>{goalProgress}%</HeaderStatValue>
-              <HeaderProgressBar $width={goalProgress} />
+              <HeaderStatValue>{displayProgress}%</HeaderStatValue>
+              <HeaderProgressBar $width={displayProgress} />
             </HeaderStatItem>
 
             <ExpandButton
@@ -73,7 +106,49 @@ export const SessionStats = () => {
         }}
         resizable={true}
       >
-        <SessionStatsModal />
+        <StatsList>
+          {/* Current Number of Words */}
+          <StatItem>
+            <StatLabel>Current Wordcount</StatLabel>
+            <StatValue>{wordCount.toLocaleString()} words</StatValue>
+          </StatItem>
+
+          {/* Session duration */}
+          <StatItem>
+            <StatLabel>Session duration</StatLabel>
+            <TimerValue $isRunning={isRunning}>
+              {formattedTime}
+              {isRunning && <TimerIndicator />}
+            </TimerValue>
+          </StatItem>
+
+          {/* Goal (Fixed Display) */}
+          <StatItem>
+            <StatLabel>Goal</StatLabel>
+            <GoalValue>
+              {goalValue.toLocaleString()} {goalType === 'wordcount' ? 'words' : 'minutes'}
+            </GoalValue>
+          </StatItem>
+
+          {/* Progress Meter */}
+          <StatItem>
+            <StatLabel>Progress</StatLabel>
+            <ProgressSection>
+              <ProgressInfo>
+                <ProgressText>
+                  {currentProgressValue.toLocaleString()} / {goalValue.toLocaleString()} {progressUnit}
+                </ProgressText>
+                <ProgressPercentage>{displayProgress}%</ProgressPercentage>
+              </ProgressInfo>
+              <ProgressBarContainer>
+                <ProgressBar
+                  $color="green"
+                  $width={displayProgress}
+                />
+              </ProgressBarContainer>
+            </ProgressSection>
+          </StatItem>
+        </StatsList>
       </DraggableModal>
     </>
   );
