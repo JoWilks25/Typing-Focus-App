@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Lottie, { type LottieRefCurrentProps } from 'lottie-react';
-import { TreeAnimation as TreeAnimationStyled, PopOutButton } from './TreeAnimation.styles';
+import {
+  TreeAnimation as TreeAnimationStyled,
+  PopOutButton,
+  MessageContainer,
+  LottieContainer
+} from './TreeAnimation.styles';
 import { useSessionStore } from '@renderer/stores/SessionStore';
 import { useEditorStore } from '@renderer/stores/EditorStore';
 
@@ -10,38 +15,22 @@ interface TreeAnimationProps {
 }
 
 const InactiveMessage = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#9ca3af',
-    fontSize: '14px',
-    textAlign: 'center'
-  }}>
+  <MessageContainer>
     Tree Animation<br />
     (Start a session to see growth)
-  </div>
+  </MessageContainer>
 );
 
 const LoadingMessage = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#9ca3af',
-    fontSize: '14px',
-    textAlign: 'center'
-  }}>
+  <MessageContainer>
     Loading animation...
-  </div>
+  </MessageContainer>
 );
 
 interface AnimationDisplayProps {
   currentStage: number;
   currentAnimation: unknown;
-  lottieRef: React.RefObject<LottieRefCurrentProps>;
+  lottieRef: React.RefObject<LottieRefCurrentProps | null>;
 }
 
 const AnimationDisplay = ({ currentStage, currentAnimation, lottieRef }: AnimationDisplayProps) => {
@@ -50,19 +39,15 @@ const AnimationDisplay = ({ currentStage, currentAnimation, lottieRef }: Animati
   }
 
   return (
-    <Lottie
-      key={currentStage}
-      lottieRef={lottieRef}
-      animationData={currentAnimation}
-      loop={true}
-      autoplay={true}
-      style={{
-        width: '300px',
-        height: '300px',
-        minWidth: '300px',
-        minHeight: '300px'
-      }}
-    />
+    <LottieContainer>
+      <Lottie
+        key={currentStage}
+        lottieRef={lottieRef}
+        animationData={currentAnimation}
+        loop={true}
+        autoplay={true}
+      />
+    </LottieContainer>
   );
 };
 

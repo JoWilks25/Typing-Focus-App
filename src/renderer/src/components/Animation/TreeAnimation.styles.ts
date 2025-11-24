@@ -88,3 +88,20 @@ export const ProgressIndicator = styled.div`
   font-weight: ${props => props.theme.fontWeights.medium};
   transition: opacity 0.3s ease-in-out;
 `;
+
+export const MessageContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: ${props => props.theme.colors.text.tertiary};
+  font-size: ${props => props.theme.fontSizes.sm};
+  text-align: center;
+`;
+
+export const LottieContainer = styled.div`
+  width: 300px;
+  height: 300px;
+  min-width: 300px;
+  min-height: 300px;
+`;
