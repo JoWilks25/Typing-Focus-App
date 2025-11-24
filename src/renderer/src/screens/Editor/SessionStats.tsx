@@ -40,10 +40,15 @@ export const SessionStats = () => {
   const goalType = useSessionStore(state => state.goalType);
   const timeProgressFromStore = useEditorStore(state => state.timeProgress);
   const setTimeProgress = useEditorStore(state => state.setTimeProgress);
-  const { formattedTime, isRunning, timeProgress } = useSessionTimer();
+  const { formattedTime, isRunning, timeProgress, minutes: elapsedMinutes } = useSessionTimer();
 
   // Determine which progress to show
   const displayProgress = goalType === 'time' ? timeProgress : goalProgress;
+
+  // NEW: Compute display values based on goal type
+  const currentProgressValue = goalType === 'time' ? elapsedMinutes : wordCount;
+  const progressUnit = goalType === 'time' ? 'minutes' : 'words';
+
 
   // Update the store with time progress
   useEffect(() => {
@@ -131,7 +136,7 @@ export const SessionStats = () => {
             <ProgressSection>
               <ProgressInfo>
                 <ProgressText>
-                  {wordCount.toLocaleString()} / {goalValue.toLocaleString()} {goalType === 'wordcount' ? 'words' : 'minutes'}
+                  {currentProgressValue.toLocaleString()} / {goalValue.toLocaleString()} {progressUnit}
                 </ProgressText>
                 <ProgressPercentage>{displayProgress}%</ProgressPercentage>
               </ProgressInfo>
