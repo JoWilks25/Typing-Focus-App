@@ -67,6 +67,10 @@ export const AnimationSidebar = styled.div`
   background-color: ${props => props.theme.colors.background.tertiary};
   border-radius: 0.5rem;
   border: 2px solid ${props => props.theme.colors.border.secondary};
+  height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
 export const DisabledMessage = styled.div`
