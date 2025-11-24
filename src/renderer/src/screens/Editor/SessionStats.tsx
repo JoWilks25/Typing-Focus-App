@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AiOutlineExport } from "react-icons/ai";
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 import {
@@ -36,9 +36,21 @@ export const SessionStats = () => {
   const wordCount = useEditorStore(state => state.wordCount);
   const goalProgress = useEditorStore(state => state.goalProgress);
   const sessionActive = useSessionStore(state => state.sessionActive);
-  const goalValue = useEditorStore(state => state.goal);;
+  const goalValue = useEditorStore(state => state.goal);
   const goalType = useSessionStore(state => state.goalType);
-  const { formattedTime, isRunning } = useSessionTimer();
+  const timeProgressFromStore = useEditorStore(state => state.timeProgress);
+  const setTimeProgress = useEditorStore(state => state.setTimeProgress);
+  const { formattedTime, isRunning, timeProgress } = useSessionTimer();
+
+  // Determine which progress to show
+  const displayProgress = goalType === 'time' ? timeProgress : goalProgress;
+
+  // Update the store with time progress
+  useEffect(() => {
+    if (goalType === 'time') {
+      setTimeProgress(timeProgress);
+    }
+  }, [goalType, timeProgress, setTimeProgress]);
 
   return (
     <>
@@ -60,8 +72,8 @@ export const SessionStats = () => {
 
             <HeaderStatItem>
               <HeaderStatLabel>Progress</HeaderStatLabel>
-              <HeaderStatValue>{goalProgress}%</HeaderStatValue>
-              <HeaderProgressBar $width={goalProgress} />
+              <HeaderStatValue>{displayProgress}%</HeaderStatValue>
+              <HeaderProgressBar $width={displayProgress} />
             </HeaderStatItem>
 
             <ExpandButton
@@ -121,12 +133,12 @@ export const SessionStats = () => {
                 <ProgressText>
                   {wordCount.toLocaleString()} / {goalValue.toLocaleString()} {goalType === 'wordcount' ? 'words' : 'minutes'}
                 </ProgressText>
-                <ProgressPercentage>{goalProgress}%</ProgressPercentage>
+                <ProgressPercentage>{displayProgress}%</ProgressPercentage>
               </ProgressInfo>
               <ProgressBarContainer>
                 <ProgressBar
                   $color="green"
-                  $width={goalProgress}
+                  $width={displayProgress}
                 />
               </ProgressBarContainer>
             </ProgressSection>

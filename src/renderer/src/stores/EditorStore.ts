@@ -11,6 +11,8 @@ interface EditorState {
   goalProgress: number;
   lastUpdated: string | null;
   duration: number;
+  timeProgress: number;
+  setTimeProgress: (progress: number) => void;
   updateContent: (content: EditorState['formattedContent'], text: EditorState['plainText'], wordCount: EditorState['wordCount']) => void;
   setGoal: (goal: number) => void;
 }
@@ -26,6 +28,7 @@ export const useEditorStore = create<EditorState>()(
       goal: 100,
       goalProgress: 0,
       lastUpdated: null,
+      timeProgress: 0,
 
       // Actions
       updateContent: (content, text, wordCount) => {
@@ -54,6 +57,7 @@ export const useEditorStore = create<EditorState>()(
         }, false, 'updateContent');
       },
       setGoal: (goal) => set({ goal }, false, 'setGoal'),
+      setTimeProgress: (timeProgress) => set({ timeProgress }, false, 'setTimeProgress'),
     }),
     { name: 'EditorStore' }
   )

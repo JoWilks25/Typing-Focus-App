@@ -1,13 +1,15 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { useSessionStore } from '@renderer/stores/SessionStore';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 
 dayjs.extend(duration);
 
 export const useSessionTimer = () => {
   const sessionActive = useSessionStore(state => state.sessionActive);
   const startTime = useSessionStore(state => state.startTime);
+  const goalType = useSessionStore(state => state.goalType);
+  const goalMinutes = useSessionStore(state => state.goal);
 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,10 +51,16 @@ export const useSessionTimer = () => {
   // Reset when session ends (startTime becomes null)
   useEffect(() => {
     if (!startTime) {
-      console.log('Session ended - resetting timer to 0');
       resetTimer();
     }
   }, [startTime, resetTimer]);
+
+  // Calculate time-based progress if goal is time-based
+  const timeProgress = useMemo(() => {
+    if (goalType !== 'time' || goalMinutes === 0) return 0;
+    const goalSeconds = goalMinutes * 60;
+    return Math.min(Math.round((elapsedSeconds / goalSeconds) * 100), 100);
+  }, [goalType, goalMinutes, elapsedSeconds]);
 
   // Calculate formatted values
   const hours = Math.floor(elapsedSeconds / 3600);
@@ -69,5 +77,6 @@ export const useSessionTimer = () => {
     formattedTime,
     isRunning: !!intervalRef.current,
     reset: resetTimer,
+    timeProgress
   };
 };
