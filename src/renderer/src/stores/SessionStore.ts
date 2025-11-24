@@ -35,7 +35,8 @@ export const useSessionStore = create<SessionState>()(
           filePath: '',
           goal: 0,
           goalType: 'wordcount',
-          sessionActive: false
+          sessionActive: false,
+          startTime: null,  // Clear start time
         }, false, 'endSession')
       }),
       {
