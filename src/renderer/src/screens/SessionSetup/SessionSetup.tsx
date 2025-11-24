@@ -24,10 +24,10 @@ import {
   SubmitButton,
 } from './SessionSetup.styles';
 import { GoalType, useSessionStore } from '@renderer/stores/SessionStore';
-import { fileNameCheck } from '@renderer/utilities/isValidFileName';
 import { GoalSelector } from './GoalSelector';
 import { GoalInput } from './GoalInput';
 import { useEditorStore } from '@renderer/stores/EditorStore';
+import { fileNameCheck } from '@renderer/utilities/fileNameCheck';
 
 const NEW = 'new';
 const EXISTING = 'existing';
