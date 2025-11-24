@@ -9,6 +9,7 @@ import {
   DisabledOverlay,
   EditorTitle,
   EditorTitleText,
+  AnimationSidebar,
 } from './Editor.styles';
 import { useEditor, EditorContent, Editor as ttEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -20,9 +21,12 @@ import { useEditorStore } from '@renderer/stores/EditorStore';
 import { Modal } from '@renderer/components/Modal/Modal';
 import { SessionSetup } from '../SessionSetup/SessionSetup';
 import { useSessionStore } from '@renderer/stores/SessionStore';
+import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
+import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 
 export const Editor = () => {
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
+  const [isAnimationPoppedOut, setIsAnimationPoppedOut] = useState(false);
   const activeSession = useSessionStore(state => state.sessionActive)
   const displayTitle = useSessionStore(state => state.fileName)
   const updateContent = useEditorStore(state => state.updateContent)
@@ -88,8 +92,37 @@ export const Editor = () => {
           )}
         </EditorContentDiv>
 
-        {/* TODO: Add Tree animation */}
+        {!isAnimationPoppedOut && (
+          <AnimationSidebar>
+            <TreeAnimation
+              isPoppedOut={false}
+              onPopOut={() => setIsAnimationPoppedOut(true)}
+            />
+          </AnimationSidebar>
+        )}
       </EditorMain>
+
+      {isAnimationPoppedOut && (
+        <DraggableModal
+          title="Tree Growth"
+          isVisible={isAnimationPoppedOut}
+          onClose={() => setIsAnimationPoppedOut(false)}
+          initialPosition={{ x: 100, y: 100 }}
+          initialSize={{ width: 250, height: 400 }}
+          sizeConstraints={{
+            minWidth: 120,
+            maxWidth: 800,
+            minHeight: 200,
+            maxHeight: 600,
+          }}
+          resizable={true}
+        >
+          <TreeAnimation
+            isPoppedOut={true}
+            onPopOut={() => { }}
+          />
+        </DraggableModal>
+      )}
 
       <Modal
         title="Session Setup"

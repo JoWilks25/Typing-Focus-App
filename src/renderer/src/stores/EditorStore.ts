@@ -29,7 +29,7 @@ export const useEditorStore = create<EditorState>()(
       goalProgress: 0,
       lastUpdated: null,
       timeProgress: 0,
-
+      
       // Actions
       updateContent: (content, text, wordCount) => {
         set((state) => {
