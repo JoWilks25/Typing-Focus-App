@@ -108,7 +108,7 @@ export const Editor = () => {
           isVisible={isAnimationPoppedOut}
           onClose={() => setIsAnimationPoppedOut(false)}
           initialPosition={{ x: 100, y: 100 }}
-          initialSize={{ width: 180, height: 275 }}
+          initialSize={{ width: 250, height: 400 }}
           sizeConstraints={{
             minWidth: 120,
             maxWidth: 800,
