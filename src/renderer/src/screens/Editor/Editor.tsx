@@ -90,7 +90,7 @@ export const Editor = () => {
 
       <EditorMain>
         <EditorContentDiv>
-          <FormattingBar editor={editor} disabled={!activeSession} />
+          <FormattingBar editor={editor} disabled={!activeSession} clearAndCloseEditor={clearAndCloseEditor} />
           <TipTapEditor>
             <EditorContent editor={editor} />
           </TipTapEditor>
