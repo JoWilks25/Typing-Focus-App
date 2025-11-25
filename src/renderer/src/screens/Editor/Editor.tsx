@@ -23,18 +23,22 @@ import { SessionSetup } from '../SessionSetup/SessionSetup';
 import { useSessionStore } from '@renderer/stores/SessionStore';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
+import { CompletionModal } from '../SessionModals/CompletionModal';
+import { useSessionTimer } from '@renderer/hooks/useSessionTimer';
 
 export const Editor = () => {
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
   const [isAnimationPoppedOut, setIsAnimationPoppedOut] = useState(false);
-  const activeSession = useSessionStore(state => state.sessionActive)
-  const displayTitle = useSessionStore(state => state.fileName)
-  const updateContent = useEditorStore(state => state.updateContent)
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const activeSession = useSessionStore(state => state.sessionActive);
+  const displayTitle = useSessionStore(state => state.fileName);
+  const updateContent = useEditorStore(state => state.updateContent);
+  const { stop } = useSessionTimer();
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
     const text = editor.getText();
-    const wordCount = editor.storage.characterCount.words()
+    const wordCount = editor.storage.characterCount.words();
     updateContent(content, text, wordCount)
   }
 
@@ -63,6 +67,15 @@ export const Editor = () => {
       editor.setEditable(true);
     }
   }, [activeSession, editor]);
+
+  const sessionComplete = useEditorStore(state => state.goalAchieved);
+  useEffect(() => {
+    console.log('sessionComplete', sessionComplete)
+    if (sessionComplete) {
+      setShowCompleteModal(true)
+      stop();
+    }
+  }, [sessionComplete])
 
   return (
     <EditorContainer>
@@ -124,6 +137,17 @@ export const Editor = () => {
         </DraggableModal>
       )}
 
+
+      <Modal
+        title="Session Complete"
+        isVisible={showCompleteModal}
+        onClose={() => setShowCompleteModal(false)}
+        width={300}
+        height="auto"
+      >
+        <CompletionModal showModal={setShowCompleteModal} />
+      </Modal>
+
       <Modal
         title="Session Setup"
         isVisible={showSessionSetupModal}
@@ -133,6 +157,8 @@ export const Editor = () => {
       >
         <SessionSetup closeModal={() => setShowSessionSetupModal(false)} />
       </Modal>
+
+
     </EditorContainer >
   );
 };

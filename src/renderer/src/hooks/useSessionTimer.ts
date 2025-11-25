@@ -77,6 +77,7 @@ export const useSessionTimer = () => {
     formattedTime,
     isRunning: !!intervalRef.current,
     reset: resetTimer,
-    timeProgress
+    timeProgress,
+    stop: stopTimer,
   };
 };
