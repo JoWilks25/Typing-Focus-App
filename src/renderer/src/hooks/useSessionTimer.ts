@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { useSessionStore } from '@renderer/stores/SessionStore';
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 dayjs.extend(duration);
 
@@ -10,50 +10,43 @@ export const useSessionTimer = () => {
   const startTime = useSessionStore(state => state.startTime);
   const goalType = useSessionStore(state => state.goalType);
   const goalMinutes = useSessionStore(state => state.goal);
+  const elapsedSeconds = useSessionStore(state => state.elapsedSeconds);
+  const updateElapsedTime = useSessionStore(state => state.updateElapsedTime);
+  const resetElapsedTime = useSessionStore(state => state.resetElapsedTime);
 
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Start the timer
-  const startTimer = useCallback(() => {
-    if (intervalRef.current) return; // Already running
-
-    intervalRef.current = setInterval(() => {
-      setElapsedSeconds(prev => prev + 1);
-    }, 1000);
-  }, []);
-
-  // Stop the timer
-  const stopTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
-
-  // Reset to zero
-  const resetTimer = useCallback(() => {
-    stopTimer();
-    setElapsedSeconds(0);
-  }, [stopTimer]);
-
-  // Auto-start/stop based on sessionActive
+  // Update elapsed time periodically when session is active
   useEffect(() => {
-    if (sessionActive) {
-      startTimer();
+    if (sessionActive && startTime) {
+      // Update immediately
+      updateElapsedTime();
+
+      // Then update every second
+      intervalRef.current = setInterval(() => {
+        updateElapsedTime();
+      }, 1000);
     } else {
-      stopTimer();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
 
-    return () => stopTimer();
-  }, [sessionActive, startTimer, stopTimer]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [sessionActive, startTime, updateElapsedTime]);
 
-  // Reset when session ends (startTime becomes null)
+  // Reset when session ends
   useEffect(() => {
     if (!startTime) {
-      resetTimer();
+      resetElapsedTime();
     }
-  }, [startTime, resetTimer]);
+  }, [startTime, resetElapsedTime]);
 
   // Calculate time-based progress if goal is time-based
   const timeProgress = useMemo(() => {
@@ -75,9 +68,16 @@ export const useSessionTimer = () => {
     hours,
     elapsedSeconds,
     formattedTime,
-    isRunning: !!intervalRef.current,
-    reset: resetTimer,
+    isRunning: sessionActive && !!startTime,
+    reset: resetElapsedTime,
     timeProgress,
-    stop: stopTimer,
+    stop: () => {
+      // Stop is handled by sessionActive changing
+      // But we can clear the interval if needed
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    },
   };
 };

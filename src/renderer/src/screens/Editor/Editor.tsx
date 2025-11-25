@@ -33,7 +33,6 @@ export const Editor = () => {
   const activeSession = useSessionStore(state => state.sessionActive);
   const displayTitle = useSessionStore(state => state.fileName);
   const updateContent = useEditorStore(state => state.updateContent);
-  const { stop } = useSessionTimer();
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
@@ -69,11 +68,12 @@ export const Editor = () => {
   }, [activeSession, editor]);
 
   const sessionComplete = useEditorStore(state => state.goalAchieved);
+  const setSessionActive = useSessionStore(state => state.setSessionActive);
   useEffect(() => {
     console.log('sessionComplete', sessionComplete)
     if (sessionComplete) {
       setShowCompleteModal(true)
-      stop();
+      setSessionActive(false);
     }
   }, [sessionComplete])
 

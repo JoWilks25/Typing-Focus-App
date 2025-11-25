@@ -32,15 +32,19 @@ interface SessionState {
   sessionActive: boolean;
   startTime: string | null;
   sessionStats: SessionStat[];
+  elapsedSeconds: number; // Add this
+  updateElapsedTime: () => void; // Add this
+  resetElapsedTime: () => void; // Add this
   setInitSession: (fileName: SessionState['fileName'], filePath: SessionState['filePath'], goal: SessionState['goal'], goalType: SessionState['goalType'], sessionActive: SessionState['sessionActive']) => void;
   endSession: () => void;
+  setSessionActive: (value: boolean) => void;
 }
 
 
 export const useSessionStore = create<SessionState>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         // Initial State
         fileName: '',
         filePath: '',
@@ -49,8 +53,12 @@ export const useSessionStore = create<SessionState>()(
         sessionActive: false,
         startTime: null,
         sessionStats: [],
+        elapsedSeconds: 0, // Add this
 
         // Actions
+        setSessionActive: (value) => set({ sessionActive: value }, false,
+          'setSessionActive'
+        ),
         setInitSession: (fileName, filePath, goal, goalType, sessionActive) => set({ fileName, filePath, goal, goalType, sessionActive, startTime: dayjs().format() }, false, 'setFileValues'),
         endSession: () => {
           set((state) => {
@@ -102,6 +110,21 @@ export const useSessionStore = create<SessionState>()(
               ]
             }
           }, false, 'endSession')
+        },
+
+        // Add these new actions:
+        updateElapsedTime: () => {
+          const state = get();
+          if (state.sessionActive && state.startTime) {
+            const start = dayjs(state.startTime);
+            const now = dayjs();
+            const elapsed = now.diff(start, 'second');
+            set({ elapsedSeconds: elapsed }, false, 'updateElapsedTime');
+          }
+        },
+
+        resetElapsedTime: () => {
+          set({ elapsedSeconds: 0 }, false, 'resetElapsedTime');
         },
       }),
       {

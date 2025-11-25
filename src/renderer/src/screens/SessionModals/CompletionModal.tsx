@@ -27,6 +27,7 @@ export function CompletionModal({ showModal }: CompletionModalProps): React.JSX.
   const goalValue = useEditorStore(state => state.goal);
   const goalType = useSessionStore(state => state.goalType);
   const endSession = useSessionStore(state => state.endSession);
+  const setSessionActive = useSessionStore(state => state.setSessionActive);
   const { formattedTime } = useSessionTimer();
 
   return (
@@ -50,7 +51,7 @@ export function CompletionModal({ showModal }: CompletionModalProps): React.JSX.
             </StatItem>
             <StatItem>
               <StatValue>
-                {/* {formattedTime} */}
+                {formattedTime}
               </StatValue>
               <StatLabel>time elapsed</StatLabel>
             </StatItem>
@@ -65,7 +66,10 @@ export function CompletionModal({ showModal }: CompletionModalProps): React.JSX.
           {/* Actions */}
           <Actions>
             <ActionButton
-              onClick={() => showModal(false)}
+              onClick={() => {
+                setSessionActive(true);
+                showModal(false);
+              }}
               $variant="secondary"
             >
               Keep Writing
