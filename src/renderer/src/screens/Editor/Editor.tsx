@@ -24,7 +24,6 @@ import { useSessionStore } from '@renderer/stores/SessionStore';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 import { CompletionModal } from '../SessionModals/CompletionModal';
-import { useSessionTimer } from '@renderer/hooks/useSessionTimer';
 
 export const Editor = () => {
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
@@ -32,7 +31,10 @@ export const Editor = () => {
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const activeSession = useSessionStore(state => state.sessionActive);
   const displayTitle = useSessionStore(state => state.fileName);
+  const setSessionActive = useSessionStore(state => state.setSessionActive);
   const updateContent = useEditorStore(state => state.updateContent);
+  const goalAchieved = useEditorStore(state => state.goalAchieved);
+
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
@@ -57,25 +59,25 @@ export const Editor = () => {
     onUpdate: handleOnUpdate,
   })
 
-  // Clear editor content when session ends
   useEffect(() => {
-    if (editor && !activeSession) {
-      editor.commands.clearContent();
-      editor.setEditable(false);
-    } else if (editor && activeSession) {
+    if (activeSession) {
       editor.setEditable(true);
+    } else {
+      editor.setEditable(false);
     }
-  }, [activeSession, editor]);
+  }, [activeSession, editor])
 
-  const sessionComplete = useEditorStore(state => state.goalAchieved);
-  const setSessionActive = useSessionStore(state => state.setSessionActive);
+  const clearAndCloseEditor = () => {
+    editor.commands.clearContent();
+    editor.setEditable(false);
+  }
+
   useEffect(() => {
-    console.log('sessionComplete', sessionComplete)
-    if (sessionComplete) {
+    if (goalAchieved) {
       setShowCompleteModal(true)
       setSessionActive(false);
     }
-  }, [sessionComplete])
+  }, [goalAchieved])
 
   return (
     <EditorContainer>
@@ -145,7 +147,7 @@ export const Editor = () => {
         width={300}
         height="auto"
       >
-        <CompletionModal showModal={setShowCompleteModal} />
+        <CompletionModal showModal={setShowCompleteModal} clearAndCloseEditor={clearAndCloseEditor} />
       </Modal>
 
       <Modal

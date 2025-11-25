@@ -20,15 +20,27 @@ import { useSessionTimer } from '@renderer/hooks/useSessionTimer';
 
 interface CompletionModalProps {
   showModal: (value: boolean) => void;
+  clearAndCloseEditor: () => void;
 }
 
-export function CompletionModal({ showModal }: CompletionModalProps): React.JSX.Element {
+export function CompletionModal({ showModal, clearAndCloseEditor }: CompletionModalProps): React.JSX.Element {
   const wordCount = useEditorStore(state => state.wordCount);
   const goalValue = useEditorStore(state => state.goal);
   const goalType = useSessionStore(state => state.goalType);
   const endSession = useSessionStore(state => state.endSession);
   const setSessionActive = useSessionStore(state => state.setSessionActive);
   const { formattedTime } = useSessionTimer();
+
+  const handleKeepWriting = () => {
+    setSessionActive(true);
+    showModal(false);
+  }
+
+  const handleEndSession = () => {
+    endSession();
+    clearAndCloseEditor();
+    showModal(false);
+  }
 
   return (
     <ModalOverlay>
@@ -66,19 +78,13 @@ export function CompletionModal({ showModal }: CompletionModalProps): React.JSX.
           {/* Actions */}
           <Actions>
             <ActionButton
-              onClick={() => {
-                setSessionActive(true);
-                showModal(false);
-              }}
+              onClick={handleKeepWriting}
               $variant="secondary"
             >
               Keep Writing
             </ActionButton>
             <ActionButton
-              onClick={() => {
-                endSession();
-                showModal(false);
-              }}
+              onClick={handleEndSession}
               $variant="primary"
             >
               End Session

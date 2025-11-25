@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import dayjs from 'dayjs'
-import { GoalType } from './SessionStore';
+import { useSessionStore } from './SessionStore';
 
 interface EditorState {
   formattedContent: string;
@@ -9,7 +9,6 @@ interface EditorState {
   wordCount: number;
   characterCount: number;
   goal: number;
-  goalType: GoalType;
   goalProgress: number;
   lastUpdated: string | null;
   duration: number;
@@ -29,7 +28,6 @@ export const useEditorStore = create<EditorState>()(
       wordCount: 0,
       characterCount: 0,
       goal: 100,
-      goalType: 'wordcount',
       goalProgress: 0,
       lastUpdated: null,
       timeProgress: 0,
@@ -38,7 +36,8 @@ export const useEditorStore = create<EditorState>()(
       // Actions
       updateContent: (content, text, wordCount) => {
         set((state) => {
-          if (state.goalType === 'wordcount') {
+          const sessionState = useSessionStore.getState();
+          if (sessionState.goalType === 'wordcount') {
             const newGoalProgress = state.goal > 0 ? Math.round((wordCount / state.goal) * 100) : 0;
             // Only update goalProgress if it actually changed
             if (newGoalProgress === state.goalProgress) {
@@ -50,7 +49,7 @@ export const useEditorStore = create<EditorState>()(
                 lastUpdated: dayjs().format(),
               };
             }
-
+            console.log('newGoalProgress', newGoalProgress)
             return {
               formattedContent: content,
               plainText: text,
