@@ -38,7 +38,6 @@ export const SessionStats = () => {
   const sessionActive = useSessionStore(state => state.sessionActive);
   const goalValue = useEditorStore(state => state.goal);
   const goalType = useSessionStore(state => state.goalType);
-  const timeProgressFromStore = useEditorStore(state => state.timeProgress);
   const setTimeProgress = useEditorStore(state => state.setTimeProgress);
   const { formattedTime, isRunning, timeProgress, minutes: elapsedMinutes } = useSessionTimer();
 
