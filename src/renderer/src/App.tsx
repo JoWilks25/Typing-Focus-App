@@ -15,8 +15,8 @@ import {
 import { useEffectiveTheme } from './hooks/useEffectiveTheme';
 import Versions from './components/Versions';
 import { Editor } from './screens/Editor/Editor';
-import { useState } from 'react';
 import { AppTitleSection } from './components/AppTitleSection';
+import { SessionSummary } from './screens/SessionSummary/SessionSummary';
 
 
 function App(): React.JSX.Element {
@@ -31,7 +31,7 @@ function App(): React.JSX.Element {
   }
 
   // VIEWS
-  const [currentView, setCurrentView] = useState('editor')
+  const currentView = useAppStore((state) => state.currentView);
 
   return (
     <ThemeProvider theme={theme}>
@@ -69,7 +69,7 @@ function App(): React.JSX.Element {
         <MainContent>
           {currentView === 'editor' && <Editor />}
           {/* {currentView === 'dashboard' && <Dashboard />} */}
-          {/* {currentView === 'session-summary' && <SessionSummary />} */}
+          {currentView === 'session-summary' && <SessionSummary />}
         </MainContent>
 
         {/* Footer with Versions */}

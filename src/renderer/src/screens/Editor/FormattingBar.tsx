@@ -18,15 +18,27 @@ import {
   EndSessionButton,
 } from './FormattingBar.styles';
 import { useSessionStore } from '@renderer/stores/SessionStore';
+import { useAppStore } from '@renderer/stores/AppStore';
+import { useEditorStore } from '@renderer/stores/EditorStore';
 
 interface FormattingBarProps {
-  editor: Editor
-  disabled?: boolean
+  editor: Editor;
+  disabled?: boolean;
+  clearAndCloseEditor: () => void;
 }
 
-export const FormattingBar = ({ editor, disabled }: FormattingBarProps) => {
+export const FormattingBar = ({ editor, disabled, clearAndCloseEditor }: FormattingBarProps) => {
   const sessionActive = useSessionStore(state => state.sessionActive);
   const endSession = useSessionStore(state => state.endSession);
+  const resetEditor = useEditorStore(state => state.resetEditor);
+  const setView = useAppStore((state) => state.setView);
+
+  const handleEndSession = () => {
+    endSession();
+    clearAndCloseEditor();
+    resetEditor();
+    setView('session-summary');
+  }
 
   return (
     <ControlGroup $disabled={disabled}>
@@ -121,7 +133,7 @@ export const FormattingBar = ({ editor, disabled }: FormattingBarProps) => {
         </EditorToolbarButton>
       </ButtonGroup>
       {sessionActive && <EndSessionButton
-        onClick={endSession}
+        onClick={handleEndSession}
         title="End Session"
       >
         End Session

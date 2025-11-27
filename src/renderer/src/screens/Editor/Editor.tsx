@@ -23,18 +23,23 @@ import { SessionSetup } from '../SessionSetup/SessionSetup';
 import { useSessionStore } from '@renderer/stores/SessionStore';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
+import { CompletionModal } from '../SessionModals/CompletionModal';
 
 export const Editor = () => {
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
   const [isAnimationPoppedOut, setIsAnimationPoppedOut] = useState(false);
-  const activeSession = useSessionStore(state => state.sessionActive)
-  const displayTitle = useSessionStore(state => state.fileName)
-  const updateContent = useEditorStore(state => state.updateContent)
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const activeSession = useSessionStore(state => state.sessionActive);
+  const displayTitle = useSessionStore(state => state.fileName);
+  const setSessionActive = useSessionStore(state => state.setSessionActive);
+  const updateContent = useEditorStore(state => state.updateContent);
+  const goalAchieved = useEditorStore(state => state.goalAchieved);
+
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
     const text = editor.getText();
-    const wordCount = editor.storage.characterCount.words()
+    const wordCount = editor.storage.characterCount.words();
     updateContent(content, text, wordCount)
   }
 
@@ -54,15 +59,25 @@ export const Editor = () => {
     onUpdate: handleOnUpdate,
   })
 
-  // Clear editor content when session ends
   useEffect(() => {
-    if (editor && !activeSession) {
-      editor.commands.clearContent();
-      editor.setEditable(false);
-    } else if (editor && activeSession) {
+    if (activeSession) {
       editor.setEditable(true);
+    } else {
+      editor.setEditable(false);
     }
-  }, [activeSession, editor]);
+  }, [activeSession, editor])
+
+  const clearAndCloseEditor = () => {
+    editor.commands.clearContent();
+    editor.setEditable(false);
+  }
+
+  useEffect(() => {
+    if (goalAchieved) {
+      setShowCompleteModal(true)
+      setSessionActive(false);
+    }
+  }, [goalAchieved])
 
   return (
     <EditorContainer>
@@ -75,7 +90,7 @@ export const Editor = () => {
 
       <EditorMain>
         <EditorContentDiv>
-          <FormattingBar editor={editor} disabled={!activeSession} />
+          <FormattingBar editor={editor} disabled={!activeSession} clearAndCloseEditor={clearAndCloseEditor} />
           <TipTapEditor>
             <EditorContent editor={editor} />
           </TipTapEditor>
@@ -124,6 +139,17 @@ export const Editor = () => {
         </DraggableModal>
       )}
 
+
+      <Modal
+        title="Session Complete"
+        isVisible={showCompleteModal}
+        onClose={() => setShowCompleteModal(false)}
+        width={300}
+        height="auto"
+      >
+        <CompletionModal showModal={setShowCompleteModal} clearAndCloseEditor={clearAndCloseEditor} />
+      </Modal>
+
       <Modal
         title="Session Setup"
         isVisible={showSessionSetupModal}
@@ -133,6 +159,8 @@ export const Editor = () => {
       >
         <SessionSetup closeModal={() => setShowSessionSetupModal(false)} />
       </Modal>
+
+
     </EditorContainer >
   );
 };

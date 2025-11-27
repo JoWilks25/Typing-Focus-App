@@ -48,6 +48,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   });
   const setInitSession = useSessionStore(state => state.setInitSession);
   const setGoal = useEditorStore(state => state.setGoal);
+  
 
   const handleFileModeChange = (fileMode: FileModeType) => {
     setFileMode(fileMode);

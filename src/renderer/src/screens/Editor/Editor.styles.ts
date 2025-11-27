@@ -7,8 +7,8 @@ export const EditorContainer = styled.div`
   min-height: 500px;
   display: flex;
   flex-direction: column;
-  max-width: 794px; /* A4 width at 96 DPI */
-  margin: 0 auto; /* Center the content */
+  max-width: 1000px;
+  margin: 0 auto;
 `;
 
 export const EditorTitle = styled.div`
@@ -43,8 +43,9 @@ export const EditorMain = styled.div`
   gap: 1rem;
   padding: 1rem;
   min-height: calc(100vh - 150px);
-  height: calc(100vh - 150px); /* Add explicit height */
-  max-height: calc(100vh - 150px); /* Constrain height */
+  height: calc(100vh - 150px);
+  max-height: calc(100vh - 150px);
+  max-width: 100%;
 `;
 
 export const EditorContentDiv = styled.div`
@@ -61,9 +62,9 @@ export const EditorContentDiv = styled.div`
 
 export const AnimationSidebar = styled.div`
   flex: 0 0 auto;
-  width: 300px;
-  min-width: 250px;
-  max-width: 400px;
+  width: 100%;
+  min-width: 200px;
+  max-width: 300px;
   background-color: ${props => props.theme.colors.background.tertiary};
   border-radius: 0.5rem;
   border: 2px solid ${props => props.theme.colors.border.secondary};
@@ -249,5 +250,5 @@ export const EditorContentArea = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
-  min-height: 0; /* Important for flex scrolling */
+  min-height: 0;
 `;
