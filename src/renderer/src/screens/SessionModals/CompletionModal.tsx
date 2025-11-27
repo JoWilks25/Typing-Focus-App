@@ -17,6 +17,7 @@ import {
 import { useEditorStore } from '@renderer/stores/EditorStore';
 import { useSessionStore } from '@renderer/stores/SessionStore';
 import { useSessionTimer } from '@renderer/hooks/useSessionTimer';
+import { useAppStore } from '@renderer/stores/AppStore';
 
 interface CompletionModalProps {
   showModal: (value: boolean) => void;
@@ -26,10 +27,12 @@ interface CompletionModalProps {
 export function CompletionModal({ showModal, clearAndCloseEditor }: CompletionModalProps): React.JSX.Element {
   const wordCount = useEditorStore(state => state.wordCount);
   const goalValue = useEditorStore(state => state.goal);
+  const resetEditor = useEditorStore(state => state.resetEditor);
   const goalType = useSessionStore(state => state.goalType);
   const endSession = useSessionStore(state => state.endSession);
   const setSessionActive = useSessionStore(state => state.setSessionActive);
   const { formattedTime } = useSessionTimer();
+  const setView = useAppStore((state) => state.setView);
 
   const handleKeepWriting = () => {
     setSessionActive(true);
@@ -39,7 +42,9 @@ export function CompletionModal({ showModal, clearAndCloseEditor }: CompletionMo
   const handleEndSession = () => {
     endSession();
     clearAndCloseEditor();
+    resetEditor();
     showModal(false);
+    setView('session-summary');
   }
 
   return (

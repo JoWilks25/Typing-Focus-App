@@ -32,9 +32,9 @@ interface SessionState {
   sessionActive: boolean;
   startTime: string | null;
   sessionStats: SessionStat[];
-  elapsedSeconds: number; // Add this
-  updateElapsedTime: () => void; // Add this
-  resetElapsedTime: () => void; // Add this
+  elapsedSeconds: number;
+  updateElapsedTime: () => void;
+  resetElapsedTime: () => void;
   setInitSession: (fileName: SessionState['fileName'], filePath: SessionState['filePath'], goal: SessionState['goal'], goalType: SessionState['goalType'], sessionActive: SessionState['sessionActive']) => void;
   endSession: () => void;
   setSessionActive: (value: boolean) => void;

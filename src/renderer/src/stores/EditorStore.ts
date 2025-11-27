@@ -16,6 +16,7 @@ interface EditorState {
   goalAchieved: boolean;
   setTimeProgress: (progress: number) => void;
   updateContent: (content: EditorState['formattedContent'], text: EditorState['plainText'], wordCount: EditorState['wordCount']) => void;
+  resetEditor: () => void;
   setGoal: (goal: number) => void;
 }
 
@@ -49,7 +50,6 @@ export const useEditorStore = create<EditorState>()(
                 lastUpdated: dayjs().format(),
               };
             }
-            console.log('newGoalProgress', newGoalProgress)
             return {
               formattedContent: content,
               plainText: text,
@@ -70,6 +70,17 @@ export const useEditorStore = create<EditorState>()(
           }
         }, false, 'updateContent');
       },
+      resetEditor: () => set({
+        formattedContent: '',
+        plainText: '',
+        wordCount: 0,
+        characterCount: 0,
+        goal: 100,
+        goalProgress: 0,
+        lastUpdated: null,
+        timeProgress: 0,
+        goalAchieved: false,
+      }, false, 'resetEditor'),
       setGoal: (goal) => set({ goal }, false, 'setGoal'),
       setTimeProgress: (timeProgress) => set({ timeProgress, goalAchieved: timeProgress >= 100 }, false, 'setTimeProgress'),
     }),

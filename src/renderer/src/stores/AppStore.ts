@@ -9,7 +9,6 @@ interface AppState {
   setTheme: (theme: AppState['theme']) => void;
 }
 
-
 export const useAppStore = create<AppState>()(
   devtools(
     persist(
