@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import dayjs from 'dayjs';
+import Lottie from 'lottie-react';
 import {
   SummaryContainer,
   Header,
@@ -23,22 +24,15 @@ import {
   ProgressFill,
   ProgressText,
 } from './SessionSummary.styles';
-import { useEditorStore } from '@renderer/stores/EditorStore';
 import { useSessionStore } from '@renderer/stores/SessionStore';
-import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
 import { useAppStore } from '@renderer/stores/AppStore';
+import treeGrow7Animation from '@renderer/assets/animations/tree-grow-7.json';
+import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation.styles';
+
 
 export function SessionSummary(): React.JSX.Element {
   const sessionStats = useSessionStore(state => state.sessionStats);
   const lastSession = sessionStats[sessionStats.length - 1];
-
-  // const goalAchieved = useEditorStore(state => state.goalAchieved);
-  // const goalProgress = useEditorStore(state => state.goalProgress);
-  // const timeProgress = useEditorStore(state => state.timeProgress);
-  // const wordCount = useEditorStore(state => state.wordCount);
-  // const goalType = useSessionStore(state => state.goalType);
-  // const elapsedSeconds = useSessionStore(state => state.elapsedSeconds);
-  // const filePath = useSessionStore(state => state.filePath);
   const setView = useAppStore(state => state.setView);
 
   const progressAmount = lastSession.goalType === 'wordcount' ? lastSession.goalProgress : lastSession.timeProgress;
@@ -55,7 +49,7 @@ export function SessionSummary(): React.JSX.Element {
   }
 
   const handleOpenFolder = () => {
-
+    // TODO
   }
 
   return (
@@ -84,14 +78,32 @@ export function SessionSummary(): React.JSX.Element {
       {/* Content Layout - Tree Animation and Stats */}
       <ContentLayout>
         {/* Tree Animation */}
-        <TreeSection>
-          <TreeContainer>
-            <TreeAnimation
-              isPoppedOut={false}
-              onPopOut={() => { }}
-            />
-          </TreeContainer>
-        </TreeSection>
+        {
+          lastSession.goalAchieved ? (
+            <TreeSection>
+              <TreeContainer>
+                <Lottie
+                  animationData={treeGrow7Animation}
+                  loop={true}
+                  autoplay={true}
+                />
+              </TreeContainer>
+            </TreeSection>
+          ) : (
+            <TreeAnimation>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                fontSize: '200px', // Large emoji size
+                textAlign: 'center'
+              }}>
+                🍂
+              </div>
+            </TreeAnimation>
+          )
+        }
 
         {/* Statistics */}
         <StatsSection>

@@ -53,7 +53,10 @@ export const TreeContainer = styled.div`
   justify-content: center;
   align-items: center;
   margin-bottom: 1rem;
-  min-height: 200px;
+  width: 300px;
+  height: 300px;
+  min-width: 300px;
+  min-height: 300px;
 `;
 
 export const TreeStatus = styled.div`
