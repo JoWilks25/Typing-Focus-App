@@ -7,8 +7,8 @@ export const EditorContainer = styled.div`
   min-height: 500px;
   display: flex;
   flex-direction: column;
-  max-width: 1000px; /* A4 width at 96 DPI */
-  margin: 0 auto; /* Center the content */
+  max-width: 1000px;
+  margin: 0 auto;
 `;
 
 export const EditorTitle = styled.div`
@@ -43,8 +43,8 @@ export const EditorMain = styled.div`
   gap: 1rem;
   padding: 1rem;
   min-height: calc(100vh - 150px);
-  height: calc(100vh - 150px); /* Add explicit height */
-  max-height: calc(100vh - 150px); /* Constrain height */
+  height: calc(100vh - 150px);
+  max-height: calc(100vh - 150px);
   max-width: 100%;
 `;
 
@@ -250,5 +250,5 @@ export const EditorContentArea = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
-  min-height: 0; /* Important for flex scrolling */
+  min-height: 0;
 `;
