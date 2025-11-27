@@ -98,7 +98,7 @@ export const InactivityModal = ({ isVisible, onClose, onEndSession }: Inactivity
           >
             Resume Writing
           </ResumeButton>
-          <EndSessionButtones     
+          <EndSessionButton    
             onClick={onEndSession}
           >
             End Session
