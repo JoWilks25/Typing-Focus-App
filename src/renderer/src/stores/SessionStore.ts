@@ -42,12 +42,27 @@ interface SessionState {
 
 const STORE_NAME = 'SessionStore';
 
+// Helper function to extract only serializable state (no functions)
+function getSerializableState(state: SessionState): Omit<SessionState, 'updateElapsedTime' | 'resetElapsedTime' | 'setInitSession' | 'endSession' | 'setSessionActive'> {
+  return {
+    fileName: state.fileName,
+    filePath: state.filePath,
+    goal: state.goal,
+    goalType: state.goalType,
+    sessionActive: state.sessionActive,
+    startTime: state.startTime,
+    sessionStats: state.sessionStats,
+    elapsedSeconds: state.elapsedSeconds,
+  };
+}
+
 // Listen for state sync from other windows
 if (typeof window !== 'undefined' && window.api?.state) {
   window.api.state.sync((data) => {
     if (data.storeName === STORE_NAME) {
-      // Merge the synced state
-      useSessionStore.setState(data.state as SessionState);
+      // Merge only the serializable state (functions are already in the store)
+      const serializableState = data.state as ReturnType<typeof getSerializableState>;
+      useSessionStore.setState(serializableState);
     }
   });
 
@@ -55,7 +70,8 @@ if (typeof window !== 'undefined' && window.api?.state) {
   window.api.state.onStateRequest?.((data) => {
     if (data.storeName === STORE_NAME) {
       const currentState = useSessionStore.getState();
-      window.api?.state.respondToStateRequest?.(data.responseChannel, currentState);
+      const serializableState = getSerializableState(currentState);
+      window.api?.state.respondToStateRequest?.(data.responseChannel, serializableState);
     }
   });
 }
@@ -78,9 +94,10 @@ export const useSessionStore = create<SessionState>()(
         setSessionActive: (value) => {
           set({ sessionActive: value }, false, 'setSessionActive');
 
-          // Broadcast to other windows
+          // Broadcast to other windows (only serializable state)
           if (window.api?.state) {
-            window.api.state.broadcast(STORE_NAME, useSessionStore.getState());
+            const currentState = get();
+            window.api.state.broadcast(STORE_NAME, getSerializableState(currentState));
           }
         },
 
@@ -96,9 +113,10 @@ export const useSessionStore = create<SessionState>()(
 
           set(newState, false, 'setInitSession');
 
-          // Broadcast to other windows
+          // Broadcast to other windows (only serializable state)
           if (window.api?.state) {
-            window.api.state.broadcast(STORE_NAME, useSessionStore.getState());
+            const currentState = get();
+            window.api.state.broadcast(STORE_NAME, getSerializableState(currentState));
           }
         },
 
@@ -153,9 +171,10 @@ export const useSessionStore = create<SessionState>()(
             }
           }, false, 'endSession')
 
-          // Broadcast to other windows
+          // Broadcast to other windows (only serializable state)
           if (window.api?.state) {
-            window.api.state.broadcast(STORE_NAME, useSessionStore.getState());
+            const currentState = get();
+            window.api.state.broadcast(STORE_NAME, getSerializableState(currentState));
           }
         },
 
@@ -195,7 +214,8 @@ export const useSessionStore = create<SessionState>()(
 if (typeof window !== 'undefined' && window.api?.state) {
   window.api.state.request(STORE_NAME).then((response) => {
     if (response.success && response.state) {
-      useSessionStore.setState(response.state as SessionState);
+      // Only set the serializable state (functions are already in the store)
+      useSessionStore.setState(response.state as ReturnType<typeof getSerializableState>);
     }
   });
 }
