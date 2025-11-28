@@ -42,7 +42,7 @@ function createDistractionWindow() {
 
   distractionWindow = new BrowserWindow({
     width: 520,
-    height: 300,
+    height: 750,
     resizable: false,
     alwaysOnTop: true,
     frame: true,
@@ -79,8 +79,8 @@ function createDistractionWindow() {
 
 function setupFocusMonitoring(win: BrowserWindow) {
   win.on('blur', () => {
-    // Only show if a session is active in your real code
-    startDistractionCountdown();
+    // Check if we should show the distraction warning
+    checkAndStartDistractionCountdown(win);
   });
 
   win.on('focus', () => {
@@ -92,6 +92,23 @@ function setupFocusMonitoring(win: BrowserWindow) {
       distractionWindow.close();
     }
   });
+}
+
+function checkAndStartDistractionCountdown(win: BrowserWindow) {
+  if (!win || win.isDestroyed()) return;
+
+  // Query the renderer to check if we should show the distraction warning
+  const responseChannel = `distraction:should-show-response-${Date.now()}`;
+
+  // Set up one-time listener for the response
+  ipcMain.once(responseChannel, (_event, shouldShow: boolean) => {
+    if (shouldShow) {
+      startDistractionCountdown();
+    }
+  });
+
+  // Send query to renderer
+  win.webContents.send('distraction:should-show', responseChannel);
 }
 
 function startDistractionCountdown() {

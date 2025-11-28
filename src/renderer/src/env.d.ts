@@ -26,6 +26,7 @@ interface Window {
     ondismissDistractionWarning: (cb: () => void) => void;
     onupdateCountdown: (cb: (seconds: number) => void) => void;
     returnToSession?: () => void;
+    onShouldShowDistractionWarning?: (cb: (respond: (shouldShow: boolean) => void) => void) => void;
     session: {
       end: () => Promise<void>;
     };
