@@ -161,7 +161,10 @@ ipcMain.on('distraction:end-session', async () => {
     clearInterval(distractionCountdown);
     distractionCountdown = null;
   }
-  // TODO: Mark session as abandoned
+  // Send message to main window to end the session properly
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('end-session-from-distraction');
+  }
   if (distractionWindow && !distractionWindow.isDestroyed()) {
     distractionWindow.close();
   }

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ThemeProvider } from 'styled-components';
-import { getTheme, THEME_LIGHT } from '@renderer/styles/theme';
+import { getTheme } from '@renderer/styles/theme';
 import { GlobalStyles } from '@renderer/styles/globalStyles';
+import { useAppStore } from '@renderer/stores/AppStore';
+import { useEffectiveTheme } from '@renderer/hooks/useEffectiveTheme';
 import {
   WarningContainer,
   WarningContent,
@@ -14,7 +16,11 @@ import {
 
 export const DistractionWarningWindow: React.FC = () => {
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
-  const theme = getTheme(THEME_LIGHT);
+
+  // Get theme preference from store (shared via localStorage)
+  const themePreference = useAppStore((state) => state.theme);
+  const effectiveTheme = useEffectiveTheme(themePreference);
+  const theme = getTheme(effectiveTheme);
 
   useEffect(() => {
     if (!window.api) return;

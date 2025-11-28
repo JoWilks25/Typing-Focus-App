@@ -23,7 +23,10 @@ contextBridge.exposeInMainWorld('api', {
       });
     });
   },
+  onEndSessionFromDistraction(callback: () => void) {
+    ipcRenderer.on('end-session-from-distraction', () => callback());
+  },
   session: {
-    end: () => ipcRenderer.invoke('session:end'),
+    end: () => ipcRenderer.send('distraction:end-session'),
   },
 });

@@ -27,8 +27,9 @@ interface Window {
     onupdateCountdown: (cb: (seconds: number) => void) => void;
     returnToSession?: () => void;
     onShouldShowDistractionWarning?: (cb: (respond: (shouldShow: boolean) => void) => void) => void;
+    onEndSessionFromDistraction?: (cb: () => void) => void;
     session: {
-      end: () => Promise<void>;
+      end: () => void;
     };
   };
 }
