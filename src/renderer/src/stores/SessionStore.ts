@@ -40,6 +40,25 @@ interface SessionState {
   setSessionActive: (value: boolean) => void;
 }
 
+const STORE_NAME = 'SessionStore';
+
+// Listen for state sync from other windows
+if (typeof window !== 'undefined' && window.api?.state) {
+  window.api.state.sync((data) => {
+    if (data.storeName === STORE_NAME) {
+      // Merge the synced state
+      useSessionStore.setState(data.state as SessionState);
+    }
+  });
+
+  // Respond to state requests from new windows
+  window.api.state.onStateRequest?.((data) => {
+    if (data.storeName === STORE_NAME) {
+      const currentState = useSessionStore.getState();
+      window.api?.state.respondToStateRequest?.(data.responseChannel, currentState);
+    }
+  });
+}
 
 export const useSessionStore = create<SessionState>()(
   devtools(
@@ -56,10 +75,33 @@ export const useSessionStore = create<SessionState>()(
         elapsedSeconds: 0, // Add this
 
         // Actions
-        setSessionActive: (value) => set({ sessionActive: value }, false,
-          'setSessionActive'
-        ),
-        setInitSession: (fileName, filePath, goal, goalType, sessionActive) => set({ fileName, filePath, goal, goalType, sessionActive, startTime: dayjs().format() }, false, 'setFileValues'),
+        setSessionActive: (value) => {
+          set({ sessionActive: value }, false, 'setSessionActive');
+
+          // Broadcast to other windows
+          if (window.api?.state) {
+            window.api.state.broadcast(STORE_NAME, useSessionStore.getState());
+          }
+        },
+
+        setInitSession: (fileName, filePath, goal, goalType, sessionActive) => {
+          const newState = {
+            fileName,
+            filePath,
+            goal,
+            goalType,
+            sessionActive,
+            startTime: dayjs().format(),
+          };
+
+          set(newState, false, 'setInitSession');
+
+          // Broadcast to other windows
+          if (window.api?.state) {
+            window.api.state.broadcast(STORE_NAME, useSessionStore.getState());
+          }
+        },
+
         endSession: () => {
           set((state) => {
             // Get current values from EditorStore
@@ -110,6 +152,11 @@ export const useSessionStore = create<SessionState>()(
               ]
             }
           }, false, 'endSession')
+
+          // Broadcast to other windows
+          if (window.api?.state) {
+            window.api.state.broadcast(STORE_NAME, useSessionStore.getState());
+          }
         },
 
         // Add these new actions:
@@ -143,3 +190,12 @@ export const useSessionStore = create<SessionState>()(
     { name: 'SessionStore' }
   )
 );
+
+// Request state sync when store initializes (for modal windows)
+if (typeof window !== 'undefined' && window.api?.state) {
+  window.api.state.request(STORE_NAME).then((response) => {
+    if (response.success && response.state) {
+      useSessionStore.setState(response.state as SessionState);
+    }
+  });
+}

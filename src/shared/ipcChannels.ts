@@ -1,10 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 
-// Define IPC channels directly (can't import from main process)
-const IPC_CHANNELS = {
+// Shared IPC channel constants that can be used by both main and preload
+export const IPC_CHANNELS = {
+  // Window management
   MODAL_CREATE: 'modal:create',
   MODAL_CLOSE: 'modal:close',
+
+  // State synchronization
   STATE_BROADCAST: 'state:broadcast',
   STATE_SYNC: 'state:sync',
   STATE_REQUEST: 'state:request',
