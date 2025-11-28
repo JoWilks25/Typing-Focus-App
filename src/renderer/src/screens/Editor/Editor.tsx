@@ -79,34 +79,14 @@ export const Editor = () => {
     }
   }, [goalAchieved])
 
-  // Create a modal window
-  const handleOpenModal = async () => {
-    try {
-      const result = await window.api?.modal.create({
-        id: 'session-stats-modal',
-        width: 500,
-        height: 600,
-        title: 'Session Statistics',
-      });
-      console.log('Modal created:', result);
-    } catch (error) {
-      console.error('Failed to create modal:', error);
-    }
-  };
-
-  // Close modal
-  const handleCloseModal = async () => {
-    await window.api?.modal.close('session-stats-modal');
-  };
-
   return (
     <EditorContainer>
       <EditorTitle>
         <EditorTitleText>
           {displayTitle}
         </EditorTitleText>
-        <button onClick={handleCloseModal}>Close</button>
-        <button onClick={handleOpenModal}>Open</button>
+        {/* <button onClick={handleCloseModal}>Close</button>
+        <button onClick={handleOpenModal}>Open</button> */}
 
         <SessionStats />
       </EditorTitle>

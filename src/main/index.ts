@@ -1,64 +1,162 @@
-import { app, shell, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { windowManager } from './windowManager';
-import { registerIpcHandlers } from './ipcHandlers';
 
 let mainWindow: BrowserWindow | null = null;
+let distractionWindow: BrowserWindow | null = null;
+let distractionCountdown: NodeJS.Timeout | null = null;
+let secondsRemaining = 0;
 
-function createWindow(): void {
-  // Create the browser window.
+function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
+    ...(process.platform === 'linux' ? { icon: join(__dirname, '../../build/icon.png') } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      contextIsolation: true,
     },
   });
-
-  // Register main window with window manager
-  windowManager.setMainWindow(mainWindow);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show();
   });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: 'deny' };
-  });
-
-  // HMR for renderer base on electron-vite cli.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+  // Load the renderer
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] || 'http://localhost:5173');
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  setupFocusMonitoring(mainWindow);
 }
 
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.electron');
+function createDistractionWindow() {
+  if (distractionWindow && !distractionWindow.isDestroyed()) {
+    distractionWindow.focus();
+    return;
+  }
 
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
+  distractionWindow = new BrowserWindow({
+    width: 520,
+    height: 300,
+    resizable: false,
+    alwaysOnTop: true,
+    frame: true,
+    autoHideMenuBar: true,
+    modal: false,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+    },
   });
 
-  // Register IPC handlers
-  registerIpcHandlers();
+  // Center the window
+  if (mainWindow) {
+    const bounds = mainWindow.getBounds();
+    distractionWindow.setPosition(
+      bounds.x + (bounds.width - 520) / 2,
+      bounds.y + (bounds.height - 300) / 2
+    );
+  }
 
-  createWindow();
+  // Load the distraction warning page
+  if (process.env.NODE_ENV === 'development') {
+    distractionWindow.loadURL(
+      (process.env['ELECTRON_RENDERER_URL'] || 'http://localhost:5173') + '/distraction-warning.html'
+    );
+  } else {
+    distractionWindow.loadFile(join(__dirname, '../renderer/distraction-warning.html'));
+  }
 
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  distractionWindow.on('closed', () => {
+    distractionWindow = null;
+  });
+}
+
+function setupFocusMonitoring(win: BrowserWindow) {
+  win.on('blur', () => {
+    // Only show if a session is active in your real code
+    startDistractionCountdown();
+  });
+
+  win.on('focus', () => {
+    if (distractionCountdown) {
+      clearInterval(distractionCountdown);
+      distractionCountdown = null;
+    }
+    if (distractionWindow && !distractionWindow.isDestroyed()) {
+      distractionWindow.close();
+    }
+  });
+}
+
+function startDistractionCountdown() {
+  secondsRemaining = 10; // from AppConfig.distractionCountdown
+
+  createDistractionWindow();
+
+  // Wait for window to be ready before sending messages
+  if (distractionWindow) {
+    distractionWindow.webContents.once('did-finish-load', () => {
+      distractionWindow?.webContents.send('update-countdown', secondsRemaining);
+    });
+  }
+
+  distractionCountdown = setInterval(() => {
+    secondsRemaining -= 1;
+    if (distractionWindow && !distractionWindow.isDestroyed()) {
+      distractionWindow.webContents.send('update-countdown', secondsRemaining);
+    }
+
+    if (secondsRemaining <= 0) {
+      clearInterval(distractionCountdown!);
+      distractionCountdown = null;
+      // Mark session as abandoned in your real SessionService
+      // sessionState.status = 'abandoned';
+      if (distractionWindow && !distractionWindow.isDestroyed()) {
+        distractionWindow.close();
+      }
+    }
+  }, 1000);
+}
+
+// Handle return to session
+ipcMain.on('distraction:return', () => {
+  if (distractionCountdown) {
+    clearInterval(distractionCountdown);
+    distractionCountdown = null;
+  }
+  if (mainWindow) {
+    mainWindow.focus();
+  }
+  if (distractionWindow && !distractionWindow.isDestroyed()) {
+    distractionWindow.close();
+  }
+});
+
+// Handle end session
+ipcMain.on('distraction:end-session', async () => {
+  if (distractionCountdown) {
+    clearInterval(distractionCountdown);
+    distractionCountdown = null;
+  }
+  // TODO: Mark session as abandoned
+  if (distractionWindow && !distractionWindow.isDestroyed()) {
+    distractionWindow.close();
+  }
+});
+
+app.whenReady().then(() => {
+  createMainWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createMainWindow();
+    }
   });
 });
 

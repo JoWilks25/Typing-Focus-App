@@ -40,42 +40,6 @@ interface SessionState {
   setSessionActive: (value: boolean) => void;
 }
 
-const STORE_NAME = 'SessionStore';
-
-// Helper function to extract only serializable state (no functions)
-function getSerializableState(state: SessionState): Omit<SessionState, 'updateElapsedTime' | 'resetElapsedTime' | 'setInitSession' | 'endSession' | 'setSessionActive'> {
-  return {
-    fileName: state.fileName,
-    filePath: state.filePath,
-    goal: state.goal,
-    goalType: state.goalType,
-    sessionActive: state.sessionActive,
-    startTime: state.startTime,
-    sessionStats: state.sessionStats,
-    elapsedSeconds: state.elapsedSeconds,
-  };
-}
-
-// Listen for state sync from other windows
-if (typeof window !== 'undefined' && window.api?.state) {
-  window.api.state.sync((data) => {
-    if (data.storeName === STORE_NAME) {
-      // Merge only the serializable state (functions are already in the store)
-      const serializableState = data.state as ReturnType<typeof getSerializableState>;
-      useSessionStore.setState(serializableState);
-    }
-  });
-
-  // Respond to state requests from new windows
-  window.api.state.onStateRequest?.((data) => {
-    if (data.storeName === STORE_NAME) {
-      const currentState = useSessionStore.getState();
-      const serializableState = getSerializableState(currentState);
-      window.api?.state.respondToStateRequest?.(data.responseChannel, serializableState);
-    }
-  });
-}
-
 export const useSessionStore = create<SessionState>()(
   devtools(
     persist(
@@ -93,12 +57,6 @@ export const useSessionStore = create<SessionState>()(
         // Actions
         setSessionActive: (value) => {
           set({ sessionActive: value }, false, 'setSessionActive');
-
-          // Broadcast to other windows (only serializable state)
-          if (window.api?.state) {
-            const currentState = get();
-            window.api.state.broadcast(STORE_NAME, getSerializableState(currentState));
-          }
         },
 
         setInitSession: (fileName, filePath, goal, goalType, sessionActive) => {
@@ -112,12 +70,6 @@ export const useSessionStore = create<SessionState>()(
           };
 
           set(newState, false, 'setInitSession');
-
-          // Broadcast to other windows (only serializable state)
-          if (window.api?.state) {
-            const currentState = get();
-            window.api.state.broadcast(STORE_NAME, getSerializableState(currentState));
-          }
         },
 
         endSession: () => {
@@ -170,12 +122,6 @@ export const useSessionStore = create<SessionState>()(
               ]
             }
           }, false, 'endSession')
-
-          // Broadcast to other windows (only serializable state)
-          if (window.api?.state) {
-            const currentState = get();
-            window.api.state.broadcast(STORE_NAME, getSerializableState(currentState));
-          }
         },
 
         // Add these new actions:
@@ -209,13 +155,3 @@ export const useSessionStore = create<SessionState>()(
     { name: 'SessionStore' }
   )
 );
-
-// Request state sync when store initializes (for modal windows)
-if (typeof window !== 'undefined' && window.api?.state) {
-  window.api.state.request(STORE_NAME).then((response) => {
-    if (response.success && response.state) {
-      // Only set the serializable state (functions are already in the store)
-      useSessionStore.setState(response.state as ReturnType<typeof getSerializableState>);
-    }
-  });
-}
