@@ -40,7 +40,6 @@ interface SessionState {
   setSessionActive: (value: boolean) => void;
 }
 
-
 export const useSessionStore = create<SessionState>()(
   devtools(
     persist(
@@ -56,10 +55,23 @@ export const useSessionStore = create<SessionState>()(
         elapsedSeconds: 0, // Add this
 
         // Actions
-        setSessionActive: (value) => set({ sessionActive: value }, false,
-          'setSessionActive'
-        ),
-        setInitSession: (fileName, filePath, goal, goalType, sessionActive) => set({ fileName, filePath, goal, goalType, sessionActive, startTime: dayjs().format() }, false, 'setFileValues'),
+        setSessionActive: (value) => {
+          set({ sessionActive: value }, false, 'setSessionActive');
+        },
+
+        setInitSession: (fileName, filePath, goal, goalType, sessionActive) => {
+          const newState = {
+            fileName,
+            filePath,
+            goal,
+            goalType,
+            sessionActive,
+            startTime: dayjs().format(),
+          };
+
+          set(newState, false, 'setInitSession');
+        },
+
         endSession: () => {
           set((state) => {
             // Get current values from EditorStore

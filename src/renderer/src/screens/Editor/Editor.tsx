@@ -85,6 +85,9 @@ export const Editor = () => {
         <EditorTitleText>
           {displayTitle}
         </EditorTitleText>
+        {/* <button onClick={handleCloseModal}>Close</button>
+        <button onClick={handleOpenModal}>Open</button> */}
+
         <SessionStats />
       </EditorTitle>
 
@@ -138,7 +141,6 @@ export const Editor = () => {
           />
         </DraggableModal>
       )}
-
 
       <Modal
         title="Session Complete"

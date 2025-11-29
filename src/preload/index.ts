@@ -1,23 +1,32 @@
-import { contextBridge } from 'electron';
-import { electronAPI } from '@electron-toolkit/preload';
+import { contextBridge, ipcRenderer } from 'electron';
 
-// Custom APIs for renderer
-const api = {};
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI);
-    contextBridge.exposeInMainWorld('api', api);
-  } catch (error) {
-    console.error(error);
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI;
-  // @ts-ignore (define in dts)
-  window.api = api;
-}
-
+contextBridge.exposeInMainWorld('api', {
+  onshowDistractionWarning(callback: () => void) {
+    ipcRenderer.on('show-distraction-warning', () => callback());
+  },
+  ondismissDistractionWarning(callback: () => void) {
+    ipcRenderer.on('dismiss-distraction-warning', () => callback());
+  },
+  onupdateCountdown(callback: (seconds: number) => void) {
+    ipcRenderer.on('update-countdown', (_event, seconds: number) => {
+      callback(seconds);
+    });
+  },
+  returnToSession() {
+    ipcRenderer.send('distraction:return');
+  },
+  // Add handler for main process to query if distraction warning should show
+  onShouldShowDistractionWarning(callback: (respond: (shouldShow: boolean) => void) => void) {
+    ipcRenderer.on('distraction:should-show', (_event, responseChannel: string) => {
+      callback((shouldShow: boolean) => {
+        ipcRenderer.send(responseChannel, shouldShow);
+      });
+    });
+  },
+  onEndSessionFromDistraction(callback: () => void) {
+    ipcRenderer.on('end-session-from-distraction', () => callback());
+  },
+  session: {
+    end: () => ipcRenderer.send('distraction:end-session'),
+  },
+});
