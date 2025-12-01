@@ -72,6 +72,14 @@ contextBridge.exposeInMainWorld('api', {
       return response.data;
     },
   },
+  shell: {
+    showItemInFolder: async (filePath: string): Promise<void> => {
+      const response = await ipcRenderer.invoke('shell:show-item-in-folder', filePath);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to open folder');
+      }
+    },
+  },
   onDistractionTimeout: (callback: () => void) => {
     ipcRenderer.on('distraction-timeout-end-session', () => callback());
   },

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join } from 'path';
 import { fileManager } from './services/fileManager';
 
@@ -257,6 +257,18 @@ app.whenReady().then(() => {
         canceled: false,
         data: result.filePaths[0]
       };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  ipcMain.handle('shell:show-item-in-folder', async (_event, filePath: string) => {
+    try {
+      shell.showItemInFolder(filePath);
+      return { success: true };
     } catch (error) {
       return {
         success: false,

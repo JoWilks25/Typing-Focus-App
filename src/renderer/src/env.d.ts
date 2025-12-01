@@ -42,6 +42,9 @@ interface Window {
     dialog: {
       showOpenDirectory: (defaultPath?: string) => Promise<string | null>;
     };
+    shell: {
+      showItemInFolder: (filePath: string) => Promise<void>;
+    };
     onDistractionTimeout?: (callback: () => void) => void;
   };
 }
