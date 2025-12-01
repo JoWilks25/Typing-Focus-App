@@ -14,12 +14,12 @@ import {
   LocationDisplay,
   PathDisplay,
   BrowseButton,
-  LoadFileRow,
-  LoadFileButton,
-  LoadedFileSummary,
-  LoadedFileTitle,
-  LoadedFilePath,
-  LoadedFileStats,
+  // LoadFileRow,
+  // LoadFileButton,
+  // LoadedFileSummary,
+  // LoadedFileTitle,
+  // LoadedFilePath,
+  // LoadedFileStats,
   FormGrid,
   SubmitButton,
 } from './SessionSetup.styles';
@@ -41,6 +41,7 @@ interface SessionSetup {
 export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   const [fileMode, setFileMode] = useState<FileModeType>(NEW);
   const [isLoadingDefaultPath, setIsLoadingDefaultPath] = useState(true);
+  const [fileExistsError, setFileExistsError] = useState(false);
   const [formData, setFormData] = useState({
     fileName: 'test.txt',
     filePath: '',
@@ -92,11 +93,18 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   }
 
   // Update store on submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Construct full file path: directory + filename
     const fullFilePath = formData.filePath
       ? `${formData.filePath}/${formData.fileName}`
       : formData.fileName; // Fallback if no directory selected
+
+    // Check if file already exists
+    const fileExists = await window.api?.file?.exists(fullFilePath);
+    if (fileExists) {
+      setFileExistsError(true)
+      return;
+    }
 
     setInitSession(
       formData.fileName,
@@ -177,11 +185,11 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
                     Filename must end with .txt and contain no invalid characters
                   </ErrorText>
                 )}
-                {/* {fileExistsError && (
+                {fileExistsError && (
                   <ErrorText>
                     A file with this name already exists. Please choose a different filename or location.
                   </ErrorText>
-                )} */}
+                )}
               </FilenameInput>
 
               <LocationSection>

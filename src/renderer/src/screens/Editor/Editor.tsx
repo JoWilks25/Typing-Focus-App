@@ -89,7 +89,7 @@ export const Editor = () => {
     }
 
     try {
-      await window.api.file.write(filePath, content);
+      await window.api?.file?.write(filePath, content);
       // Show success notification
     } catch (error) {
       // Show error notification

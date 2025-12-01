@@ -213,6 +213,18 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('file:exists', async (_event, filePath: string) => {
+    try {
+      const exists = await fileManager.fileExists(filePath);
+      return { success: true, exists: exists };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
   ipcMain.handle('app:get-default-save-directory', async () => {
     try {
       const documentsPath = app.getPath('documents');

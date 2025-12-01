@@ -43,6 +43,13 @@ contextBridge.exposeInMainWorld('api', {
       }
       return response.data;
     },
+    exists: async (filePath: string): Promise<boolean> => {
+      const response = await ipcRenderer.invoke('file:exists', filePath);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to read file');
+      }
+      return response.exists;
+    },
   },
   app: {
     getDefaultSaveDirectory: async (): Promise<string> => {
