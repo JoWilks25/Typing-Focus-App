@@ -29,4 +29,40 @@ contextBridge.exposeInMainWorld('api', {
   session: {
     end: () => ipcRenderer.send('distraction:end-session'),
   },
+  file: {
+    write: async (filePath: string, content: string): Promise<void> => {
+      const response = await ipcRenderer.invoke('file:write', filePath, content);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to write file');
+      }
+    },
+    read: async (filePath: string): Promise<string> => {
+      const response = await ipcRenderer.invoke('file:read', filePath);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to read file');
+      }
+      return response.data;
+    },
+  },
+  app: {
+    getDefaultSaveDirectory: async (): Promise<string> => {
+      const response = await ipcRenderer.invoke('app:get-default-save-directory');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to get default save directory');
+      }
+      return response.data;
+    },
+  },
+  dialog: {
+    showOpenDirectory: async (defaultPath?: string): Promise<string | null> => {
+      const response = await ipcRenderer.invoke('dialog:show-open-directory', defaultPath);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to open directory dialog');
+      }
+      if (response.canceled) {
+        return null;
+      }
+      return response.data;
+    },
+  },
 });

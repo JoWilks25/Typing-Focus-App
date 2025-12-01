@@ -31,5 +31,15 @@ interface Window {
     session: {
       end: () => void;
     };
+    file: {
+      write: (filePath: string, content: string) => Promise<void>;
+      read: (filePath: string) => Promise<string>;
+    };
+    app: {
+      getDefaultSaveDirectory: () => Promise<string>;
+    };
+    dialog: {
+      showOpenDirectory: (defaultPath?: string) => Promise<string | null>;
+    };
   };
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SetupContainer,
   Header,
@@ -40,15 +40,35 @@ interface SessionSetup {
 
 export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   const [fileMode, setFileMode] = useState<FileModeType>(NEW);
+  const [isLoadingDefaultPath, setIsLoadingDefaultPath] = useState(true);
   const [formData, setFormData] = useState({
     fileName: 'test.txt',
-    filePath: '/some-path',
+    filePath: '',
     goal: 0,
     goalType: 'wordcount' as 'wordcount' | 'time',
   });
   const setInitSession = useSessionStore(state => state.setInitSession);
   const setGoal = useEditorStore(state => state.setGoal);
-  
+
+  // Load default save directory on mount
+  useEffect(() => {
+    const loadDefaultPath = async () => {
+      try {
+        const defaultPath = await window.api?.app?.getDefaultSaveDirectory();
+        if (defaultPath) {
+          setFormData(prev => ({ ...prev, filePath: defaultPath }));
+        }
+      } catch (error) {
+        console.error('Failed to load default save directory:', error);
+        // Fallback to empty string or a sensible default
+        setFormData(prev => ({ ...prev, filePath: '' }));
+      } finally {
+        setIsLoadingDefaultPath(false);
+      }
+    };
+
+    loadDefaultPath();
+  }, []);
 
   const handleFileModeChange = (fileMode: FileModeType) => {
     setFileMode(fileMode);
@@ -73,9 +93,14 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
 
   // Update store on submit
   const handleSubmit = () => {
+    // Construct full file path: directory + filename
+    const fullFilePath = formData.filePath
+      ? `${formData.filePath}/${formData.fileName}`
+      : formData.fileName; // Fallback if no directory selected
+
     setInitSession(
       formData.fileName,
-      formData.filePath,
+      fullFilePath, // Use full path here
       formData.goal,
       formData.goalType,
       true
@@ -84,7 +109,20 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
     closeModal()
   };
 
-  const handleBrowseDirectory = () => {
+  const handleBrowseDirectory = async () => {
+    try {
+      // Pass current filePath as defaultPath so dialog opens to current location
+      const selectedPath = await window.api?.dialog?.showOpenDirectory?.(formData.filePath);
+
+      if (selectedPath) {
+        // Update formData with the selected directory
+        setFormData(prev => ({ ...prev, filePath: selectedPath }));
+      }
+      // If user canceled, do nothing (selectedPath will be null)
+    } catch (error) {
+      console.error('Failed to browse directory:', error);
+      // Optionally show an error message to the user
+    }
   }
 
   const allInputsFilled = useMemo((): boolean => {
@@ -150,7 +188,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
                 <label>Save Location</label>
                 <LocationDisplay>
                   <PathDisplay title={formData.filePath}>
-                    {formData.filePath || 'Loading...'}
+                    {isLoadingDefaultPath ? 'Loading...' : (formData.filePath || 'No location selected')}
                   </PathDisplay>
                   <BrowseButton
                     type="button"

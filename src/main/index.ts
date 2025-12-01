@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { join } from 'path';
+import { fileManager } from './services/fileManager';
 
 let mainWindow: BrowserWindow | null = null;
 let distractionWindow: BrowserWindow | null = null;
@@ -55,12 +56,16 @@ function createDistractionWindow() {
   });
 
   // Center the window
-  if (mainWindow) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
     const bounds = mainWindow.getBounds();
-    distractionWindow.setPosition(
-      bounds.x + (bounds.width - 520) / 2,
-      bounds.y + (bounds.height - 300) / 2
-    );
+    // Ensure values are valid integers
+    const x = Math.round(bounds.x + (bounds.width - 520) / 2);
+    const y = Math.round(bounds.y + (bounds.height - 300) / 2);
+
+    // Only set position if values are valid numbers
+    if (!isNaN(x) && !isNaN(y) && isFinite(x) && isFinite(y)) {
+      distractionWindow.setPosition(x, y);
+    }
   }
 
   // Load the distraction warning page
@@ -178,6 +183,72 @@ app.whenReady().then(() => {
       createMainWindow();
     }
   });
+
+  // Add this in your app.whenReady() or initialization
+  ipcMain.handle('file:write', async (_event, filePath: string, content: string) => {
+    try {
+      await fileManager.writeFile(filePath, content);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  ipcMain.handle('file:read', async (_event, filePath: string) => {
+    try {
+      const content = await fileManager.readFile(filePath);
+      return { success: true, data: content };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  ipcMain.handle('app:get-default-save-directory', async () => {
+    try {
+      const documentsPath = app.getPath('documents');
+      // Optionally create a subdirectory for your app's files
+      const appSaveDirectory = join(documentsPath, 'Draft Tree');
+      return { success: true, data: appSaveDirectory };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // Add handler for showing directory picker
+  ipcMain.handle('dialog:show-open-directory', async (_event, defaultPath?: string) => {
+    try {
+      const result = await dialog.showOpenDialog(mainWindow!, {
+        properties: ['openDirectory'],
+        title: 'Select Save Location',
+        defaultPath: defaultPath || app.getPath('documents'),
+      });
+
+      if (result.canceled) {
+        return { success: true, canceled: true, data: null };
+      }
+
+      return {
+        success: true,
+        canceled: false,
+        data: result.filePaths[0]
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
 });
 
 app.on('window-all-closed', () => {
