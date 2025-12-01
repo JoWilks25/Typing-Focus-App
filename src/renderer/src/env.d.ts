@@ -41,5 +41,6 @@ interface Window {
     dialog: {
       showOpenDirectory: (defaultPath?: string) => Promise<string | null>;
     };
+    onDistractionTimeout?: (callback: () => void) => void;
   };
 }

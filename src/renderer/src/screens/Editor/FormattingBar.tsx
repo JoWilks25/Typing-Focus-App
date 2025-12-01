@@ -30,10 +30,14 @@ interface FormattingBarProps {
 export const FormattingBar = ({ editor, disabled, clearAndCloseEditor }: FormattingBarProps) => {
   const sessionActive = useSessionStore(state => state.sessionActive);
   const endSession = useSessionStore(state => state.endSession);
+  const saveCurrentFile = useSessionStore(state => state.saveCurrentFile); // Add this
   const resetEditor = useEditorStore(state => state.resetEditor);
   const setView = useAppStore((state) => state.setView);
 
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
+    // Save file before ending session
+    await saveCurrentFile();
+
     endSession();
     clearAndCloseEditor();
     resetEditor();

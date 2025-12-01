@@ -117,7 +117,7 @@ function checkAndStartDistractionCountdown(win: BrowserWindow) {
 }
 
 function startDistractionCountdown() {
-  secondsRemaining = 10; // from AppConfig.distractionCountdown
+  secondsRemaining = 10;
 
   createDistractionWindow();
 
@@ -137,8 +137,12 @@ function startDistractionCountdown() {
     if (secondsRemaining <= 0) {
       clearInterval(distractionCountdown!);
       distractionCountdown = null;
-      // Mark session as abandoned in your real SessionService
-      // sessionState.status = 'abandoned';
+
+      // Trigger save and end session when timeout occurs
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('distraction-timeout-end-session');
+      }
+
       if (distractionWindow && !distractionWindow.isDestroyed()) {
         distractionWindow.close();
       }

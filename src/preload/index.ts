@@ -65,4 +65,7 @@ contextBridge.exposeInMainWorld('api', {
       return response.data;
     },
   },
+  onDistractionTimeout: (callback: () => void) => {
+    ipcRenderer.on('distraction-timeout-end-session', () => callback());
+  },
 });

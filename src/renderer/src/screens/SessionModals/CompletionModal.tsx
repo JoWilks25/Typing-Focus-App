@@ -30,6 +30,7 @@ export function CompletionModal({ showModal, clearAndCloseEditor }: CompletionMo
   const resetEditor = useEditorStore(state => state.resetEditor);
   const goalType = useSessionStore(state => state.goalType);
   const endSession = useSessionStore(state => state.endSession);
+  const saveCurrentFile = useSessionStore(state => state.saveCurrentFile); // Add this
   const setSessionActive = useSessionStore(state => state.setSessionActive);
   const { formattedTime } = useSessionTimer();
   const setView = useAppStore((state) => state.setView);
@@ -39,7 +40,10 @@ export function CompletionModal({ showModal, clearAndCloseEditor }: CompletionMo
     showModal(false);
   }
 
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
+    // Save file before ending session
+    await saveCurrentFile();
+
     endSession();
     clearAndCloseEditor();
     resetEditor();
