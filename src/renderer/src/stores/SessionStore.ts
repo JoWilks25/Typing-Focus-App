@@ -148,7 +148,7 @@ export const useSessionStore = create<SessionState>()(
           // Only save if there's a file path and content
           if (state.filePath && editorState.formattedContent) {
             try {
-              await window.api?.file?.write(state.filePath, editorState.formattedContent);
+              await window.api?.file?.writeJson(state.filePath, editorState.json);
               console.log('File saved successfully');
             } catch (error) {
               console.error('Failed to save file:', error);

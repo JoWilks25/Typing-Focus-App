@@ -43,7 +43,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   const [isLoadingDefaultPath, setIsLoadingDefaultPath] = useState(true);
   const [fileExistsError, setFileExistsError] = useState(false);
   const [formData, setFormData] = useState({
-    fileName: 'test.txt',
+    fileName: 'My first session', // no extension; purely a title/base name
     filePath: '',
     goal: 0,
     goalType: 'wordcount' as 'wordcount' | 'time',
@@ -177,12 +177,12 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
                   type="text"
                   value={formData.fileName}
                   onChange={(e) => handleFileNameChange(e)}
-                  placeholder="Enter filename (e.g., my-story.txt)"
+                  placeholder="Enter filename (e.g., My first session)"
                   $hasError={!isValidFileName && formData.fileName.length > 0}
                 />
                 {!isValidFileName && formData.fileName.length > 0 && (
                   <ErrorText>
-                    Filename must end with .txt and contain no invalid characters
+                    Filename must not contain dots or invalid characters
                   </ErrorText>
                 )}
                 {fileExistsError && (

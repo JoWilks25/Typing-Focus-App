@@ -2,11 +2,13 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import dayjs from 'dayjs'
 import { useSessionStore } from './SessionStore';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 interface EditorState {
   formattedContent: string;
   plainText: string;
   wordCount: number;
+  json: EditorJson | null;
   characterCount: number;
   goal: number;
   goalProgress: number;
@@ -15,7 +17,12 @@ interface EditorState {
   timeProgress: number;
   goalAchieved: boolean;
   setTimeProgress: (progress: number) => void;
-  updateContent: (content: EditorState['formattedContent'], text: EditorState['plainText'], wordCount: EditorState['wordCount']) => void;
+  updateContent: (
+    content: EditorState['formattedContent'],
+    text: EditorState['plainText'],
+    json: EditorJson,
+    wordCount: EditorState['wordCount'],
+  ) => void;
   resetEditor: () => void;
   setGoal: (goal: number) => void;
 }
@@ -26,6 +33,7 @@ export const useEditorStore = create<EditorState>()(
       // Initial State
       formattedContent: '',
       plainText: '',
+      json: null,
       wordCount: 0,
       characterCount: 0,
       goal: 100,
@@ -35,7 +43,7 @@ export const useEditorStore = create<EditorState>()(
       goalAchieved: false,
 
       // Actions
-      updateContent: (content, text, wordCount) => {
+      updateContent: (content, text, json, wordCount) => {
         set((state) => {
           const sessionState = useSessionStore.getState();
           if (sessionState.goalType === 'wordcount') {
@@ -45,6 +53,7 @@ export const useEditorStore = create<EditorState>()(
               return {
                 formattedContent: content,
                 plainText: text,
+                json,
                 wordCount,
                 characterCount: text.length,
                 lastUpdated: dayjs().format(),
@@ -53,6 +62,7 @@ export const useEditorStore = create<EditorState>()(
             return {
               formattedContent: content,
               plainText: text,
+              json,
               wordCount,
               characterCount: text.length,
               goalProgress: newGoalProgress,
@@ -63,6 +73,7 @@ export const useEditorStore = create<EditorState>()(
             return {
               formattedContent: content,
               plainText: text,
+              json,
               wordCount,
               characterCount: text.length,
               lastUpdated: dayjs().format(),
@@ -73,6 +84,7 @@ export const useEditorStore = create<EditorState>()(
       resetEditor: () => set({
         formattedContent: '',
         plainText: '',
+        json: null,
         wordCount: 0,
         characterCount: 0,
         goal: 100,

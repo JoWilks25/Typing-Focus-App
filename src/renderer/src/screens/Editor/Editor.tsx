@@ -24,6 +24,7 @@ import { useSessionStore } from '@renderer/stores/SessionStore';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 import { CompletionModal } from '../SessionModals/CompletionModal';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 export const Editor = () => {
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
@@ -39,9 +40,10 @@ export const Editor = () => {
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
     const text = editor.getText();
+    const json: EditorJson = editor.getJSON();
     const wordCount = editor.storage.characterCount.words();
-    updateContent(content, text, wordCount)
-  }
+    updateContent(content, text, json, wordCount);
+  };
 
   // Initialize Tiptap editor with basic extensions (always required for schema)
   const editor = useEditor({
@@ -81,15 +83,15 @@ export const Editor = () => {
 
   const handleSave = async () => {
     const filePath = useSessionStore.getState().filePath;
-    const content = useEditorStore.getState().formattedContent;
+    const content = useEditorStore.getState().json;
 
-    if (!filePath) {
+    if (!filePath || !content) {
       // Show error or save dialog
       return;
     }
 
     try {
-      await window.api?.file?.write(filePath, content);
+      await window.api?.file?.writeJson(filePath, content);
       // Show success notification
     } catch (error) {
       // Show error notification

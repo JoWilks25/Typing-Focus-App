@@ -5,7 +5,9 @@
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.tsx",
     "src/preload/*.d.ts",
-    "src/renderer/src/utilities/fileNameCheck.ts"  ],
+    "src/renderer/src/utilities/fileNameCheck.ts",
+    "src/shared/**/*"
+  ],
   "exclude": [
     "tests/**/*"
   ],
@@ -16,6 +18,9 @@
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
       ]
     }
   }

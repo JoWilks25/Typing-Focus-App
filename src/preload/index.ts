@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 contextBridge.exposeInMainWorld('api', {
   onshowDistractionWarning(callback: () => void) {
@@ -32,6 +33,12 @@ contextBridge.exposeInMainWorld('api', {
   file: {
     write: async (filePath: string, content: string): Promise<void> => {
       const response = await ipcRenderer.invoke('file:write', filePath, content);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to write file');
+      }
+    },
+    writeJson: async (filePath: string, content: EditorJson): Promise<void> => {
+      const response = await ipcRenderer.invoke('file:write-json', filePath, content);
       if (!response.success) {
         throw new Error(response.error || 'Failed to write file');
       }
