@@ -45,6 +45,7 @@ declare global {
       };
       dialog: {
         showOpenDirectory: (defaultPath?: string) => Promise<string | null>;
+        showOpenTiptap: () => Promise<string | null>;
       };
       shell: {
         showItemInFolder: (filePath: string) => Promise<void>;

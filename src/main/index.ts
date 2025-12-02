@@ -278,6 +278,27 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('dialog:show-open-tiptap', async (_event) => {
+    try {
+      const result = await dialog.showOpenDialog(mainWindow!, {
+        properties: ['openFile'],
+        title: 'Select Draft Tree session file',
+        filters: [{ name: 'Draft Tree Sessions', extensions: ['dt.json'] }],
+      });
+
+      if (result.canceled || !result.filePaths[0]) {
+        return { success: true, canceled: true, data: null };
+      }
+
+      return { success: true, canceled: false, data: result.filePaths[0] };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
   ipcMain.handle('shell:show-item-in-folder', async (_event, filePath: string) => {
     try {
       shell.showItemInFolder(filePath);

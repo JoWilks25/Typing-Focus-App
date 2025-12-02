@@ -35,7 +35,7 @@ export const Editor = () => {
   const setSessionActive = useSessionStore(state => state.setSessionActive);
   const updateContent = useEditorStore(state => state.updateContent);
   const goalAchieved = useEditorStore(state => state.goalAchieved);
-
+  const editorJson = useEditorStore(state => state.json);
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
@@ -64,6 +64,10 @@ export const Editor = () => {
   useEffect(() => {
     if (activeSession) {
       editor.setEditable(true);
+      // Load JSON content if it exists (from loading an existing file)
+      if (editorJson) {
+        editor.commands.setContent(editorJson);
+      }
     } else {
       editor.setEditable(false);
     }

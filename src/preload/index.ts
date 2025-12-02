@@ -78,6 +78,16 @@ contextBridge.exposeInMainWorld('api', {
       }
       return response.data;
     },
+    showOpenTiptap: async (): Promise<string | null> => {
+      const response = await ipcRenderer.invoke('dialog:show-open-tiptap');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to open file dialog');
+      }
+      if (response.canceled) {
+        return null;
+      }
+      return response.data;
+    },
   },
   shell: {
     showItemInFolder: async (filePath: string): Promise<void> => {

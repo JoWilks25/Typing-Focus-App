@@ -8,6 +8,7 @@ interface EditorState {
   formattedContent: string;
   plainText: string;
   wordCount: number;
+  initialWordCount: number; // Add this
   json: EditorJson | null;
   characterCount: number;
   goal: number;
@@ -25,6 +26,7 @@ interface EditorState {
   ) => void;
   resetEditor: () => void;
   setGoal: (goal: number) => void;
+  setInitialWordCount: (count: number) => void; // Add this action
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -41,13 +43,16 @@ export const useEditorStore = create<EditorState>()(
       lastUpdated: null,
       timeProgress: 0,
       goalAchieved: false,
+      initialWordCount: 0,
 
       // Actions
       updateContent: (content, text, json, wordCount) => {
         set((state) => {
           const sessionState = useSessionStore.getState();
           if (sessionState.goalType === 'wordcount') {
-            const newGoalProgress = state.goal > 0 ? Math.round((wordCount / state.goal) * 100) : 0;
+            // Calculate progress based on NEW words (current - initial)
+            const newWords = wordCount - state.initialWordCount;
+            const newGoalProgress = state.goal > 0 ? Math.round((newWords / state.goal) * 100) : 0;
             // Only update goalProgress if it actually changed
             if (newGoalProgress === state.goalProgress) {
               return {
@@ -92,9 +97,11 @@ export const useEditorStore = create<EditorState>()(
         lastUpdated: null,
         timeProgress: 0,
         goalAchieved: false,
+        initialWordCount: 0,
       }, false, 'resetEditor'),
       setGoal: (goal) => set({ goal }, false, 'setGoal'),
       setTimeProgress: (timeProgress) => set({ timeProgress, goalAchieved: timeProgress >= 100 }, false, 'setTimeProgress'),
+      setInitialWordCount: (count) => set({ initialWordCount: count }, false, 'setInitialWordCount'),
     }),
     { name: 'EditorStore' }
   )
