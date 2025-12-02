@@ -81,23 +81,23 @@ export const Editor = () => {
     }
   }, [goalAchieved])
 
-  const handleSave = async () => {
-    const filePath = useSessionStore.getState().filePath;
-    const content = useEditorStore.getState().json;
+  // const handleSave = async () => {
+  //   const filePath = useSessionStore.getState().filePath;
+  //   const content = useEditorStore.getState().json;
 
-    if (!filePath || !content) {
-      // Show error or save dialog
-      return;
-    }
+  //   if (!filePath || !content) {
+  //     // Show error or save dialog
+  //     return;
+  //   }
 
-    try {
-      await window.api?.file?.writeJson(filePath, content);
-      // Show success notification
-    } catch (error) {
-      // Show error notification
-      console.error('Failed to save:', error);
-    }
-  };
+  //   try {
+  //     await window.api?.file?.writeJson(filePath, content);
+  //     // Show success notification
+  //   } catch (error) {
+  //     // Show error notification
+  //     console.error('Failed to save:', error);
+  //   }
+  // };
 
   return (
     <EditorContainer>
@@ -105,7 +105,6 @@ export const Editor = () => {
         <EditorTitleText>
           {displayTitle}
         </EditorTitleText>
-        <button onClick={handleSave}>Save Content</button>
         <SessionStats />
       </EditorTitle>
 
