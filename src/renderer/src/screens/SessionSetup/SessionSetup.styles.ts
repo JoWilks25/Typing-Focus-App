@@ -4,6 +4,26 @@ export const SetupContainer = styled.div`
   max-width: clamp(28rem, 90vw, 64rem);
   margin: 0 auto;
   padding: 0 1rem; /* modest side padding so 90vw doesn't touch edges */
+
+  input::placeholder {
+    color: ${props => props.theme.colors.text.quaternary};
+    opacity: 0.7;
+  }
+
+  input::-webkit-input-placeholder {
+    color: ${props => props.theme.colors.text.quaternary};
+    opacity: 0.7;
+  }
+
+  input::-moz-placeholder {
+    color: ${props => props.theme.colors.text.quaternary};
+    opacity: 0.7;
+  }
+
+  input:-ms-input-placeholder {
+    color: ${props => props.theme.colors.text.quaternary};
+    opacity: 0.7;
+  }
 `;
 
 export const Header = styled.div`
@@ -338,7 +358,7 @@ export const FileGrid = styled.div`
   gap: 1rem;
 
   @media (min-width: 900px) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     align-items: end;
   }
 `;

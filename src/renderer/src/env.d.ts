@@ -31,5 +31,20 @@ interface Window {
     session: {
       end: () => void;
     };
+    file: {
+      write: (filePath: string, content: string) => Promise<void>;
+      read: (filePath: string) => Promise<string>;
+      exists: (filePath: string) => Promise<boolean>;
+    };
+    app: {
+      getDefaultSaveDirectory: () => Promise<string>;
+    };
+    dialog: {
+      showOpenDirectory: (defaultPath?: string) => Promise<string | null>;
+    };
+    shell: {
+      showItemInFolder: (filePath: string) => Promise<void>;
+    };
+    onDistractionTimeout?: (callback: () => void) => void;
   };
 }

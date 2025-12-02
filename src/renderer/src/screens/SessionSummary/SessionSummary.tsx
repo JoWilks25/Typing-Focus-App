@@ -48,8 +48,15 @@ export function SessionSummary(): React.JSX.Element {
     setView('editor');
   }
 
-  const handleOpenFolder = () => {
-    // TODO
+  const handleOpenFolder = async () => {
+    if (lastSession.filePath) {
+      try {
+        await window.api?.shell?.showItemInFolder(lastSession.filePath);
+      } catch (error) {
+        console.error('Failed to open folder:', error);
+        // Optionally show an error message to the user
+      }
+    }
   }
 
   return (

@@ -18,12 +18,34 @@ if (window.api?.onShouldShowDistractionWarning) {
 
 // Set up listener for ending session from distraction window
 if (window.api?.onEndSessionFromDistraction) {
-  window.api.onEndSessionFromDistraction(() => {
+  window.api.onEndSessionFromDistraction(async () => {
     const sessionStore = useSessionStore.getState();
     const editorStore = useEditorStore.getState();
     const appStore = useAppStore.getState();
 
     if (sessionStore.sessionActive) {
+      // Save file before ending session
+      await sessionStore.saveCurrentFile();
+
+      // Execute the full end session flow
+      sessionStore.endSession();
+      editorStore.resetEditor();
+      appStore.setView('session-summary');
+    }
+  });
+}
+
+// Set up listener for distraction timeout
+if (window.api?.onDistractionTimeout) {
+  window.api.onDistractionTimeout(async () => {
+    const sessionStore = useSessionStore.getState();
+    const editorStore = useEditorStore.getState();
+    const appStore = useAppStore.getState();
+
+    if (sessionStore.sessionActive) {
+      // Save file before ending session
+      await sessionStore.saveCurrentFile();
+
       // Execute the full end session flow
       sessionStore.endSession();
       editorStore.resetEditor();

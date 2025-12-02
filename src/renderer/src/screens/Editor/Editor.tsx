@@ -79,15 +79,31 @@ export const Editor = () => {
     }
   }, [goalAchieved])
 
+  const handleSave = async () => {
+    const filePath = useSessionStore.getState().filePath;
+    const content = useEditorStore.getState().formattedContent;
+
+    if (!filePath) {
+      // Show error or save dialog
+      return;
+    }
+
+    try {
+      await window.api?.file?.write(filePath, content);
+      // Show success notification
+    } catch (error) {
+      // Show error notification
+      console.error('Failed to save:', error);
+    }
+  };
+
   return (
     <EditorContainer>
       <EditorTitle>
         <EditorTitleText>
           {displayTitle}
         </EditorTitleText>
-        {/* <button onClick={handleCloseModal}>Close</button>
-        <button onClick={handleOpenModal}>Open</button> */}
-
+        <button onClick={handleSave}>Save Content</button>
         <SessionStats />
       </EditorTitle>
 

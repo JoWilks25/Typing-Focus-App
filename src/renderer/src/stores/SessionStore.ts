@@ -38,6 +38,7 @@ interface SessionState {
   setInitSession: (fileName: SessionState['fileName'], filePath: SessionState['filePath'], goal: SessionState['goal'], goalType: SessionState['goalType'], sessionActive: SessionState['sessionActive']) => void;
   endSession: () => void;
   setSessionActive: (value: boolean) => void;
+  saveCurrentFile: () => Promise<void>; // Add this line
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -137,6 +138,23 @@ export const useSessionStore = create<SessionState>()(
 
         resetElapsedTime: () => {
           set({ elapsedSeconds: 0 }, false, 'resetElapsedTime');
+        },
+
+        // Add a helper function to save the current file
+        saveCurrentFile: async (): Promise<void> => {
+          const state = get();
+          const editorState = useEditorStore.getState();
+
+          // Only save if there's a file path and content
+          if (state.filePath && editorState.formattedContent) {
+            try {
+              await window.api?.file?.write(state.filePath, editorState.formattedContent);
+              console.log('File saved successfully');
+            } catch (error) {
+              console.error('Failed to save file:', error);
+              // Optionally show error notification to user
+            }
+          }
         },
       }),
       {
