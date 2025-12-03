@@ -24,6 +24,7 @@ import { useSessionStore } from '@renderer/stores/SessionStore';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation';
 import { DraggableModal } from '@renderer/components/DraggableModal/DraggableModal';
 import { CompletionModal } from '../SessionModals/CompletionModal';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 export const Editor = () => {
   const [showSessionSetupModal, setShowSessionSetupModal] = useState(false);
@@ -34,14 +35,16 @@ export const Editor = () => {
   const setSessionActive = useSessionStore(state => state.setSessionActive);
   const updateContent = useEditorStore(state => state.updateContent);
   const goalAchieved = useEditorStore(state => state.goalAchieved);
-
+  const editorJson = useEditorStore(state => state.json);
+  const initialWordCount = useEditorStore(state => state.initialWordCount);
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
     const text = editor.getText();
-    const wordCount = editor.storage.characterCount.words();
-    updateContent(content, text, wordCount)
-  }
+    const json: EditorJson = editor.getJSON();
+    const wordCount = editor.storage.characterCount.words() - initialWordCount;
+    updateContent(content, text, json, wordCount);
+  };
 
   // Initialize Tiptap editor with basic extensions (always required for schema)
   const editor = useEditor({
@@ -62,6 +65,10 @@ export const Editor = () => {
   useEffect(() => {
     if (activeSession) {
       editor.setEditable(true);
+      // Load JSON content if it exists (from loading an existing file)
+      if (editorJson) {
+        editor.commands.setContent(editorJson);
+      }
     } else {
       editor.setEditable(false);
     }
@@ -79,23 +86,23 @@ export const Editor = () => {
     }
   }, [goalAchieved])
 
-  const handleSave = async () => {
-    const filePath = useSessionStore.getState().filePath;
-    const content = useEditorStore.getState().formattedContent;
+  // const handleSave = async () => {
+  //   const filePath = useSessionStore.getState().filePath;
+  //   const content = useEditorStore.getState().json;
 
-    if (!filePath) {
-      // Show error or save dialog
-      return;
-    }
+  //   if (!filePath || !content) {
+  //     // Show error or save dialog
+  //     return;
+  //   }
 
-    try {
-      await window.api?.file?.write(filePath, content);
-      // Show success notification
-    } catch (error) {
-      // Show error notification
-      console.error('Failed to save:', error);
-    }
-  };
+  //   try {
+  //     await window.api?.file?.writeJson(filePath, content);
+  //     // Show success notification
+  //   } catch (error) {
+  //     // Show error notification
+  //     console.error('Failed to save:', error);
+  //   }
+  // };
 
   return (
     <EditorContainer>
@@ -103,7 +110,6 @@ export const Editor = () => {
         <EditorTitleText>
           {displayTitle}
         </EditorTitleText>
-        <button onClick={handleSave}>Save Content</button>
         <SessionStats />
       </EditorTitle>
 
@@ -172,7 +178,7 @@ export const Editor = () => {
         title="Session Setup"
         isVisible={showSessionSetupModal}
         onClose={() => setShowSessionSetupModal(false)}
-        width={600}
+        width={1000}
         height="auto"
       >
         <SessionSetup closeModal={() => setShowSessionSetupModal(false)} />

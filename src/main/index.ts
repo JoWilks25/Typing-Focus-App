@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join } from 'path';
 import { fileManager } from './services/fileManager';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 let mainWindow: BrowserWindow | null = null;
 let distractionWindow: BrowserWindow | null = null;
@@ -201,6 +202,18 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('file:write-json', async (_event, filePath: string, content: EditorJson) => {
+    try {
+      await fileManager.writeJsonFile(filePath, content);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
   ipcMain.handle('file:read', async (_event, filePath: string) => {
     try {
       const content = await fileManager.readFile(filePath);
@@ -261,6 +274,27 @@ app.whenReady().then(() => {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  ipcMain.handle('dialog:show-open-tiptap', async (_event) => {
+    try {
+      const result = await dialog.showOpenDialog(mainWindow!, {
+        properties: ['openFile'],
+        title: 'Select Draft Tree session file',
+        filters: [{ name: 'Draft Tree Sessions', extensions: ['dt.json'] }],
+      });
+
+      if (result.canceled || !result.filePaths[0]) {
+        return { success: true, canceled: true, data: null };
+      }
+
+      return { success: true, canceled: false, data: result.filePaths[0] };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   });

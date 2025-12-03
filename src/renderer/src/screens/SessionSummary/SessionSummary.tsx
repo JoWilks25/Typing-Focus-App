@@ -51,13 +51,18 @@ export function SessionSummary(): React.JSX.Element {
   const handleOpenFolder = async () => {
     if (lastSession.filePath) {
       try {
-        await window.api?.shell?.showItemInFolder(lastSession.filePath);
+        // Derive the directory from the stored base path
+        const lastSlash = lastSession.filePath.lastIndexOf('/');
+        const folderPath =
+          lastSlash === -1 ? lastSession.filePath : lastSession.filePath.slice(0, lastSlash);
+
+        await window.api?.shell?.showItemInFolder(folderPath);
       } catch (error) {
         console.error('Failed to open folder:', error);
         // Optionally show an error message to the user
       }
     }
-  }
+  };
 
   return (
     <SummaryContainer>
