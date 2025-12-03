@@ -51,8 +51,7 @@ export const useEditorStore = create<EditorState>()(
           const sessionState = useSessionStore.getState();
           if (sessionState.goalType === 'wordcount') {
             // Calculate progress based on NEW words (current - initial)
-            const newWords = wordCount - state.initialWordCount;
-            const newGoalProgress = state.goal > 0 ? Math.round((newWords / state.goal) * 100) : 0;
+            const newGoalProgress = state.goal > 0 ? Math.round((wordCount / state.goal) * 100) : 0;
             // Only update goalProgress if it actually changed
             if (newGoalProgress === state.goalProgress) {
               return {

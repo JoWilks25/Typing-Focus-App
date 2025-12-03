@@ -36,12 +36,13 @@ export const Editor = () => {
   const updateContent = useEditorStore(state => state.updateContent);
   const goalAchieved = useEditorStore(state => state.goalAchieved);
   const editorJson = useEditorStore(state => state.json);
+  const initialWordCount = useEditorStore(state => state.initialWordCount);
 
   const handleOnUpdate = ({ editor }: { editor: ttEditor }) => {
     const content = editor.getHTML();
     const text = editor.getText();
     const json: EditorJson = editor.getJSON();
-    const wordCount = editor.storage.characterCount.words();
+    const wordCount = editor.storage.characterCount.words() - initialWordCount;
     updateContent(content, text, json, wordCount);
   };
 
@@ -177,7 +178,7 @@ export const Editor = () => {
         title="Session Setup"
         isVisible={showSessionSetupModal}
         onClose={() => setShowSessionSetupModal(false)}
-        width={600}
+        width={1000}
         height="auto"
       >
         <SessionSetup closeModal={() => setShowSessionSetupModal(false)} />

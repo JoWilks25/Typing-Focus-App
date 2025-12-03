@@ -2,8 +2,12 @@ import styled from 'styled-components';
 
 export const SetupContainer = styled.div`
   max-width: clamp(28rem, 90vw, 64rem);
+  width: 100%;
   margin: 0 auto;
-  padding: 0 1rem; /* modest side padding so 90vw doesn't touch edges */
+  padding: 0 1rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 
   input::placeholder {
     color: ${props => props.theme.colors.text.quaternary};
@@ -47,6 +51,10 @@ export const FileSection = styled.div`
   padding: 1.25rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 export const SectionTitle = styled.h2`
@@ -141,7 +149,9 @@ export const InitialWordInfo = styled.div`
 `;
 
 export const FilenameInput = styled.div`
-  margin-bottom: 1rem;
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
 
   label {
     display: block;
@@ -150,13 +160,15 @@ export const FilenameInput = styled.div`
   }
 
   input {
-    width: 90%;
+    width: 100%;
     padding: 0.75rem;
     background-color: ${props => props.theme.colors.background.primary};
     border: 1px solid ${props => props.theme.colors.border.tertiary};
     border-radius: 4px;
     color: ${props => props.theme.colors.text.primary};
     font-size: ${props => props.theme.fontSizes.base};
+    box-sizing: border-box;
+    overflow-x: auto;
   }
 
   input:focus {
@@ -180,6 +192,9 @@ export const Input = styled.input<{ $hasError?: boolean }>`
   border-radius: 4px;
   color: ${props => props.theme.colors.text.primary};
   font-size: ${props => props.theme.fontSizes.base};
+  box-sizing: border-box;
+  overflow-x: auto;
+  min-width: 0;
 
   &:focus {
     outline: 2px solid ${props => props.theme.colors.accent.blue};
@@ -202,7 +217,9 @@ export const ErrorText = styled.span`
 `;
 
 export const LocationSection = styled.div`
-  margin-bottom: 1rem;
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
 
   label {
     display: block;
@@ -212,15 +229,17 @@ export const LocationSection = styled.div`
 `;
 
 export const LocationDisplay = styled.div`
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  min-width: 0; /* allow the path to shrink and ellipsis correctly */
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 export const PathDisplay = styled.span`
-  flex: 1;
-  min-width: 0; /* critical for ellipsis in flex containers */
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 0.75rem;
   background-color: ${props => props.theme.colors.background.primary};
   border: 1px solid ${props => props.theme.colors.border.tertiary};
@@ -230,9 +249,11 @@ export const PathDisplay = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  box-sizing: border-box;
 `;
 
 export const BrowseButton = styled.button`
+  flex: 0 0 auto;         /* keep natural width, don’t stretch */
   padding: 0.75rem 1.5rem;
   background-color: ${props => props.theme.colors.background.primary};
   border: 1px solid ${props => props.theme.colors.border.tertiary};
@@ -240,7 +261,7 @@ export const BrowseButton = styled.button`
   color: ${props => props.theme.colors.text.primary};
   cursor: pointer;
   transition: all 0.2s;
-  white-space: nowrap;
+  white-space: nowrap;    /* keep label on one line */
 
   &:hover {
     background-color: ${props => props.theme.colors.background.secondary};
@@ -343,23 +364,39 @@ export const SubmitHint = styled.span`
 
 /* Responsive form grid for Goal Selector + Goal Input */
 export const FormGrid = styled.div`
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+  width: 100%;
+  min-width: 0;
 
   @media (min-width: 900px) {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
+    flex-direction: row;
+    align-items: flex-start;
   }
+`;
+
+export const GoalSelectorWrapper = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const GoalInputWrapper = styled.div`
+  flex: 1;
+  min-width: 0;
 `;
 
 /* File grid for filename + location in new file mode */
 export const FileGrid = styled.div`
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+  width: 100%;
+  min-width: 0;
 
   @media (min-width: 900px) {
-    grid-template-rows: 1fr 1fr;
-    align-items: end;
+    flex-direction: row;
+    align-items: flex-end;
   }
 `;
 
@@ -561,7 +598,10 @@ export const LoadedFileSummary = styled.div`
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 4px;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 export const LoadedFileTitle = styled.div`
@@ -575,6 +615,12 @@ export const LoadedFilePath = styled.div`
   font-size: ${props => props.theme.fontSizes.sm};
   color: ${props => props.theme.colors.accent.greenLighter};
   margin-bottom: 0.25rem;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
 `;
 
 export const LoadedFileStats = styled.span`

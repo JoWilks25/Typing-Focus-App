@@ -18,6 +18,8 @@ import {
   LoadedFileTitle,
   LoadedFilePath,
   FormGrid,
+  GoalSelectorWrapper,
+  GoalInputWrapper,
   SubmitButton,
 } from './SessionSetup.styles';
 import { GoalType, useSessionStore } from '@renderer/stores/SessionStore';
@@ -343,15 +345,19 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
         {/* Goal Selection - show if valid filename (NEW) or file loaded (EXISTING) */}
         {((fileMode === NEW && isValidFileName) || (fileMode === EXISTING && loadedFilePath)) && (
           <FormGrid>
-            <GoalSelector
-              goalType={formData.goalType}
-              onGoalTypeChange={handleGoalTypeChange}
-            />
-            <GoalInput
-              goalType={formData.goalType}
-              value={formData.goal}
-              onChange={handleGoalChange}
-            />
+            <GoalSelectorWrapper>
+              <GoalSelector
+                goalType={formData.goalType}
+                onGoalTypeChange={handleGoalTypeChange}
+              />
+            </GoalSelectorWrapper>
+            <GoalInputWrapper>
+              <GoalInput
+                goalType={formData.goalType}
+                value={formData.goal}
+                onChange={handleGoalChange}
+              />
+            </GoalInputWrapper>
           </FormGrid>
         )}
 
