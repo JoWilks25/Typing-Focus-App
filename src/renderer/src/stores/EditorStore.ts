@@ -50,19 +50,8 @@ export const useEditorStore = create<EditorState>()(
         set((state) => {
           const sessionState = useSessionStore.getState();
           if (sessionState.goalType === 'wordcount') {
-            // Calculate progress based on NEW words (current - initial)
             const newGoalProgress = state.goal > 0 ? Math.round((wordCount / state.goal) * 100) : 0;
-            // Only update goalProgress if it actually changed
-            if (newGoalProgress === state.goalProgress) {
-              return {
-                formattedContent: content,
-                plainText: text,
-                json,
-                wordCount,
-                characterCount: text.length,
-                lastUpdated: dayjs().format(),
-              };
-            }
+            const shouldTriggerGoal = newGoalProgress >= 100 && text.endsWith(' ');
             return {
               formattedContent: content,
               plainText: text,
@@ -70,7 +59,7 @@ export const useEditorStore = create<EditorState>()(
               wordCount,
               characterCount: text.length,
               goalProgress: newGoalProgress,
-              goalAchieved: newGoalProgress >= 100,
+              goalAchieved: shouldTriggerGoal,
               lastUpdated: dayjs().format(),
             };
           } else {
