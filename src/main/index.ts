@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join } from 'path';
 import { fileManager } from './services/fileManager';
-import { convertJsonToDocx } from './services/exportService';
+import { convertHtmlToDocx } from './services/exportService';
 import type { EditorJson } from '@shared/tiptapTypes';
 
 let mainWindow: BrowserWindow | null = null;
@@ -353,10 +353,10 @@ app.whenReady().then(() => {
     }
   });
 
-  // Export DOCX handler - converts JSON to DOCX buffer in main process
-  ipcMain.handle('export:json-to-docx', async (_event, json: EditorJson) => {
+  // Export DOCX handler - converts HTML to DOCX buffer in main process
+  ipcMain.handle('export:html-to-docx', async (_event, html: string) => {
     try {
-      const buffer = await convertJsonToDocx(json);
+      const buffer = await convertHtmlToDocx(html);
       // Convert Buffer to base64 for IPC transmission
       return { success: true, data: buffer.toString('base64') };
     } catch (error) {

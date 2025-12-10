@@ -54,7 +54,7 @@ declare global {
       };
       onDistractionTimeout?: (callback: () => void) => void;
       export: {
-        jsonToDocx: (json: EditorJson) => Promise<ArrayBuffer>;
+        htmlToDocx: (html: string) => Promise<ArrayBuffer>;
       };
     };
   }

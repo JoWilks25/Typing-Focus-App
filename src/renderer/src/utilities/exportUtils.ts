@@ -27,6 +27,22 @@ export async function convertJsonToMarkdown(json: EditorJson): Promise<string> {
 }
 
 /**
+ * Convert TipTap JSON to HTML
+ */
+export async function convertJsonToHtml(json: EditorJson): Promise<string> {
+  // Create a temporary editor instance to get HTML
+  const editor = new Editor({
+    extensions: [StarterKit, TextAlign],
+    content: json,
+  });
+
+  const html = editor.getHTML();
+  editor.destroy();
+
+  return html;
+}
+
+/**
  * Convert TipTap JSON to plain text
  */
 export async function convertJsonToText(json: EditorJson): Promise<string> {

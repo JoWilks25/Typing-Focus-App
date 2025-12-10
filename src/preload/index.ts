@@ -117,8 +117,8 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('distraction-timeout-end-session', () => callback());
   },
   export: {
-    jsonToDocx: async (json: EditorJson): Promise<ArrayBuffer> => {
-      const response = await ipcRenderer.invoke('export:json-to-docx', json);
+    htmlToDocx: async (html: string): Promise<ArrayBuffer> => {
+      const response = await ipcRenderer.invoke('export:html-to-docx', html);
       if (!response.success) {
         throw new Error(response.error || 'Failed to convert to DOCX');
       }

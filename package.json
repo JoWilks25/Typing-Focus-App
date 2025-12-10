@@ -34,6 +34,7 @@
     "@types/uuid": "^10.0.0",
     "dayjs": "^1.11.19",
     "docx": "^8.5.0",
+    "html-to-docx": "^1.8.0",
     "icon-gen": "^5.0.0",
     "lottie-react": "^2.4.1",
     "prosemirror-view": "^1.41.2",

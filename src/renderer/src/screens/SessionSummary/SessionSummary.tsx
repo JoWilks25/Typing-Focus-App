@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import Lottie from 'lottie-react';
 import {
@@ -28,8 +28,7 @@ import { useSessionStore } from '@renderer/stores/SessionStore';
 import { useAppStore } from '@renderer/stores/AppStore';
 import treeGrow7Animation from '@renderer/assets/animations/tree-grow-7.json';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation.styles';
-import { convertJsonToDocx } from '@renderer/utilities/exportUtils';
-import { convertJsonToText, convertJsonToMarkdown } from '@renderer/utilities/exportUtils';
+import { convertJsonToText, convertJsonToMarkdown, convertJsonToHtml } from '@renderer/utilities/exportUtils';
 import type { EditorJson } from '@shared/tiptapTypes';
 
 export function SessionSummary(): React.JSX.Element {
@@ -118,8 +117,9 @@ export function SessionSummary(): React.JSX.Element {
         const markdown = await convertJsonToMarkdown(json);
         await window.api?.file?.write(savePath, markdown);
       } else if (format === 'docx') {
-        // Convert in main process via IPC
-        const docxBuffer = await window.api?.export?.jsonToDocx(json);
+        // Convert JSON to HTML in renderer, then HTML to DOCX in main
+        const html = await convertJsonToHtml(json);
+        const docxBuffer = await window.api?.export?.htmlToDocx(html);
         if (!docxBuffer) {
           throw new Error('Failed to convert to DOCX');
         }
