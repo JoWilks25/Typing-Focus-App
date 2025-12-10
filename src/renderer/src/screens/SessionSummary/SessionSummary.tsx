@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import Lottie from 'lottie-react';
 import {
@@ -28,12 +28,15 @@ import { useSessionStore } from '@renderer/stores/SessionStore';
 import { useAppStore } from '@renderer/stores/AppStore';
 import treeGrow7Animation from '@renderer/assets/animations/tree-grow-7.json';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation.styles';
-
+import { convertJsonToDocx } from '@renderer/utilities/exportUtils';
+import { convertJsonToText, convertJsonToMarkdown } from '@renderer/utilities/exportUtils';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 export function SessionSummary(): React.JSX.Element {
   const sessionStats = useSessionStore(state => state.sessionStats);
   const lastSession = sessionStats[sessionStats.length - 1];
   const setView = useAppStore(state => state.setView);
+  const [isExporting, setIsExporting] = useState(false);
 
   const progressAmount = lastSession.goalType === 'wordcount' ? lastSession.goalProgress : lastSession.timeProgress;
 
@@ -61,6 +64,74 @@ export function SessionSummary(): React.JSX.Element {
         console.error('Failed to open folder:', error);
         // Optionally show an error message to the user
       }
+    }
+  };
+
+  const handleExport = async (format: 'txt' | 'md' | 'docx') => {
+    if (!lastSession.filePath) {
+      alert('No file path available for export');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Read the JSON file
+      const jsonFilePath = lastSession.filePath.endsWith('.dt.json')
+        ? lastSession.filePath
+        : `${lastSession.filePath}.dt.json`;
+
+      const jsonContent = await window.api?.file?.read(jsonFilePath);
+      if (!jsonContent) {
+        throw new Error('Failed to read session file');
+      }
+
+      const json: EditorJson = JSON.parse(jsonContent);
+
+      // Determine default filename
+      const baseName = lastSession.fileName || 'export';
+      const extensions = {
+        txt: '.txt',
+        md: '.md',
+        docx: '.docx',
+      };
+      const defaultPath = `${baseName}${extensions[format]}`;
+
+      // Show save dialog
+      const savePath = await window.api?.dialog?.showSaveExport({
+        defaultPath,
+        filters: [
+          { name: format === 'txt' ? 'Text File' : format === 'md' ? 'Markdown File' : 'Word Document', extensions: [format] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      });
+
+      if (!savePath) {
+        setIsExporting(false);
+        return; // User canceled
+      }
+
+      // Convert and save
+      if (format === 'txt') {
+        const text = await convertJsonToText(json);
+        await window.api?.file?.write(savePath, text);
+      } else if (format === 'md') {
+        const markdown = await convertJsonToMarkdown(json);
+        await window.api?.file?.write(savePath, markdown);
+      } else if (format === 'docx') {
+        // Convert in main process via IPC
+        const docxBuffer = await window.api?.export?.jsonToDocx(json);
+        if (!docxBuffer) {
+          throw new Error('Failed to convert to DOCX');
+        }
+        await window.api?.file?.writeBinary(savePath, docxBuffer);
+      }
+
+      alert(`Successfully exported to ${savePath}`);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert(`Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -152,6 +223,8 @@ export function SessionSummary(): React.JSX.Element {
         </FileInfo>
       )}
 
+      {/* ... existing code ... */}
+
       {/* Action Buttons */}
       <Actions>
         <ActionButton
@@ -161,19 +234,36 @@ export function SessionSummary(): React.JSX.Element {
           Return to Editor
         </ActionButton>
         {lastSession.filePath && (
-          <ActionButton
-            onClick={handleOpenFolder}
-            $variant="secondary"
-          >
-            Open Folder
-          </ActionButton>
+          <>
+            <ActionButton
+              onClick={handleOpenFolder}
+              $variant="secondary"
+            >
+              Open Folder
+            </ActionButton>
+            <ActionButton
+              onClick={() => handleExport('txt')}
+              $variant="secondary"
+              disabled={isExporting}
+            >
+              {isExporting ? 'Exporting...' : 'Export as TXT'}
+            </ActionButton>
+            <ActionButton
+              onClick={() => handleExport('md')}
+              $variant="secondary"
+              disabled={isExporting}
+            >
+              {isExporting ? 'Exporting...' : 'Export as MD'}
+            </ActionButton>
+            <ActionButton
+              onClick={() => handleExport('docx')}
+              $variant="secondary"
+              disabled={isExporting}
+            >
+              {isExporting ? 'Exporting...' : 'Export as DOCX'}
+            </ActionButton>
+          </>
         )}
-        {/* <ActionButton
-          // onClick={handleViewDashboard}
-          $variant="secondary"
-        >
-          View Dashboard
-        </ActionButton> */}
       </Actions>
     </SummaryContainer>
   );
