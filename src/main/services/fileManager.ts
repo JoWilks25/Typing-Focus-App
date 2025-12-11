@@ -50,7 +50,7 @@ class FileManager {
   }
 
   /**
-   * Read  binary content from a file
+   * Read a file as a binary buffer (e.g., for DOCX imports)
    */
   async readFileBinary(filePath: string): Promise<Buffer> {
     try {

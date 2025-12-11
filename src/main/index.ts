@@ -303,6 +303,19 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('import:docx-to-html', async (_event, filePath: string) => {
+    try {
+      const buffer = await fileManager.readFileBinary(filePath);
+      const result = await mammoth.convertToHtml({ buffer });
+      return { success: true, data: result.value };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
   ipcMain.handle('shell:show-item-in-folder', async (_event, filePath: string) => {
     try {
       shell.showItemInFolder(filePath);

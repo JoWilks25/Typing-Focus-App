@@ -215,23 +215,34 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
       }
 
       if (extension === 'docx') {
-        // Use the new import API instead of file.read
-        const html = await window.api?.import?.docxToHtml(fullPath);
-        if (!html) {
+        try {
+          const html = await window.api?.import?.docxToHtml(fullPath);
+          if (!html) {
+            setLoadError('Unable to read DOCX file.');
+            setLoadedFilePath(null);
+            setLoadedFileDisplayPath(null);
+            setIsLoadingExisting(false);
+            return;
+          }
+
+          const doc = convertDocxToDoc(html);
+
+          useEditorStore.setState({ json: doc });
+          useEditorStore.getState().setInitialWordCount(countWordsFromDoc(doc));
+          setLoadedFilePath(basePath);
+          setLoadedFileDisplayPath(fullPath);
+          return;
+        } catch (docxError) {
+          console.error('Failed to import DOCX file:', docxError);
+          setLoadError('Failed to import DOCX file. Please try again.');
+          setLoadedFilePath(null);
+          setLoadedFileDisplayPath(null);
           setIsLoadingExisting(false);
           return;
         }
-
-        const doc = await convertDocxToDoc(html);
-
-        useEditorStore.setState({ json: doc });
-        useEditorStore.getState().setInitialWordCount(countWordsFromDoc(doc));
-        setLoadedFilePath(basePath);
-        setLoadedFileDisplayPath(fullPath);
-        return;
       }
 
-      setLoadError('Unsupported file type. Please choose a .dt.json, .txt, or .md file.');
+      setLoadError('Unsupported file type. Please choose a .dt.json, .txt, .md, or .docx file.');
       setLoadedFilePath(null);
       setLoadedFileDisplayPath(null);
     } catch (error) {
@@ -335,7 +346,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
           {fileMode === EXISTING && (
             <FileGrid>
               <LocationSection>
-                <label>Session File (supports .dt.json, .txt, .md)</label>
+                <label>Session File (supports .dt.json, .txt, .md, .docx)</label>
                 <LocationDisplay>
                   {!loadedFilePath ? (
                     <>

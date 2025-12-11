@@ -1,3 +1,7 @@
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import TextAlign from '@tiptap/extension-text-align';
+import { marked } from 'marked';
 import type { EditorJson } from '@shared/tiptapTypes';
 
 export const stripExtension = (filePath: string): string => {
@@ -11,160 +15,47 @@ export const stripExtension = (filePath: string): string => {
 
 export const normalizeNewlines = (text: string): string => text.replace(/\r\n/g, '\n');
 
-const parseInline = (text: string): EditorJson[] => {
-  const nodes: EditorJson[] = [];
-  let remaining = text;
-  const tokenRegex = /(\*\*[^*]+?\*\*|\*[^*]+?\*|`[^`]+?`)/;
+const escapeHtml = (text: string): string =>
+  text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
-  while (remaining.length) {
-    const match = remaining.match(tokenRegex);
-    if (!match || match.index === undefined) {
-      nodes.push({ type: 'text', text: remaining });
-      break;
-    }
-
-    const [token] = match;
-    const before = remaining.slice(0, match.index);
-    if (before) {
-      nodes.push({ type: 'text', text: before });
-    }
-
-    const isBold = token.startsWith('**');
-    const isInlineCode = token.startsWith('`');
-    const cleanText = isBold
-      ? token.slice(2, -2)
-      : isInlineCode
-        ? token.slice(1, -1)
-        : token.slice(1, -1);
-
-    const marks =
-      isInlineCode
-        ? [{ type: 'code' }]
-        : isBold
-          ? [{ type: 'bold' }]
-          : [{ type: 'italic' }];
-
-    nodes.push({
-      type: 'text',
-      text: cleanText,
-      marks,
-    });
-
-    remaining = remaining.slice(match.index + token.length);
-  }
-
-  return nodes.length ? nodes : [{ type: 'text', text }];
+export const convertHtmlToDoc = (html: string): EditorJson => {
+  const editor = new Editor({
+    extensions: [StarterKit, TextAlign],
+    content: html || '',
+  });
+  const json = editor.getJSON();
+  editor.destroy();
+  return json;
 };
 
-const toParagraph = (text: string): EditorJson => ({
-  type: 'paragraph',
-  content: parseInline(text.trim()),
-});
-
 export const convertTextToDoc = (raw: string): EditorJson => {
-  const normalized = normalizeNewlines(raw);
+  const normalized = normalizeNewlines(raw).trim();
   const paragraphs = normalized
     .split(/\n{2,}/)
     .map(chunk => chunk.trim())
-    .filter(Boolean)
-    .map(toParagraph);
+    .filter(Boolean);
 
-  return {
-    type: 'doc',
-    content: paragraphs.length ? paragraphs : [toParagraph(normalized.trim())],
-  };
+  const html = paragraphs.length
+    ? paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('')
+    : `<p>${escapeHtml(normalized)}</p>`;
+
+  return convertHtmlToDoc(html);
 };
 
 export const convertMarkdownToDoc = (raw: string): EditorJson => {
-  const lines = normalizeNewlines(raw).split('\n');
-  const content: EditorJson[] = [];
-  let i = 0;
+  const normalized = normalizeNewlines(raw);
+  const html = marked.parse(normalized, { async: false });
+  const htmlString = typeof html === 'string' ? html : '';
+  return convertHtmlToDoc(htmlString);
+};
 
-  while (i < lines.length) {
-    const current = lines[i];
-    const trimmed = current.trim();
-
-    if (!trimmed) {
-      i += 1;
-      continue;
-    }
-
-    if (trimmed.startsWith('```')) {
-      i += 1;
-      const codeLines: string[] = [];
-      while (i < lines.length && !lines[i].trim().startsWith('```')) {
-        codeLines.push(lines[i]);
-        i += 1;
-      }
-      if (i < lines.length) {
-        i += 1; // skip closing ```
-      }
-      content.push({
-        type: 'codeBlock',
-        content: [{ type: 'text', text: codeLines.join('\n') }],
-      });
-      continue;
-    }
-
-    const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
-    if (headingMatch) {
-      content.push({
-        type: 'heading',
-        attrs: { level: headingMatch[1].length },
-        content: parseInline(headingMatch[2].trim()),
-      });
-      i += 1;
-      continue;
-    }
-
-    if (/^[-*]\s+/.test(trimmed)) {
-      const items: EditorJson[] = [];
-      while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
-        const itemText = lines[i].trim().replace(/^[-*]\s+/, '');
-        items.push({
-          type: 'listItem',
-          content: [toParagraph(itemText)],
-        });
-        i += 1;
-      }
-      content.push({ type: 'bulletList', content: items });
-      continue;
-    }
-
-    if (/^\d+\.\s+/.test(trimmed)) {
-      const items: EditorJson[] = [];
-      while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
-        const itemText = lines[i].trim().replace(/^\d+\.\s+/, '');
-        items.push({
-          type: 'listItem',
-          content: [toParagraph(itemText)],
-        });
-        i += 1;
-      }
-      content.push({ type: 'orderedList', content: items });
-      continue;
-    }
-
-    const paraLines: string[] = [];
-    while (
-      i < lines.length &&
-      lines[i].trim() &&
-      !/^[-*]\s+/.test(lines[i].trim()) &&
-      !/^\d+\.\s+/.test(lines[i].trim()) &&
-      !lines[i].trim().startsWith('#') &&
-      !lines[i].trim().startsWith('```')
-    ) {
-      paraLines.push(lines[i].trim());
-      i += 1;
-    }
-    const paragraphText = paraLines.join(' ');
-    content.push(toParagraph(paragraphText));
-  }
-
-  return {
-    type: 'doc',
-    content: content.length ? content : [toParagraph(raw.trim())],
-  };
+export const convertDocxToDoc = (html: string): EditorJson => {
+  return convertHtmlToDoc(html || '');
 };
 
 const extractTextFromDoc = (node: EditorJson): string => {
@@ -184,24 +75,4 @@ const extractTextFromDoc = (node: EditorJson): string => {
 export const countWordsFromDoc = (doc: EditorJson): number => {
   const text = extractTextFromDoc(doc);
   return text.trim().split(/\s+/).filter(Boolean).length;
-};
-
-// Simple approach - convert HTML to markdown-like structure
-export const convertDocxToDoc = async (html: string): Promise<EditorJson> => {
-  // For now, you could use a simple HTML-to-text approach
-  // or integrate with a library like turndown to convert HTML -> Markdown
-  // then use convertMarkdownToDoc
-  
-  // Temporary simple implementation - strips HTML tags
-  const textContent = html
-    .replace(/<[^>]+>/g, ' ') // Remove HTML tags
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  // Use your existing text converter
-  return convertTextToDoc(textContent);
 };
