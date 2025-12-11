@@ -21,6 +21,7 @@ import {
   GoalSelectorWrapper,
   GoalInputWrapper,
   SubmitButton,
+  LoadedFileStats,
 } from './SessionSetup.styles';
 import { GoalType, useSessionStore } from '@renderer/stores/SessionStore';
 import { GoalSelector } from './GoalSelector';
@@ -225,6 +226,12 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
     }
   }
 
+  const loadedExt = useMemo(() => {
+    const lower = (loadedFileDisplayPath || loadedFilePath || '').toLowerCase();
+    if (!lower) return null;
+    return lower.endsWith('.dt.json') ? 'dt.json' : lower.split('.').pop();
+  }, [loadedFileDisplayPath, loadedFilePath]);
+
   const allInputsFilled = useMemo((): boolean => {
     if (fileMode === NEW) {
       return !!(isValidFileName && formData.filePath && formData.goal > 0);
@@ -310,10 +317,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
           {fileMode === EXISTING && (
             <FileGrid>
               <LocationSection>
-                <label>Session File</label>
-                <PathDisplay title="Supported file types">
-                  Supports .dt.json, .txt, .md
-                </PathDisplay>
+                <label>Session File (supports .dt.json, .txt, .md)</label>
                 <LocationDisplay>
                   {!loadedFilePath ? (
                     <>
@@ -346,10 +350,14 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
                 )}
                 {loadedFilePath && (
                   <LoadedFileSummary>
-                    <LoadedFileTitle>
-                      ✓ File Loaded
-                    </LoadedFileTitle>
+                    <LoadedFileTitle>✓ File Loaded</LoadedFileTitle>
                     <LoadedFilePath>{loadedFileDisplayPath || loadedFilePath}</LoadedFilePath>
+
+                    {loadedExt && loadedExt !== 'dt.json' && (
+                      <LoadedFileStats>
+                        This file will be imported and saved as .dt.json.
+                      </LoadedFileStats>
+                    )}
                   </LoadedFileSummary>
                 )}
               </LocationSection>
