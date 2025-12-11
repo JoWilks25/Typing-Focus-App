@@ -283,8 +283,12 @@ app.whenReady().then(() => {
     try {
       const result = await dialog.showOpenDialog(mainWindow!, {
         properties: ['openFile'],
-        title: 'Select Draft Tree session file',
-        filters: [{ name: 'Draft Tree Sessions', extensions: ['dt.json'] }],
+        title: 'Select Draft Tree file',
+        filters: [
+          { name: 'All supported', extensions: ['dt.json', 'txt', 'md'] },
+          { name: 'Draft Tree Sessions', extensions: ['dt.json'] },
+          { name: 'Text / Markdown', extensions: ['txt', 'md'] },
+        ],
       });
 
       if (result.canceled || !result.filePaths[0]) {
