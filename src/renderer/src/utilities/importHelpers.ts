@@ -185,3 +185,23 @@ export const countWordsFromDoc = (doc: EditorJson): number => {
   const text = extractTextFromDoc(doc);
   return text.trim().split(/\s+/).filter(Boolean).length;
 };
+
+// Simple approach - convert HTML to markdown-like structure
+export const convertDocxToDoc = async (html: string): Promise<EditorJson> => {
+  // For now, you could use a simple HTML-to-text approach
+  // or integrate with a library like turndown to convert HTML -> Markdown
+  // then use convertMarkdownToDoc
+  
+  // Temporary simple implementation - strips HTML tags
+  const textContent = html
+    .replace(/<[^>]+>/g, ' ') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  // Use your existing text converter
+  return convertTextToDoc(textContent);
+};

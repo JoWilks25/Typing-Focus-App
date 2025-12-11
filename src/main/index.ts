@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join } from 'path';
+import mammoth from 'mammoth';
 import { fileManager } from './services/fileManager';
 import { convertHtmlToDocx } from './services/exportService';
 import type { EditorJson } from '@shared/tiptapTypes';
@@ -285,9 +286,7 @@ app.whenReady().then(() => {
         properties: ['openFile'],
         title: 'Select Draft Tree file',
         filters: [
-          { name: 'All supported', extensions: ['dt.json', 'txt', 'md'] },
-          { name: 'Draft Tree Sessions', extensions: ['dt.json'] },
-          { name: 'Text / Markdown', extensions: ['txt', 'md'] },
+          { name: 'All supported', extensions: ['dt.json', 'txt', 'md', 'docx'] },
         ],
       });
 
@@ -363,6 +362,19 @@ app.whenReady().then(() => {
       const buffer = await convertHtmlToDocx(html);
       // Convert Buffer to base64 for IPC transmission
       return { success: true, data: buffer.toString('base64') };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  ipcMain.handle('import:docx-to-html', async (_event, filePath: string) => {
+    try {
+      const buffer = await fileManager.readFileBinary(filePath);
+      const result = await mammoth.convertToHtml({ buffer });
+      return { success: true, data: result.value };
     } catch (error) {
       return {
         success: false,

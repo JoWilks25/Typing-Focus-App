@@ -30,6 +30,7 @@ import { useEditorStore } from '@renderer/stores/EditorStore';
 import { fileNameCheck } from '@renderer/utilities/fileNameCheck';
 import type { EditorJson } from '@shared/tiptapTypes';
 import {
+  convertDocxToDoc,
   convertMarkdownToDoc,
   convertTextToDoc,
   countWordsFromDoc,
@@ -205,6 +206,23 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
         const doc = extension === 'md'
           ? convertMarkdownToDoc(raw)
           : convertTextToDoc(raw);
+
+        useEditorStore.setState({ json: doc });
+        useEditorStore.getState().setInitialWordCount(countWordsFromDoc(doc));
+        setLoadedFilePath(basePath);
+        setLoadedFileDisplayPath(fullPath);
+        return;
+      }
+
+      if (extension === 'docx') {
+        // Use the new import API instead of file.read
+        const html = await window.api?.import?.docxToHtml(fullPath);
+        if (!html) {
+          setIsLoadingExisting(false);
+          return;
+        }
+
+        const doc = await convertDocxToDoc(html);
 
         useEditorStore.setState({ json: doc });
         useEditorStore.getState().setInitialWordCount(countWordsFromDoc(doc));

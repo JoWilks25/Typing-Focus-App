@@ -131,4 +131,13 @@ contextBridge.exposeInMainWorld('api', {
       return bytes.buffer;
     },
   },
+  import: {
+    docxToHtml: async (filePath: string): Promise<string> => {
+      const response = await ipcRenderer.invoke('import:docx-to-html', filePath);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to convert DOCX');
+      }
+      return response.data;
+    },
+  },
 });
