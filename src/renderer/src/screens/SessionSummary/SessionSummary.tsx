@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import Lottie from 'lottie-react';
 import {
@@ -18,6 +18,10 @@ import {
   FilePath,
   Actions,
   ActionButton,
+  ExportWrapper,
+  ExportMenu,
+  ExportMenuItem,
+  ExportTrigger,
   ProgressSection,
   ProgressTitle,
   ProgressBar,
@@ -28,12 +32,16 @@ import { useSessionStore } from '@renderer/stores/SessionStore';
 import { useAppStore } from '@renderer/stores/AppStore';
 import treeGrow7Animation from '@renderer/assets/animations/tree-grow-7.json';
 import { TreeAnimation } from '@renderer/components/Animation/TreeAnimation.styles';
-
+import { convertJsonToText, convertJsonToMarkdown, convertJsonToHtml } from '@renderer/utilities/exportUtils';
+import type { EditorJson } from '@shared/tiptapTypes';
 
 export function SessionSummary(): React.JSX.Element {
   const sessionStats = useSessionStore(state => state.sessionStats);
   const lastSession = sessionStats[sessionStats.length - 1];
   const setView = useAppStore(state => state.setView);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
 
   const progressAmount = lastSession.goalType === 'wordcount' ? lastSession.goalProgress : lastSession.timeProgress;
 
@@ -63,6 +71,100 @@ export function SessionSummary(): React.JSX.Element {
       }
     }
   };
+
+  const handleExport = async (format: 'txt' | 'md' | 'docx') => {
+    setIsExportMenuOpen(false);
+    if (!lastSession.filePath) {
+      alert('No file path available for export');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Read the JSON file
+      const jsonFilePath = lastSession.filePath.endsWith('.dt.json')
+        ? lastSession.filePath
+        : `${lastSession.filePath}.dt.json`;
+
+      const jsonContent = await window.api?.file?.read(jsonFilePath);
+      if (!jsonContent) {
+        throw new Error('Failed to read session file');
+      }
+
+      const json: EditorJson = JSON.parse(jsonContent);
+
+      // Determine default filename
+      const baseName = lastSession.fileName || 'export';
+      const extensions = {
+        txt: '.txt',
+        md: '.md',
+        docx: '.docx',
+      };
+      const defaultPath = `${baseName}${extensions[format]}`;
+
+      // Show save dialog
+      const savePath = await window.api?.dialog?.showSaveExport({
+        defaultPath,
+        filters: [
+          { name: format === 'txt' ? 'Text File' : format === 'md' ? 'Markdown File' : 'Word Document', extensions: [format] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      });
+
+      if (!savePath) {
+        setIsExporting(false);
+        return; // User canceled
+      }
+
+      // Convert and save
+      if (format === 'txt') {
+        const text = await convertJsonToText(json);
+        await window.api?.file?.write(savePath, text);
+      } else if (format === 'md') {
+        const markdown = await convertJsonToMarkdown(json);
+        await window.api?.file?.write(savePath, markdown);
+      } else if (format === 'docx') {
+        // Convert JSON to HTML in renderer, then HTML to DOCX in main
+        const html = await convertJsonToHtml(json);
+        const docxBuffer = await window.api?.export?.htmlToDocx(html);
+        if (!docxBuffer) {
+          throw new Error('Failed to convert to DOCX');
+        }
+        await window.api?.file?.writeBinary(savePath, docxBuffer);
+      }
+
+      alert(`Successfully exported to ${savePath}`);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert(`Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!exportMenuRef.current) return;
+      if (event.target instanceof Node && exportMenuRef.current.contains(event.target)) {
+        return;
+      }
+      setIsExportMenuOpen(false);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsExportMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
 
   return (
     <SummaryContainer>
@@ -152,28 +254,61 @@ export function SessionSummary(): React.JSX.Element {
         </FileInfo>
       )}
 
+      {/* ... existing code ... */}
+
       {/* Action Buttons */}
       <Actions>
         <ActionButton
           onClick={handleReturnToEditor}
           $variant="primary"
         >
-          Return to Editor
+          Return
         </ActionButton>
         {lastSession.filePath && (
-          <ActionButton
-            onClick={handleOpenFolder}
-            $variant="secondary"
-          >
-            Open Folder
-          </ActionButton>
+          <ExportWrapper ref={exportMenuRef}>
+            <ActionButton
+              onClick={handleOpenFolder}
+              $variant="secondary"
+            >
+              Open folder
+            </ActionButton>
+            <ExportTrigger
+              type="button"
+              onClick={() => setIsExportMenuOpen(prev => !prev)}
+              aria-haspopup="menu"
+              aria-expanded={isExportMenuOpen}
+              disabled={isExporting}
+            >
+              {isExporting ? 'Exporting…' : 'Export'}
+              <span aria-hidden="true">▾</span>
+            </ExportTrigger>
+            {isExportMenuOpen && (
+              <ExportMenu role="menu">
+                <ExportMenuItem
+                  role="menuitem"
+                  onClick={() => handleExport('txt')}
+                  disabled={isExporting}
+                >
+                  TXT
+                </ExportMenuItem>
+                <ExportMenuItem
+                  role="menuitem"
+                  onClick={() => handleExport('md')}
+                  disabled={isExporting}
+                >
+                  MD
+                </ExportMenuItem>
+                <ExportMenuItem
+                  role="menuitem"
+                  onClick={() => handleExport('docx')}
+                  disabled={isExporting}
+                >
+                  DOCX
+                </ExportMenuItem>
+              </ExportMenu>
+            )}
+          </ExportWrapper>
         )}
-        {/* <ActionButton
-          // onClick={handleViewDashboard}
-          $variant="secondary"
-        >
-          View Dashboard
-        </ActionButton> */}
       </Actions>
     </SummaryContainer>
   );

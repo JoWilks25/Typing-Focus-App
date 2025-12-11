@@ -43,6 +43,12 @@ contextBridge.exposeInMainWorld('api', {
         throw new Error(response.error || 'Failed to write file');
       }
     },
+    writeBinary: async (filePath: string, buffer: ArrayBuffer): Promise<void> => {
+      const response = await ipcRenderer.invoke('file:write-binary', filePath, Buffer.from(buffer));
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to write file');
+      }
+    },
     read: async (filePath: string): Promise<string> => {
       const response = await ipcRenderer.invoke('file:read', filePath);
       if (!response.success) {
@@ -88,6 +94,16 @@ contextBridge.exposeInMainWorld('api', {
       }
       return response.data;
     },
+    showSaveExport: async (options: { defaultPath?: string; filters: { name: string; extensions: string[] }[] }): Promise<string | null> => {
+      const response = await ipcRenderer.invoke('dialog:show-save-export', options);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to open save dialog');
+      }
+      if (response.canceled) {
+        return null;
+      }
+      return response.data;
+    },
   },
   shell: {
     showItemInFolder: async (filePath: string): Promise<void> => {
@@ -99,5 +115,20 @@ contextBridge.exposeInMainWorld('api', {
   },
   onDistractionTimeout: (callback: () => void) => {
     ipcRenderer.on('distraction-timeout-end-session', () => callback());
+  },
+  export: {
+    htmlToDocx: async (html: string): Promise<ArrayBuffer> => {
+      const response = await ipcRenderer.invoke('export:html-to-docx', html);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to convert to DOCX');
+      }
+      // Convert base64 back to ArrayBuffer
+      const binaryString = atob(response.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    },
   },
 });

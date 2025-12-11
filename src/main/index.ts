@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join } from 'path';
 import { fileManager } from './services/fileManager';
+import { convertHtmlToDocx } from './services/exportService';
 import type { EditorJson } from '@shared/tiptapTypes';
 
 let mainWindow: BrowserWindow | null = null;
@@ -307,6 +308,61 @@ app.whenReady().then(() => {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // Export dialog handler
+  ipcMain.handle('dialog:show-save-export', async (_event, options: { defaultPath?: string; filters: { name: string; extensions: string[] }[] }) => {
+    try {
+      const result = await dialog.showSaveDialog(mainWindow!, {
+        title: 'Export Document',
+        defaultPath: options.defaultPath,
+        filters: options.filters,
+      });
+
+      if (result.canceled || !result.filePath) {
+        return { success: true, canceled: true, data: null };
+      }
+
+      return {
+        success: true,
+        canceled: false,
+        data: result.filePath,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  // Export file handler (for binary files like DOCX)
+  ipcMain.handle('file:write-binary', async (_event, filePath: string, buffer: Buffer) => {
+    try {
+      const dir = require('path').join(filePath, '..');
+      await require('fs').promises.mkdir(dir, { recursive: true });
+      await require('fs').promises.writeFile(filePath, buffer);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  // Export DOCX handler - converts HTML to DOCX buffer in main process
+  ipcMain.handle('export:html-to-docx', async (_event, html: string) => {
+    try {
+      const buffer = await convertHtmlToDocx(html);
+      // Convert Buffer to base64 for IPC transmission
+      return { success: true, data: buffer.toString('base64') };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   });

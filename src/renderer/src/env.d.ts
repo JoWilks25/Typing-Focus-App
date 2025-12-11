@@ -37,6 +37,7 @@ declare global {
       file: {
         write: (filePath: string, content: string) => Promise<void>;
         writeJson: (filePath: string, content: EditorJson) => Promise<void>;
+        writeBinary: (filePath: string, buffer: ArrayBuffer) => Promise<void>;
         read: (filePath: string) => Promise<string>;
         exists: (filePath: string) => Promise<boolean>;
       };
@@ -46,11 +47,15 @@ declare global {
       dialog: {
         showOpenDirectory: (defaultPath?: string) => Promise<string | null>;
         showOpenTiptap: () => Promise<string | null>;
+        showSaveExport: (options: { defaultPath?: string; filters: { name: string; extensions: string[] }[] }) => Promise<string | null>;
       };
       shell: {
         showItemInFolder: (filePath: string) => Promise<void>;
       };
       onDistractionTimeout?: (callback: () => void) => void;
+      export: {
+        htmlToDocx: (html: string) => Promise<ArrayBuffer>;
+      };
     };
   }
 }
