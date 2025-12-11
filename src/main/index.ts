@@ -294,7 +294,22 @@ app.whenReady().then(() => {
         return { success: true, canceled: true, data: null };
       }
 
-      return { success: true, canceled: false, data: result.filePaths[0] };
+      // Validate file extension - reject unsupported files
+      const filePath = result.filePaths[0];
+      const lowerPath = filePath.toLowerCase();
+      const extension = lowerPath.endsWith('.dt.json')
+        ? 'dt.json'
+        : lowerPath.split('.').pop();
+
+      const supportedExtensions = ['dt.json', 'txt', 'md', 'docx'];
+      if (!extension || !supportedExtensions.includes(extension)) {
+        return {
+          success: false,
+          error: 'Unsupported file type. Please choose a .dt.json, .txt, .md, or .docx file.',
+        };
+      }
+
+      return { success: true, canceled: false, data: filePath };
     } catch (error) {
       return {
         success: false,

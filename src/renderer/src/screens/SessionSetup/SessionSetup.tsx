@@ -247,7 +247,8 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
       setLoadedFileDisplayPath(null);
     } catch (error) {
       console.error('Failed to load existing file:', error);
-      setLoadError('Failed to load file. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load file. Please try again.';
+      setLoadError(errorMessage);
       setLoadedFilePath(null);
       setLoadedFileDisplayPath(null);
     } finally {
