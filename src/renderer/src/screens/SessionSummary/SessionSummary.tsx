@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import Lottie from 'lottie-react';
 import {
@@ -18,6 +18,10 @@ import {
   FilePath,
   Actions,
   ActionButton,
+  ExportWrapper,
+  ExportMenu,
+  ExportMenuItem,
+  ExportTrigger,
   ProgressSection,
   ProgressTitle,
   ProgressBar,
@@ -36,6 +40,8 @@ export function SessionSummary(): React.JSX.Element {
   const lastSession = sessionStats[sessionStats.length - 1];
   const setView = useAppStore(state => state.setView);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
 
   const progressAmount = lastSession.goalType === 'wordcount' ? lastSession.goalProgress : lastSession.timeProgress;
 
@@ -67,6 +73,7 @@ export function SessionSummary(): React.JSX.Element {
   };
 
   const handleExport = async (format: 'txt' | 'md' | 'docx') => {
+    setIsExportMenuOpen(false);
     if (!lastSession.filePath) {
       alert('No file path available for export');
       return;
@@ -134,6 +141,30 @@ export function SessionSummary(): React.JSX.Element {
       setIsExporting(false);
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!exportMenuRef.current) return;
+      if (event.target instanceof Node && exportMenuRef.current.contains(event.target)) {
+        return;
+      }
+      setIsExportMenuOpen(false);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsExportMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
 
   return (
     <SummaryContainer>
@@ -231,38 +262,52 @@ export function SessionSummary(): React.JSX.Element {
           onClick={handleReturnToEditor}
           $variant="primary"
         >
-          Return to Editor
+          Return
         </ActionButton>
         {lastSession.filePath && (
-          <>
+          <ExportWrapper ref={exportMenuRef}>
             <ActionButton
               onClick={handleOpenFolder}
               $variant="secondary"
             >
-              Open Folder
+              Open folder
             </ActionButton>
-            <ActionButton
-              onClick={() => handleExport('txt')}
-              $variant="secondary"
+            <ExportTrigger
+              type="button"
+              onClick={() => setIsExportMenuOpen(prev => !prev)}
+              aria-haspopup="menu"
+              aria-expanded={isExportMenuOpen}
               disabled={isExporting}
             >
-              {isExporting ? 'Exporting...' : 'Export as TXT'}
-            </ActionButton>
-            <ActionButton
-              onClick={() => handleExport('md')}
-              $variant="secondary"
-              disabled={isExporting}
-            >
-              {isExporting ? 'Exporting...' : 'Export as MD'}
-            </ActionButton>
-            <ActionButton
-              onClick={() => handleExport('docx')}
-              $variant="secondary"
-              disabled={isExporting}
-            >
-              {isExporting ? 'Exporting...' : 'Export as DOCX'}
-            </ActionButton>
-          </>
+              {isExporting ? 'Exporting…' : 'Export'}
+              <span aria-hidden="true">▾</span>
+            </ExportTrigger>
+            {isExportMenuOpen && (
+              <ExportMenu role="menu">
+                <ExportMenuItem
+                  role="menuitem"
+                  onClick={() => handleExport('txt')}
+                  disabled={isExporting}
+                >
+                  TXT
+                </ExportMenuItem>
+                <ExportMenuItem
+                  role="menuitem"
+                  onClick={() => handleExport('md')}
+                  disabled={isExporting}
+                >
+                  MD
+                </ExportMenuItem>
+                <ExportMenuItem
+                  role="menuitem"
+                  onClick={() => handleExport('docx')}
+                  disabled={isExporting}
+                >
+                  DOCX
+                </ExportMenuItem>
+              </ExportMenu>
+            )}
+          </ExportWrapper>
         )}
       </Actions>
     </SummaryContainer>

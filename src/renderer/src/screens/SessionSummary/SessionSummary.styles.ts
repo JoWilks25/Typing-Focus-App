@@ -156,17 +156,20 @@ export const FilePath = styled.p`
 
 export const Actions = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
+  flex-wrap: wrap;
 `;
 
 export const ActionButton = styled.button<{ $variant?: 'primary' | 'secondary' }>`
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: ${props => props.theme.fontWeights.medium};
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
+  min-width: 8.5rem;
+  height: 2.75rem;
 
   ${props => props.$variant === 'primary' ? `
     background-color: ${props.theme.colors.button.primary.bg};
@@ -195,4 +198,58 @@ export const ActionButton = styled.button<{ $variant?: 'primary' | 'secondary' }
       outline-offset: 2px;
     }
   `}
+`;
+
+export const ExportWrapper = styled.div`
+  position: relative;
+  display: flex;
+  gap: 0.5rem;
+`;
+
+export const ExportTrigger = styled(ActionButton).attrs({ $variant: 'secondary' })`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.75rem 1rem;
+
+  span {
+    font-size: 0.85em;
+    line-height: 1;
+  }
+`;
+
+export const ExportMenu = styled.div`
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 8rem;
+  background: ${props => props.theme.colors.background.tertiary};
+  border: 1px solid ${props => props.theme.colors.border.tertiary};
+  border-radius: 0.5rem;
+  box-shadow: 0 -10px 25px -5px ${props => props.theme.colors.shadow.md};
+  padding: 0.35rem;
+  z-index: 5;
+`;
+
+export const ExportMenuItem = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  background: transparent;
+  color: ${props => props.theme.colors.text.primary};
+  border-radius: 0.35rem;
+  cursor: pointer;
+  font-weight: ${props => props.theme.fontWeights.medium};
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: ${props => props.theme.colors.background.quaternary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
