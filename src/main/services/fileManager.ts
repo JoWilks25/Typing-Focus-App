@@ -50,6 +50,17 @@ class FileManager {
   }
 
   /**
+   * Read a file as a binary buffer (e.g., for DOCX imports)
+   */
+  async readFileBinary(filePath: string): Promise<Buffer> {
+    try {
+      return await fs.readFile(filePath);
+    } catch (error) {
+      throw new Error(`Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
    * Check if a file exists
    */
   async fileExists(filePath: string): Promise<boolean> {

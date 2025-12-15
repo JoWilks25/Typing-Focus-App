@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join } from 'path';
+import mammoth from 'mammoth';
 import { fileManager } from './services/fileManager';
 import { convertHtmlToDocx } from './services/exportService';
 import type { EditorJson } from '@shared/tiptapTypes';
@@ -283,15 +284,45 @@ app.whenReady().then(() => {
     try {
       const result = await dialog.showOpenDialog(mainWindow!, {
         properties: ['openFile'],
-        title: 'Select Draft Tree session file',
-        filters: [{ name: 'Draft Tree Sessions', extensions: ['dt.json'] }],
+        title: 'Select Draft Tree file',
+        filters: [
+          { name: 'All supported', extensions: ['dt.json', 'txt', 'md', 'docx'] },
+        ],
       });
 
       if (result.canceled || !result.filePaths[0]) {
         return { success: true, canceled: true, data: null };
       }
 
-      return { success: true, canceled: false, data: result.filePaths[0] };
+      // Validate file extension - reject unsupported files
+      const filePath = result.filePaths[0];
+      const lowerPath = filePath.toLowerCase();
+      const extension = lowerPath.endsWith('.dt.json')
+        ? 'dt.json'
+        : lowerPath.split('.').pop();
+
+      const supportedExtensions = ['dt.json', 'txt', 'md', 'docx'];
+      if (!extension || !supportedExtensions.includes(extension)) {
+        return {
+          success: false,
+          error: 'Unsupported file type. Please choose a .dt.json, .txt, .md, or .docx file.',
+        };
+      }
+
+      return { success: true, canceled: false, data: filePath };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  ipcMain.handle('import:docx-to-html', async (_event, filePath: string) => {
+    try {
+      const buffer = await fileManager.readFileBinary(filePath);
+      const result = await mammoth.convertToHtml({ buffer });
+      return { success: true, data: result.value };
     } catch (error) {
       return {
         success: false,
@@ -359,6 +390,19 @@ app.whenReady().then(() => {
       const buffer = await convertHtmlToDocx(html);
       // Convert Buffer to base64 for IPC transmission
       return { success: true, data: buffer.toString('base64') };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  ipcMain.handle('import:docx-to-html', async (_event, filePath: string) => {
+    try {
+      const buffer = await fileManager.readFileBinary(filePath);
+      const result = await mammoth.convertToHtml({ buffer });
+      return { success: true, data: result.value };
     } catch (error) {
       return {
         success: false,

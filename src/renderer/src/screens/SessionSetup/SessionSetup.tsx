@@ -21,12 +21,21 @@ import {
   GoalSelectorWrapper,
   GoalInputWrapper,
   SubmitButton,
+  LoadedFileStats,
 } from './SessionSetup.styles';
 import { GoalType, useSessionStore } from '@renderer/stores/SessionStore';
 import { GoalSelector } from './GoalSelector';
 import { GoalInput } from './GoalInput';
 import { useEditorStore } from '@renderer/stores/EditorStore';
 import { fileNameCheck } from '@renderer/utilities/fileNameCheck';
+import type { EditorJson } from '@shared/tiptapTypes';
+import {
+  convertDocxToDoc,
+  convertMarkdownToDoc,
+  convertTextToDoc,
+  countWordsFromDoc,
+  stripExtension,
+} from '@renderer/utilities/importHelpers';
 
 const NEW = 'new';
 const EXISTING = 'existing';
@@ -42,7 +51,9 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
   const [isLoadingDefaultPath, setIsLoadingDefaultPath] = useState(true);
   const [fileExistsError, setFileExistsError] = useState(false);
   const [loadedFilePath, setLoadedFilePath] = useState<string | null>(null);
+  const [loadedFileDisplayPath, setLoadedFileDisplayPath] = useState<string | null>(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fileName: 'My first session', // no extension; purely a title/base name
     filePath: '',
@@ -157,6 +168,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
 
   const handleLoadExistingFile = async () => {
     try {
+      setLoadError(null);
       setIsLoadingExisting(true);
       const fullPath = await window.api?.dialog?.showOpenTiptap?.();
       if (!fullPath) {
@@ -164,65 +176,100 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
         return; // user canceled
       }
 
-      // Read JSON string and parse
-      const raw = await window.api?.file?.read(fullPath);
-      if (!raw) {
-        setIsLoadingExisting(false);
+      const lowerPath = fullPath.toLowerCase();
+      const extension = lowerPath.endsWith('.dt.json')
+        ? 'dt.json'
+        : lowerPath.split('.').pop();
+      const basePath = stripExtension(fullPath);
+
+      if (extension === 'dt.json') {
+        const raw = await window.api?.file?.read(fullPath);
+        if (!raw) {
+          setIsLoadingExisting(false);
+          return;
+        }
+        const json = JSON.parse(raw) as EditorJson;
+        useEditorStore.setState({ json });
+        useEditorStore.getState().setInitialWordCount(countWordsFromDoc(json));
+        setLoadedFilePath(basePath);
+        setLoadedFileDisplayPath(fullPath);
         return;
       }
 
-      const json = JSON.parse(raw);
-
-      // Extract word count from the loaded JSON using TipTap's structure
-      // You'll need to create a temporary editor instance or use a helper
-      // For now, store the JSON and let the editor calculate it when it loads
-      useEditorStore.setState({ json });
-
-      // When the editor loads this JSON, it will call onUpdate which will
-      // give us the word count. But we need to capture that initial count.
-      // Better approach: extract text from JSON and calculate word count here
-
-      // Helper to extract text from TipTap JSON
-      const extractText = (node: any): string => {
-        if (node.text) {
-          return node.text;
+      if (extension === 'txt' || extension === 'md') {
+        const raw = await window.api?.file?.read(fullPath);
+        if (raw === undefined || raw === null) {
+          setIsLoadingExisting(false);
+          return;
         }
-        if (node.content && Array.isArray(node.content)) {
-          return node.content.map(extractText).join(' ');
+
+        const doc = extension === 'md'
+          ? convertMarkdownToDoc(raw)
+          : convertTextToDoc(raw);
+
+        useEditorStore.setState({ json: doc });
+        useEditorStore.getState().setInitialWordCount(countWordsFromDoc(doc));
+        setLoadedFilePath(basePath);
+        setLoadedFileDisplayPath(fullPath);
+        return;
+      }
+
+      if (extension === 'docx') {
+        try {
+          const html = await window.api?.import?.docxToHtml(fullPath);
+          if (!html) {
+            setLoadError('Unable to read DOCX file.');
+            setLoadedFilePath(null);
+            setLoadedFileDisplayPath(null);
+            setIsLoadingExisting(false);
+            return;
+          }
+
+          const doc = convertDocxToDoc(html);
+
+          useEditorStore.setState({ json: doc });
+          useEditorStore.getState().setInitialWordCount(countWordsFromDoc(doc));
+          setLoadedFilePath(basePath);
+          setLoadedFileDisplayPath(fullPath);
+          return;
+        } catch (docxError) {
+          console.error('Failed to import DOCX file:', docxError);
+          setLoadError('Failed to import DOCX file. Please try again.');
+          setLoadedFilePath(null);
+          setLoadedFileDisplayPath(null);
+          setIsLoadingExisting(false);
+          return;
         }
-        return '';
-      };
+      }
 
-      const text = extractText(json);
-      const initialWordCount = text.trim().split(/\s+/).filter(Boolean).length;
-
-      // Set the initial word count so progress tracks only new words
-      useEditorStore.getState().setInitialWordCount(initialWordCount);
-
-      // Derive base path (strip .dt.json) and file name (no extension)
-      const lastSlash = fullPath.lastIndexOf('/');
-      const dir = lastSlash === -1 ? '' : fullPath.slice(0, lastSlash);
-      const fileWithExt = lastSlash === -1 ? fullPath : fullPath.slice(lastSlash + 1);
-      const base = fileWithExt.replace(/\.dt\.json$/, '');
-      const basePath = dir ? `${dir}/${base}` : base;
-
-      setLoadedFilePath(basePath);
+      setLoadError('Unsupported file type. Please choose a .dt.json, .txt, .md, or .docx file.');
+      setLoadedFilePath(null);
+      setLoadedFileDisplayPath(null);
     } catch (error) {
       console.error('Failed to load existing file:', error);
-      // Optionally show error message to user
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load file. Please try again.';
+      setLoadError(errorMessage);
+      setLoadedFilePath(null);
+      setLoadedFileDisplayPath(null);
     } finally {
       setIsLoadingExisting(false);
     }
   }
+
+  const loadedExt = useMemo(() => {
+    const lower = (loadedFileDisplayPath || loadedFilePath || '').toLowerCase();
+    if (!lower) return null;
+    return lower.endsWith('.dt.json') ? 'dt.json' : lower.split('.').pop();
+  }, [loadedFileDisplayPath, loadedFilePath]);
 
   const allInputsFilled = useMemo((): boolean => {
     if (fileMode === NEW) {
       return !!(isValidFileName && formData.filePath && formData.goal > 0);
     } else {
       // EXISTING mode: only need loaded file and goal
-      return !!(loadedFilePath && formData.goal > 0);
+      return !!(loadedFilePath && formData.goal > 0 && !loadError);
     }
-  }, [fileMode, isValidFileName, formData.filePath, formData.goal, loadedFilePath])
+  }, [fileMode, isValidFileName, formData.filePath, formData.goal, loadedFilePath, loadError])
 
   return (
     <SetupContainer>
@@ -300,7 +347,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
           {fileMode === EXISTING && (
             <FileGrid>
               <LocationSection>
-                <label>Session File</label>
+                <label>Session File (supports .dt.json, .txt, .md, .docx)</label>
                 <LocationDisplay>
                   {!loadedFilePath ? (
                     <>
@@ -315,8 +362,8 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
                     </>
                   ) : (
                     <>
-                      <PathDisplay title={loadedFilePath}>
-                        {loadedFilePath}
+                      <PathDisplay title={loadedFileDisplayPath || loadedFilePath}>
+                        {loadedFileDisplayPath || loadedFilePath}
                       </PathDisplay>
                       <BrowseButton
                         type="button"
@@ -328,12 +375,19 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
                     </>
                   )}
                 </LocationDisplay>
+                {loadError && (
+                  <ErrorText>{loadError}</ErrorText>
+                )}
                 {loadedFilePath && (
                   <LoadedFileSummary>
-                    <LoadedFileTitle>
-                      ✓ File Loaded
-                    </LoadedFileTitle>
-                    <LoadedFilePath>{loadedFilePath}</LoadedFilePath>
+                    <LoadedFileTitle>✓ File Loaded</LoadedFileTitle>
+                    <LoadedFilePath>{loadedFileDisplayPath || loadedFilePath}</LoadedFilePath>
+
+                    {loadedExt && loadedExt !== 'dt.json' && (
+                      <LoadedFileStats>
+                        This file will be imported and saved as .dt.json.
+                      </LoadedFileStats>
+                    )}
                   </LoadedFileSummary>
                 )}
               </LocationSection>
@@ -343,7 +397,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
         </FileSection>
 
         {/* Goal Selection - show if valid filename (NEW) or file loaded (EXISTING) */}
-        {((fileMode === NEW && isValidFileName) || (fileMode === EXISTING && loadedFilePath)) && (
+        {((fileMode === NEW && isValidFileName) || (fileMode === EXISTING && loadedFilePath && !loadError)) && (
           <FormGrid>
             <GoalSelectorWrapper>
               <GoalSelector
@@ -362,7 +416,7 @@ export function SessionSetup({ closeModal }: SessionSetup): React.JSX.Element {
         )}
 
         {/* Submit Button */}
-        {((fileMode === NEW && isValidFileName) || (fileMode === EXISTING && loadedFilePath)) && (
+        {((fileMode === NEW && isValidFileName) || (fileMode === EXISTING && loadedFilePath && !loadError)) && (
           <SubmitButton
             type="button"
             onClick={handleSubmit}

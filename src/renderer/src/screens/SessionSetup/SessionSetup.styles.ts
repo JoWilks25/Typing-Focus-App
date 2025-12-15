@@ -226,6 +226,10 @@ export const LocationSection = styled.div`
     margin-bottom: 0.5rem;
     font-weight: ${props => props.theme.fontWeights.medium};
   }
+  
+  p {
+    font-style: italic;
+  }
 `;
 
 export const LocationDisplay = styled.div`
@@ -624,6 +628,10 @@ export const LoadedFilePath = styled.div`
 `;
 
 export const LoadedFileStats = styled.span`
+  display: block;
+  margin-top: 0.35rem;
   font-size: ${props => props.theme.fontSizes.sm};
-  color: ${props => props.theme.colors.accent.greenLighter};
+  color: ${props => props.theme.colors.accent.redError};
+  font-weight: 900;
+  line-height: 1.4;
 `;

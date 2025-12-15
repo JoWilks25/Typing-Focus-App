@@ -31,6 +31,7 @@ declare global {
       returnToSession?: () => void;
       onShouldShowDistractionWarning?: (cb: (respond: (shouldShow: boolean) => void) => void) => void;
       onEndSessionFromDistraction?: (cb: () => void) => void;
+      onDistractionTimeout?: (callback: () => void) => void;
       session: {
         end: () => void;
       };
@@ -52,9 +53,11 @@ declare global {
       shell: {
         showItemInFolder: (filePath: string) => Promise<void>;
       };
-      onDistractionTimeout?: (callback: () => void) => void;
       export: {
         htmlToDocx: (html: string) => Promise<ArrayBuffer>;
+      };
+      import: {
+        docxToHtml: (filePath: string) => Promise<string>;
       };
     };
   }

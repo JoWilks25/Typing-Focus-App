@@ -105,6 +105,15 @@ contextBridge.exposeInMainWorld('api', {
       return response.data;
     },
   },
+  import: {
+    docxToHtml: async (filePath: string): Promise<string> => {
+      const response = await ipcRenderer.invoke('import:docx-to-html', filePath);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to convert DOCX');
+      }
+      return response.data;
+    },
+  },
   shell: {
     showItemInFolder: async (filePath: string): Promise<void> => {
       const response = await ipcRenderer.invoke('shell:show-item-in-folder', filePath);
