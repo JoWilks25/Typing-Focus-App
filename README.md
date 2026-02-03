@@ -2,7 +2,7 @@
 
 A minimalist writing app built with Electron, React, and TypeScript. Write without distractions with beautiful animations that respond to your typing progress.
 
-<video src="docs/demo-video.mov" controls></video>
+<video src="docs/demo-video.mp4" controls width="600"></video>
 
 ## Prerequisites
 
